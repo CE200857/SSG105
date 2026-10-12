@@ -29,7 +29,7 @@ public class RegisterServlet extends HttpServlet {
         String gender = request.getParameter("gender");
         String campus = request.getParameter("campus");
         
-        // 1. Validate dữ liệu ở Backend để đề phòng bypass từ frontend
+        // 1. Validate dữ liệu
         if (username == null || !username.matches("^[a-zA-Z0-9_]{3,20}$")) {
             sendError(response, out, "Tên đăng nhập không hợp lệ."); return;
         }
@@ -42,24 +42,30 @@ public class RegisterServlet extends HttpServlet {
         if (fullName == null || !fullName.trim().contains(" ")) {
             sendError(response, out, "Tên phải có ít nhất 2 từ."); return;
         }
-        // Validate SĐT: Bắt đầu bằng 0, số thứ 2 là 1-9, tổng 10 số
         if (phone == null || !phone.matches("^0[1-9][0-9]{8}$")) {
             sendError(response, out, "Số điện thoại không hợp lệ."); return;
         }
 
         UserDAO dao = new UserDAO();
         
-        // 2. Check trùng lặp
+        // 2. Check trùng lặp Username, Email (Bảo mật 2 lớp)
         if (dao.checkUserExist(username, email)) {
             response.setStatus(409);
             out.print("{\"status\":\"error\", \"message\":\"Tên đăng nhập hoặc Email đã được sử dụng!\"}");
             return;
         }
+
+        // 3. Check trùng lặp Số điện thoại
+        if (dao.checkPhoneExist(phone)) {
+            response.setStatus(409);
+            out.print("{\"status\":\"error\", \"message\":\"Số điện thoại này đã được sử dụng cho một tài khoản khác!\"}");
+            return;
+        }
         
-        // 3. MÃ HÓA MẬT KHẨU (Sử dụng hàm hash đã viết ở thư mục filter)
+        // 4. Mã hóa mật khẩu
         String hashedPassword = PasswordUtils.hashPassword(password);
         
-        // 4. Lưu vào Database
+        // 5. Lưu vào Database
         boolean isSuccess = dao.registerUser(username, fullName, email, phone, campus, gender, hashedPassword);
         
         if (isSuccess) {
@@ -69,7 +75,6 @@ public class RegisterServlet extends HttpServlet {
         }
     }
     
-    // Hàm phụ trợ in ra lỗi JSON
     private void sendError(HttpServletResponse response, PrintWriter out, String message) {
         response.setStatus(400);
         out.print("{\"status\":\"error\", \"message\":\"" + message + "\"}");
