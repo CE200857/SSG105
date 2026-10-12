@@ -3,11 +3,14 @@ import Login from "../components/DatNT/Login";
 import Register from "../components/DatNT/Register";
 import CreateProfile from "../components/DatNT/CreateProfile";
 
-// Import Header & Footer mới tạo
+// Import Header & Footer
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+// Import các trang
 import Home from "../pages/Home";
+import OverviewPage from "../pages/OverviewPage";
+import LostFoundPage from "../pages/LostFoundPage";
 
 // Khung bảo vệ Role
 const ProtectedRoute = ({ user, allowedRoles, children }) => {
@@ -47,22 +50,17 @@ export default function AppRoutes({ user, setUser }) {
 
       {/* 2. Các trang CÓ Header/Footer (bọc trong MainLayout) */}
       <Route element={<MainLayout user={user} setUser={setUser} />}>
-        {/* Dành cho Student (Role 2) */}
+        {/* Trang chủ */}
         <Route
           path="/"
           element={user ? <Home /> : <Navigate to="/login" replace />}
         />
 
-        <Route
-          path="/"
-          element={user ? <Home /> : <Navigate to="/login" replace />}
-        />
+        {/* 2 Trang đã tích hợp */}
+        <Route path="/lost-found" element={<LostFoundPage />} />
+        <Route path="/overview" element={<OverviewPage />} />
 
-        {/* Thêm các trang tạm thời để không bị lỗi 404 khi bấm vào Header */}
-        <Route
-          path="/lost-found"
-          element={<h3 className="text-center p-5">Trang đồ thất lạc</h3>}
-        />
+        {/* Các trang tạm thời khác */}
         <Route
           path="/forum"
           element={<h3 className="text-center p-5">Trang diễn đàn</h3>}
@@ -70,10 +68,6 @@ export default function AppRoutes({ user, setUser }) {
         <Route
           path="/review"
           element={<h3 className="text-center p-5">Trang đánh giá</h3>}
-        />
-        <Route
-          path="/overview"
-          element={<h3 className="text-center p-5">Trang tổng quan</h3>}
         />
         <Route
           path="/profile"
