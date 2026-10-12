@@ -48,15 +48,11 @@ const Login = ({ setUser }) => {
         const userData = response.data.user;
         setUser(userData);
         
-        // Đổi localStorage thành sessionStorage ở đây
+        // Lưu phiên đăng nhập
         sessionStorage.setItem("user", JSON.stringify(userData));
         
-        // Điều hướng dựa theo Role (1: Admin, 2: Student)
-        if (userData.roleId === 1) {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
+        // Chuyển hướng tất cả người dùng về Trang chủ (Home) sau khi đăng nhập thành công
+        navigate("/");
       }
     } catch (err) {
       if (err.response && err.response.data) {
@@ -74,7 +70,7 @@ const Login = ({ setUser }) => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', // Hoặc dùng nền hồng nhạt nếu muốn giống y chang: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 100%)
+        background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', 
         padding: '20px'
       }}
     >
@@ -162,7 +158,7 @@ const Login = ({ setUser }) => {
                     style={{ 
                       borderRadius: '10px', 
                       padding: '12px',
-                      backgroundColor: '#a31d45', // Màu đỏ sậm giống hình
+                      backgroundColor: '#a31d45',
                       borderColor: '#a31d45',
                       fontSize: '16px'
                     }}
