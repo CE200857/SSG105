@@ -75,4 +75,20 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
+    
+    // Hàm kiểm tra trùng số điện thoại
+    public boolean checkPhoneExist(String phone) {
+        String query = "SELECT 1 FROM Users WHERE Phone = ?";
+        try {
+            java.sql.PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, phone);
+            java.sql.ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return true; // Số điện thoại đã tồn tại
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi checkPhoneExist: " + e.getMessage());
+        }
+        return false;
+    }
 }
