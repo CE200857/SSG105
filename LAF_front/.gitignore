@@ -1,0 +1,95 @@
+# ==========================================
+# 1. DATABASE & SENSITIVE CONFIG (Bảo mật tài khoản DB)
+# ==========================================
+
+# File cấu hình database / biến môi trường (nếu có dùng sau này)
+**/db.properties
+**/database.properties
+**/config.properties
+.env
+.env.local
+.env.*.local
+
+# ==========================================
+# 2. JAVA / MAVEN / BACKEND
+# ==========================================
+# File biên dịch
+*.class
+
+# Thư mục build của Maven
+target/
+build/
+dist/
+
+# File đóng gói
+*.jar
+*.war
+*.ear
+
+# Log files
+*.log
+
+# ==========================================
+# 3. NETBEANS & IDEs
+# ==========================================
+# NetBeans
+**/nbproject/private/
+**/nbproject/Makefile-*.mk
+**/nbproject/Package-*.bash
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# IntelliJ IDEA / Eclipse
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ==========================================
+# 4. REACT + VITE / NODEJS / FRONTEND
+# ==========================================
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Output build của Vite
+dist/
+dist-ssr/
+
+# Logs npm/yarn/pnpm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Bộ nhớ tạm của Vite / ESLint
+.eslintcache
+.vite/
+
+# ==========================================
+# 5. OS & HỆ ĐIỀU HÀNH
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

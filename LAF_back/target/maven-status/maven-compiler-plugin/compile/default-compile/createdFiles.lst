@@ -1,0 +1,15 @@
+entity\Reviews.class
+entity\Likes.class
+com\mycompany\laf_back\resources\TestResource.class
+entity\FoundImages.class
+com\mycompany\laf_back\resources\JakartaEE10Resource.class
+entity\Roles.class
+com\mycompany\laf_back\resources\ApplicationConfig.class
+util\DBContext.class
+entity\Users.class
+entity\FoundPosts.class
+entity\LostPosts.class
+entity\LostImages.class
+filter\CorsFilter.class
+entity\Comments.class
+com\mycompany\laf_back\JakartaRestConfiguration.class
