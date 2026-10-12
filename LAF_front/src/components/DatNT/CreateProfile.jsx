@@ -94,7 +94,7 @@ const CreateProfile = () => {
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Họ và Tên<span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      type="text" placeholder="Vd: Nguyễn Tiến Đạt"
+                      type="text"
                       value={fullName} onChange={(e) => setFullName(e.target.value)}
                       style={{ borderRadius: '10px', padding: '10px 15px' }}
                     />
@@ -103,7 +103,7 @@ const CreateProfile = () => {
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Số điện thoại<span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      type="text" placeholder="Vd: 0912345678"
+                      type="text"
                       value={phone} onChange={(e) => setPhone(e.target.value)}
                       style={{ borderRadius: '10px', padding: '10px 15px' }}
                     />
