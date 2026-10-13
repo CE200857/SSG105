@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -7,16 +8,40 @@ import {
   Card,
   Badge,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Home = () => {
   const primaryColor = "#0C8B72";
+  const navigate = useNavigate();
 
   const [recentPosts, setRecentPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [forumPosts, setForumPosts] = useState([]);
 
+  // ===== STATE CHO TÌM KIẾM TRANG CHỦ =====
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
+
+  // ===== STATE & REF CHO TÍNH NĂNG CUỘN NGANG =====
+  const scrollRef = React.useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // Gọi API lấy bài diễn đàn
+  useEffect(() => {
+    const fetchForumPosts = async () => {
+      try {
+        const response = await axios.get("/api/home/forum-posts");
+        setForumPosts(response.data);
+      } catch (error) {
+        console.error("Lỗi lấy dữ liệu diễn đàn:", error);
+      }
+    };
+    fetchForumPosts();
+  }, []);
+
+  // Gọi API lấy tin mới nhất
   useEffect(() => {
     const fetchRecentPosts = async () => {
       try {
@@ -30,6 +55,49 @@ const Home = () => {
     };
     fetchRecentPosts();
   }, []);
+
+  const checkScrollPosition = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 2);
+    }
+  };
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = 300;
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!loading && recentPosts.length > 0) {
+      checkScrollPosition();
+    }
+  }, [loading, recentPosts]);
+
+  // ===== HÀM XỬ LÝ TÌM KIẾM =====
+  const handleSearchSubmit = () => {
+    navigate("/lost-found", { 
+      state: { 
+        keyword: searchKeyword, 
+        location: searchLocation || "Toàn campus" 
+      } 
+    });
+  };
+
+  const handleQuickSearch = (keyword) => {
+    navigate("/lost-found", { 
+      state: { 
+        keyword: keyword, 
+        location: "Toàn campus" 
+      } 
+    });
+  };
 
   return (
     <div
@@ -54,9 +122,17 @@ const Home = () => {
         .bg-primary-custom {
             background-color: ${primaryColor};
         }
+        .quick-search-badge {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-search-badge:hover {
+            background-color: ${primaryColor} !important;
+            color: white !important;
+            border-color: ${primaryColor} !important;
+        }
       `}</style>
 
-      {/* ================= HERO & SEARCH SECTION (GỘP CHUNG NỀN XANH) ================= */}
       <section
         style={{
           backgroundColor: "#EAF5F3",
@@ -107,18 +183,24 @@ const Home = () => {
 
               <div className="d-flex gap-3 mb-4">
                 <Button
-                  className="bg-primary-custom"
+                  onClick={() => navigate("/lost-found")}
+                  className="border-0 shadow-sm"
                   style={{
-                    borderColor: primaryColor,
+                    backgroundColor: primaryColor, // Set trực tiếp màu nền
+                    color: "white",
                     borderRadius: "10px",
                     padding: "12px 24px",
                     fontWeight: "600",
                   }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#0a735e"} // Đổi màu xanh đậm hơn khi hover
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = primaryColor} // Trả lại màu cũ khi bỏ chuột
                 >
                   <i className="bi bi-search me-2"></i> Đăng tin mất đồ
                 </Button>
                 <Button
                   variant="light"
+                  onClick={() => navigate("/lost-found")}
+                  className="shadow-sm"
                   style={{
                     borderRadius: "10px",
                     padding: "12px 24px",
@@ -206,7 +288,7 @@ const Home = () => {
             </Col>
           </Row>
 
-          {/* CHUYỂN SEARCH SECTION VÀO BÊN TRONG SECTION NỀN XANH */}
+          {/* SEARCH SECTION */}
           <Card
             className="border-0 shadow-sm p-3"
             style={{ borderRadius: "20px" }}
@@ -226,6 +308,9 @@ const Home = () => {
                       <Form.Control
                         type="text"
                         placeholder="Ví, laptop, balo, chìa khóa..."
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
                         className="border-0 shadow-none px-0"
                         style={{ fontSize: "1rem" }}
                       />
@@ -256,18 +341,33 @@ const Home = () => {
                       >
                         ĐỊA ĐIỂM
                       </label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Toà nhà, ký túc xá, sân trường..."
-                        className="border-0 shadow-none px-0"
-                        style={{ fontSize: "1rem" }}
-                      />
+                      <Form.Select 
+                        value={searchLocation}
+                        onChange={(e) => setSearchLocation(e.target.value)}
+                        className="border-0 shadow-none px-0 text-secondary" 
+                        style={{ fontSize: "1rem", cursor: "pointer" }}
+                      >
+                        <option value="">Toàn campus</option>
+                        <option value="Tòa Alpha">Tòa Alpha</option>
+                        <option value="Tòa Beta">Tòa Beta</option>
+                        <option value="Tòa Gamma">Tòa Gamma</option>
+                        <option value="Giảng đường">Giảng đường</option>
+                        <option value="Thư viện">Thư viện</option>
+                        <option value="Căn tin">Căn tin</option>
+                        <option value="Hầm gửi xe">Hầm gửi xe</option>
+                        <option value="Bãi đổ xe ngoài trời">Bãi đổ xe ngoài trời</option>
+                        <option value="Sân trường">Sân trường</option>
+                        <option value="Sân bóng">Sân bóng</option>
+                        <option value="Sân pickleball">Sân pickleball</option>
+                        <option value="Nhà võ">Nhà võ</option>
+                      </Form.Select>
                     </div>
                   </div>
                 </Col>
 
                 <Col md={2} className="text-end">
                   <Button
+                    onClick={handleSearchSubmit}
                     className="w-100 bg-primary-custom"
                     style={{
                       borderColor: primaryColor,
@@ -286,73 +386,103 @@ const Home = () => {
           <div className="mt-4">
             {/* Hàng trên: Tags tìm kiếm nhanh */}
             <div className="d-flex align-items-center gap-3 mb-4">
-              <span style={{ color: "#6c757d", fontSize: "0.95rem" }}>Tìm kiếm nhanh:</span>
+              <span style={{ color: "#6c757d", fontSize: "0.95rem" }}>
+                Tìm kiếm nhanh:
+              </span>
               <div className="d-flex gap-2">
-                <Badge 
-                  pill 
-                  bg="transparent" 
-                  text="dark" 
-                  className="border fw-normal px-3 py-2" 
+                <Badge
+                  pill bg="transparent" text="dark"
+                  className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
+                  onClick={() => handleQuickSearch("Ví")}
                 >
-                  Ví & thẻ sinh viên
+                  Ví
                 </Badge>
-                <Badge 
-                  pill 
-                  bg="transparent" 
-                  text="dark" 
-                  className="border fw-normal px-3 py-2" 
+                <Badge
+                  pill bg="transparent" text="dark"
+                  className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
+                  onClick={() => handleQuickSearch("Chìa khóa")}
                 >
-                  Laptop
+                  Chìa khóa
                 </Badge>
-                <Badge 
-                  pill 
-                  bg="transparent" 
-                  text="dark" 
-                  className="border fw-normal px-3 py-2" 
+                <Badge
+                  pill bg="transparent" text="dark"
+                  className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
+                  onClick={() => handleQuickSearch("Thẻ")}
+                >
+                  Thẻ
+                </Badge>
+                <Badge
+                  pill bg="transparent" text="dark"
+                  className="border fw-normal px-3 py-2 quick-search-badge"
+                  style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
+                  onClick={() => handleQuickSearch("Balo")}
                 >
                   Balo
                 </Badge>
-                <Badge 
-                  pill 
-                  bg="transparent" 
-                  text="dark" 
-                  className="border fw-normal px-3 py-2" 
+                <Badge
+                  pill bg="transparent" text="dark"
+                  className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
+                  onClick={() => handleQuickSearch("Laptop")}
                 >
-                  Ký túc xá
+                  Laptop
                 </Badge>
               </div>
             </div>
-            
-            {/* Đường gạch ngang phân cách */}
-            <hr style={{ borderTop: "1px solid rgba(0, 0, 0, 0.08)", margin: "0 0 25px 0" }} />
 
-            {/* Hàng dưới: 3 tính năng trải dài */}
+            <hr
+              style={{
+                borderTop: "1px solid rgba(0, 0, 0, 0.08)",
+                margin: "0 0 25px 0",
+              }}
+            />
+
             <Row className="text-dark">
               <Col md={4} className="d-flex align-items-center">
-                <i className="bi bi-box-seam fs-4 me-3 text-primary-custom"></i> 
+                <i className="bi bi-box-seam fs-4 me-3 text-primary-custom"></i>
                 <div>
-                  <span className="fw-bold fs-5 me-2">Tìm đồ</span> 
-                  <span className="text-secondary fw-normal" style={{ fontSize: "0.95rem" }}>theo địa điểm trong campus</span>
-                </div>
-              </Col>
-              
-              <Col md={4} className="d-flex align-items-center justify-content-center">
-                <i className="bi bi-people fs-4 me-3 text-primary-custom"></i> 
-                <div>
-                  <span className="fw-bold fs-5 me-2">Kết nối</span> 
-                  <span className="text-secondary fw-normal" style={{ fontSize: "0.95rem" }}>sinh viên cùng giúp đỡ</span>
+                  <span className="fw-bold fs-5 me-2">Tìm đồ</span>
+                  <span
+                    className="text-secondary fw-normal"
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    theo địa điểm trong campus
+                  </span>
                 </div>
               </Col>
 
-              <Col md={4} className="d-flex align-items-center justify-content-end">
-                <i className="bi bi-shield-check fs-4 me-3 text-primary-custom"></i> 
+              <Col
+                md={4}
+                className="d-flex align-items-center justify-content-center"
+              >
+                <i className="bi bi-people fs-4 me-3 text-primary-custom"></i>
                 <div>
-                  <span className="fw-bold fs-5 me-2">An toàn</span> 
-                  <span className="text-secondary fw-normal" style={{ fontSize: "0.95rem" }}>xác minh trước khi trao trả</span>
+                  <span className="fw-bold fs-5 me-2">Kết nối</span>
+                  <span
+                    className="text-secondary fw-normal"
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    sinh viên cùng giúp đỡ
+                  </span>
+                </div>
+              </Col>
+
+              <Col
+                md={4}
+                className="d-flex align-items-center justify-content-end"
+              >
+                <i className="bi bi-shield-check fs-4 me-3 text-primary-custom"></i>
+                <div>
+                  <span className="fw-bold fs-5 me-2">An toàn</span>
+                  <span
+                    className="text-secondary fw-normal"
+                    style={{ fontSize: "0.95rem" }}
+                  >
+                    xác minh trước khi trao trả
+                  </span>
                 </div>
               </Col>
             </Row>
@@ -384,115 +514,149 @@ const Home = () => {
         ) : recentPosts.length === 0 ? (
           <div className="text-center py-5">Chưa có tin tức nào.</div>
         ) : (
-          <div
-            className="d-flex gap-4 pb-3 horizontal-scroll-container"
-            style={{
-              overflowX: "auto",
-              scrollSnapType: "x mandatory",
-              scrollBehavior: "smooth",
-            }}
-          >
-            {recentPosts.map((post) => (
-              <div
-                key={`${post.type}-${post.id}`}
+          <div className="position-relative">
+            {canScrollLeft && (
+              <Button
+                variant="light"
+                className="position-absolute top-50 start-0 translate-middle-y rounded-circle shadow d-flex align-items-center justify-content-center p-0 z-1"
                 style={{
-                  minWidth: "280px",
-                  maxWidth: "280px",
-                  scrollSnapAlign: "start",
+                  width: "45px",
+                  height: "45px",
+                  marginLeft: "-15px",
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  border: "1px solid #dee2e6",
                 }}
+                onClick={() => scroll("left")}
               >
-                <Card
-                  className="h-100 border-0 shadow-sm overflow-hidden"
+                <i className="bi bi-chevron-left text-dark fs-5"></i>
+              </Button>
+            )}
+
+            <div
+              ref={scrollRef}
+              onScroll={checkScrollPosition}
+              className="d-flex gap-4 pb-3 horizontal-scroll-container"
+              style={{
+                overflowX: "auto",
+                scrollSnapType: "x mandatory",
+                scrollBehavior: "smooth",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              {recentPosts.map((post) => (
+                <div
+                  key={`${post.type}-${post.id}`}
                   style={{
-                    borderRadius: "15px",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
+                    minWidth: "280px",
+                    maxWidth: "280px",
+                    scrollSnapAlign: "start",
                   }}
-                  onMouseOver={(e) =>
-                    (e.currentTarget.style.transform = "translateY(-5px)")
-                  }
-                  onMouseOut={(e) =>
-                    (e.currentTarget.style.transform = "translateY(0)")
-                  }
                 >
-                  <div className="position-relative">
-                    <Card.Img
-                      variant="top"
-                      src={post.img}
-                      style={{ height: "180px", objectFit: "cover" }}
-                    />
-                    <Badge
-                      className="position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill shadow-sm"
-                      style={{
-                        backgroundColor: "rgba(255,255,255,0.9)",
-                        color: post.tagColor,
-                      }}
-                    >
-                      {post.type === "lost" ? (
-                        <i className="bi bi-search me-1"></i>
-                      ) : (
-                        <i className="bi bi-check-circle me-1"></i>
-                      )}{" "}
-                      {post.tag}
-                    </Badge>
-                    <Button
-                      variant="light"
-                      className="position-absolute top-0 end-0 m-3 rounded-circle p-1 shadow-sm d-flex align-items-center justify-content-center"
-                      style={{ width: "35px", height: "35px" }}
-                    >
-                      <i className="bi bi-bookmark text-secondary"></i>
-                    </Button>
-                  </div>
-                  <Card.Body className="d-flex flex-column text-start">
-                    <p
-                      className="text-secondary mb-1"
-                      style={{ fontSize: "0.8rem" }}
-                    >
-                      {post.category}
-                    </p>
-                    <Card.Title
-                      className="fw-bold fs-6 mb-3 text-truncate"
-                      style={{ color: "#10393B" }}
-                    >
-                      {post.title}
-                    </Card.Title>
-                    <div className="mt-auto">
+                  <Card
+                    onClick={() => navigate("/lost-found")}
+                    className="h-100 border-0 shadow-sm overflow-hidden"
+                    style={{
+                      borderRadius: "15px",
+                      cursor: "pointer",
+                      transition: "transform 0.2s",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.transform = "translateY(-5px)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.transform = "translateY(0)")
+                    }
+                  >
+                    <div className="position-relative">
+                      <Card.Img
+                        variant="top"
+                        src={post.img}
+                        style={{ height: "180px", objectFit: "cover" }}
+                      />
+                      <Badge
+                        className="position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill shadow-sm"
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.9)",
+                          color: post.tagColor,
+                        }}
+                      >
+                        {post.type === "lost" ? (
+                          <i className="bi bi-search me-1"></i>
+                        ) : (
+                          <i className="bi bi-check-circle me-1"></i>
+                        )}{" "}
+                        {post.tag}
+                      </Badge>
+                    </div>
+                    <Card.Body className="d-flex flex-column text-start">
                       <p
-                        className="text-secondary mb-3 text-truncate"
-                        style={{ fontSize: "0.85rem" }}
+                        className="text-secondary mb-1"
+                        style={{ fontSize: "0.8rem" }}
                       >
-                        <i className="bi bi-geo-alt me-2"></i>
-                        {post.location}
+                        {post.category}
                       </p>
-                      <div
-                        className="d-flex justify-content-between align-items-center pt-3 border-top"
-                        style={{ fontSize: "0.85rem" }}
+                      <Card.Title
+                        className="fw-bold fs-6 mb-3 text-truncate"
+                        style={{ color: "#10393B" }}
                       >
+                        {post.title}
+                      </Card.Title>
+                      <div className="mt-auto">
+                        <p
+                          className="text-secondary mb-3 text-truncate"
+                          style={{ fontSize: "0.85rem" }}
+                        >
+                          <i className="bi bi-geo-alt me-2"></i>
+                          {post.location}
+                        </p>
                         <div
-                          className="d-flex align-items-center gap-2 fw-medium text-dark text-truncate"
-                          style={{ maxWidth: "120px" }}
+                          className="d-flex justify-content-between align-items-center pt-3 border-top"
+                          style={{ fontSize: "0.85rem" }}
                         >
                           <div
-                            className="bg-light text-secondary rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
-                            style={{
-                              width: "25px",
-                              height: "25px",
-                              fontSize: "10px",
-                            }}
+                            className="d-flex align-items-center gap-2 fw-medium text-dark text-truncate"
+                            style={{ maxWidth: "120px" }}
                           >
-                            {post.user ? post.user.charAt(0) : "?"}
+                            <div
+                              className="bg-light text-secondary rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
+                              style={{
+                                width: "25px",
+                                height: "25px",
+                                fontSize: "10px",
+                              }}
+                            >
+                              {post.user ? post.user.charAt(0) : "?"}
+                            </div>
+                            <span className="text-truncate">{post.user}</span>
                           </div>
-                          <span className="text-truncate">{post.user}</span>
+                          <span className="text-muted flex-shrink-0 ms-2">
+                            {post.time ? post.time.split(" ")[0] : ""}
+                          </span>
                         </div>
-                        <span className="text-muted flex-shrink-0 ms-2">
-                          {post.time ? post.time.split(" ")[0] : ""}
-                        </span>
                       </div>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </div>
-            ))}
+                    </Card.Body>
+                  </Card>
+                </div>
+              ))}
+            </div>
+
+            {canScrollRight && recentPosts.length > 4 && (
+              <Button
+                variant="light"
+                className="position-absolute top-50 end-0 translate-middle-y rounded-circle shadow d-flex align-items-center justify-content-center p-0 z-1"
+                style={{
+                  width: "45px",
+                  height: "45px",
+                  marginRight: "-15px",
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  border: "1px solid #dee2e6",
+                }}
+                onClick={() => scroll("right")}
+              >
+                <i className="bi bi-chevron-right text-dark fs-5"></i>
+              </Button>
+            )}
           </div>
         )}
       </Container>
@@ -674,33 +838,34 @@ const Home = () => {
                 </h5>
               </div>
 
-              <div className="mb-4">
-                <h6 className="fw-bold text-dark">
-                  Nhặt được đồ trong campus, nên làm gì đầu tiên?
-                </h6>
-                <div
-                  className="d-flex gap-3 text-muted"
-                  style={{ fontSize: "0.85rem" }}
-                >
-                  <span className="text-primary-custom">
-                    Kinh nghiệm campus
-                  </span>
-                  <span>• Chờ đợi gợi ý</span>
+              {forumPosts.length > 0 ? (
+                forumPosts.map((post, index) => (
+                  <div
+                    key={post.id}
+                    className={`mb-4 ${index > 0 ? "border-top pt-4" : ""}`}
+                  >
+                    <h6
+                      className="fw-bold text-dark text-truncate"
+                      title={post.title}
+                    >
+                      {post.title}
+                    </h6>
+                    <div
+                      className="d-flex gap-3 text-muted"
+                      style={{ fontSize: "0.85rem" }}
+                    >
+                      <span className="text-primary-custom">
+                        {post.category}
+                      </span>
+                      <span>• {post.date}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-secondary py-3">
+                  Đang tải chủ đề...
                 </div>
-              </div>
-
-              <div className="mb-4 border-top pt-4">
-                <h6 className="fw-bold text-dark">
-                  5 lưu ý khi trao trả đồ trong campus
-                </h6>
-                <div
-                  className="d-flex gap-3 text-muted"
-                  style={{ fontSize: "0.85rem" }}
-                >
-                  <span className="text-primary-custom">Mẹo campus</span>
-                  <span>• Chờ đợi gợi ý</span>
-                </div>
-              </div>
+              )}
 
               <div className="mt-auto border-top pt-4">
                 <Link

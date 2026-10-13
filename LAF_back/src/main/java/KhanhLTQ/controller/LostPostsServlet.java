@@ -22,8 +22,14 @@ public class LostPostsServlet extends HttpServlet {
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         
+        // Lấy tham số tìm kiếm từ Frontend gửi lên
+        String keyword = request.getParameter("keyword");
+        String category = request.getParameter("category");
+        String location = request.getParameter("location");
+        
         LostPostDAO dao = new LostPostDAO();
-        List<Map<String, Object>> posts = dao.getAllLostPosts();
+        // Gọi hàm DAO có hỗ trợ tìm kiếm
+        List<Map<String, Object>> posts = dao.getAllLostPosts(keyword, category, location);
         
         Gson gson = new Gson();
         out.print(gson.toJson(posts));

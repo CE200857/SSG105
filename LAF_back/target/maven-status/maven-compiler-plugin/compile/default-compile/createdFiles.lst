@@ -3,6 +3,7 @@ entity\Likes.class
 com\mycompany\laf_back\resources\TestResource.class
 entity\FoundImages.class
 entity\PostDTO.class
+DatNT\controller\ForumServlet.class
 com\mycompany\laf_back\resources\JakartaEE10Resource.class
 dao\LostPostDAO.class
 DatNT\controller\HomeServlet.class
@@ -24,6 +25,7 @@ DatNT\controller\AuthCheckServlet.class
 entity\Roles.class
 util\DBContext.class
 filter\PasswordUtils.class
+dao\ForumDAO.class
 entity\Comments.class
 KhanhLTQ\controller\OverviewServlet.class
 DatNT\controller\LogoutServlet.class
