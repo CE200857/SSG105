@@ -85,11 +85,24 @@ const Header = ({ user, setUser }) => {
                 </Dropdown>
               </>
             ) : (
-              <div className="d-flex gap-2">
-                <Button as={Link} to="/login" variant="outline-primary" style={{ borderColor: primaryColor, color: primaryColor, fontWeight: '600', borderRadius: '8px' }}>
+              <div className="d-flex gap-3">
+                {/* Nút Đăng nhập: Nền xanh, chữ trắng */}
+                <Button 
+                  as={Link} 
+                  to="/login" 
+                  className="btn-solid-custom shadow-sm"
+                  style={{ borderRadius: '10px', padding: '8px 24px' }}
+                >
                   Đăng nhập
                 </Button>
-                <Button as={Link} to="/register" variant="outline-primary" style={{ borderColor: primaryColor, color: primaryColor, fontWeight: '600', borderRadius: '8px' }}>
+                
+                {/* Nút Đăng ký: Nền trắng, viền xanh */}
+                <Button 
+                  as={Link} 
+                  to="/register" 
+                  className="btn-outline-custom shadow-sm"
+                  style={{ borderRadius: '10px', padding: '8px 24px' }}
+                >
                   Đăng ký
                 </Button>
               </div>
@@ -103,6 +116,35 @@ const Header = ({ user, setUser }) => {
           color: ${primaryColor} !important;
           border-bottom: 3px solid ${primaryColor};
           font-weight: 600;
+        }
+        
+        /* Hiệu ứng cho nút Đăng nhập */
+        .btn-solid-custom {
+          background-color: ${primaryColor} !important;
+          color: white !important;
+          border: 2px solid ${primaryColor} !important;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-solid-custom:hover {
+          background-color: #0a735e !important;
+          border-color: #0a735e !important;
+          color: white !important;
+        }
+        
+        /* Hiệu ứng cho nút Đăng ký */
+        .btn-outline-custom {
+          background-color: white !important;
+          color: ${primaryColor} !important;
+          border: 2px solid ${primaryColor} !important;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-outline-custom:hover {
+          background-color: ${primaryColor} !important;
+          color: white !important;
         }
       `}</style>
     </Navbar>

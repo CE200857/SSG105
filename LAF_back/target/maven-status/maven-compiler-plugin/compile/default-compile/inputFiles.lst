@@ -3,6 +3,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\filter\AuthFilter.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\filter\PasswordUtils.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\com\mycompany\laf_back\JakartaRestConfiguration.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\Reviews.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\DatNT\controller\ForumServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\LostPosts.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\DatNT\controller\LoginServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\DatNT\controller\LogoutServlet.java
@@ -22,6 +23,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\util\DBContext.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\com\mycompany\laf_back\resources\TestResource.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\LostImages.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\KhanhLTQ\controller\OverviewServlet.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\ForumDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\PostDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\Roles.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dto\OverviewDTO.java
