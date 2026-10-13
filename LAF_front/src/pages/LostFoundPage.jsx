@@ -1,79 +1,26 @@
-import React, { useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  Badge,
-  Image,
-  InputGroup,
-} from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Container, Row, Col, Card, Form, Button, Badge, Image, InputGroup } from "react-bootstrap";
+import axios from "axios";
 
 const LostFoundPage = () => {
-  // State lưu danh sách bài đăng mẫu (có chứa ảnh)
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: "Minh Anh",
-      time: "30 phút trước",
-      status: "Đang tìm đồ",
-      statusVariant: "warning",
-      title: "Tìm ví màu xanh navy bị mất ở thư viện",
-      content:
-        "Mình để quên một chiếc ví màu xanh navy ở khu bàn tự học thư viện. Vì có đường chỉ sáng màu và một vết xước nhỏ ở góc. Bạn nào nhìn thấy cho mình xin manh mối ở phần bình luận nhé.",
-      location: "Thư viện - Khu tự học",
-      date: "12/10 - Khoảng 09:30",
-      category: "Ví & giấy tờ",
-      likes: 24,
-      commentsCount: 3,
-      image:
-        "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=500&q=80",
-      comments: [
-        {
-          author: "Phương Linh",
-          text: "Bạn thử kiểm tra khu bàn gần cửa sổ nhé. Sáng nay mình thấy một chiếc ví xanh ở đó.",
-        },
-      ],
-    },
-    {
-      id: 2,
-      author: "Quang Huy",
-      time: "1 giờ trước",
-      status: "Đang tìm đồ",
-      statusVariant: "warning",
-      title: "Có ai thấy tai nghe của mình ở căn tin không?",
-      content:
-        "Mình bị mất hộp tai nghe không dây màu trắng sau giờ ăn trưa. Hộp có bao silicone màu xám và móc nhỏ bên hông. Mình đã quay lại bàn nhưng chưa thấy.",
-      location: "Căn tin - Khu bàn ngồi",
-      date: "12/10 - Khoảng 11:45",
-      category: "Đồ điện tử",
-      likes: 12,
-      commentsCount: 2,
-      image:
-        "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=500&q=80",
-      comments: [],
-    },
-    {
-      id: 3,
-      author: "Thu Hà",
-      time: "2 giờ trước",
-      status: "Đã tìm được",
-      statusVariant: "success",
-      title: "Đã tìm lại được bình giữ nhiệt, cảm ơn mọi người!",
-      content:
-        "Mình đã tìm lại được bình giữ nhiệt màu tím để quên ở giảng đường. Cảm ơn các bạn đã bình luận chỉ chỗ và giúp mình tìm lại.",
-      location: "Khu giảng đường",
-      date: "11/10 - Buổi chiều",
-      category: "Đồ dùng cá nhân",
-      likes: 36,
-      commentsCount: 4,
-      image:
-        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=500&q=80",
-      comments: [],
-    },
-  ]);
+  // Chuyển sang mảng rỗng để hứng dữ liệu từ Backend
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch dữ liệu từ API
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get("/api/lost-posts");
+        setPosts(response.data);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu bài đăng mất đồ:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
 
   // State xử lý form đăng bài
   const [newTitle, setNewTitle] = useState("");
@@ -83,7 +30,6 @@ const LostFoundPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // Xử lý chọn ảnh từ máy tính
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -92,7 +38,7 @@ const LostFoundPage = () => {
     }
   };
 
-  // Xử lý gửi bài đăng mới
+  // Mock submit: Hiển thị tạm thời bài mới lên đầu danh sách (chưa gọi API POST)
   const handleSubmitPost = (e) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
@@ -115,7 +61,6 @@ const LostFoundPage = () => {
     };
 
     setPosts([newPostObj, ...posts]);
-    // Reset Form
     setNewTitle("");
     setNewContent("");
     setNewLocation("");
@@ -125,7 +70,7 @@ const LostFoundPage = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#F4F7F6", minHeight: "100vh", paddingBottom: "40px" }}>
+    <div className="text-start" style={{ backgroundColor: "#F4F7F6", minHeight: "100vh", paddingBottom: "40px" }}>
       <Container className="py-4">
         {/* Breadcrumb & Subtitle */}
         <div className="mb-3">
@@ -188,6 +133,7 @@ const LostFoundPage = () => {
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     required
+                    className="shadow-none"
                   />
                 </Form.Group>
 
@@ -202,6 +148,7 @@ const LostFoundPage = () => {
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
                     required
+                    className="shadow-none"
                   />
                 </Form.Group>
 
@@ -210,7 +157,7 @@ const LostFoundPage = () => {
                     <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
                       Địa điểm mất
                     </Form.Label>
-                    <Form.Select value={newLocation} onChange={(e) => setNewLocation(e.target.value)}>
+                    <Form.Select value={newLocation} onChange={(e) => setNewLocation(e.target.value)} className="shadow-none">
                       <option value="">Chọn khu vực trong campus</option>
                       <option value="Thư viện - Khu tự học">Thư viện</option>
                       <option value="Giảng đường A/B">Giảng đường</option>
@@ -227,6 +174,7 @@ const LostFoundPage = () => {
                       placeholder="Ngày / tháng - Khoảng thời gian"
                       value={newTime}
                       onChange={(e) => setNewTime(e.target.value)}
+                      className="shadow-none"
                     />
                   </Col>
                 </Row>
@@ -304,7 +252,7 @@ const LostFoundPage = () => {
                 Bài đăng từ cộng đồng
               </h5>
               <div className="d-flex gap-2">
-                <Button variant="success" size="sm" className="rounded-pill px-3" style={{ backgroundColor: "#0C8B72" }}>
+                <Button variant="success" size="sm" className="rounded-pill px-3" style={{ backgroundColor: "#0C8B72", borderColor: "#0C8B72" }}>
                   Tất cả
                 </Button>
                 <Button variant="light" size="sm" className="rounded-pill px-3 border">
@@ -316,99 +264,97 @@ const LostFoundPage = () => {
               </div>
             </div>
 
-            {/* Loop danh sách Bài Đăng */}
-            {posts.map((post) => (
-              <Card key={post.id} className="border-0 shadow-sm p-4 mb-3">
-                {/* Header người đăng */}
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <div className="d-flex align-items-center gap-2">
-                    <div
-                      className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                      style={{ width: "40px", height: "40px", backgroundColor: "#0C8B72" }}
-                    >
-                      {post.author.charAt(0)}
-                    </div>
-                    <div>
-                      <h6 className="fw-bold mb-0" style={{ color: "#10393B" }}>
-                        {post.author}
-                      </h6>
-                      <span className="text-muted" style={{ fontSize: "0.75rem" }}>
-                        Sinh viên FPT CT · {post.time}
-                      </span>
-                    </div>
-                  </div>
-                  <Badge bg={post.statusVariant}>{post.status}</Badge>
-                </div>
-
-                {/* Nội dung bài & Ảnh minh họa */}
-                <Row className="g-3 my-1">
-                  <Col md={post.image ? 8 : 12}>
-                    <h5 className="fw-bold mb-2" style={{ color: "#10393B" }}>
-                      {post.title}
-                    </h5>
-                    <p className="text-secondary mb-3" style={{ fontSize: "0.9rem", lineHeight: "1.5" }}>
-                      {post.content}
-                    </p>
-
-                    {/* Tag vị trí / thời gian */}
-                    <div className="d-flex flex-wrap gap-2 text-muted mb-2" style={{ fontSize: "0.8rem" }}>
-                      <span className="bg-light px-2 py-1 rounded border">
-                        <i className="bi bi-geo-alt me-1"></i> {post.location}
-                      </span>
-                      <span className="bg-light px-2 py-1 rounded border">
-                        <i className="bi bi-clock me-1"></i> {post.date}
-                      </span>
-                      <span className="bg-light px-2 py-1 rounded border">
-                        <i className="bi bi-tag me-1"></i> {post.category}
-                      </span>
-                    </div>
-                  </Col>
-
-                  {/* Hiển thị Ảnh đính kèm của Bài Đăng */}
-                  {post.image && (
-                    <Col md={4} className="d-flex align-items-center justify-content-center">
-                      <Image
-                        src={post.image}
-                        alt={post.title}
-                        rounded
-                        className="w-100 object-fit-cover border"
-                        style={{ maxHeight: "160px" }}
-                      />
-                    </Col>
-                  )}
-                </Row>
-
-                {/* Tương tác Like / Comment */}
-                <div className="d-flex gap-4 pt-2 border-top text-secondary" style={{ fontSize: "0.85rem" }}>
-                  <span className="cursor-pointer">
-                    <i className="bi bi-hand-thumbs-up me-1"></i> Đã thích ({post.likes})
-                  </span>
-                  <span className="cursor-pointer">
-                    <i className="bi bi-chat me-1"></i> Bình luận ({post.commentsCount})
-                  </span>
-                  <span className="cursor-pointer ms-auto">
-                    <i className="bi bi-share me-1"></i> Chia sẻ
-                  </span>
-                </div>
-
-                {/* Khối Comment xem trước */}
-                {post.comments.length > 0 && (
-                  <div className="mt-3 pt-2 bg-light p-3 rounded">
-                    {post.comments.map((comment, index) => (
-                      <div key={index} className="mb-1" style={{ fontSize: "0.85rem" }}>
-                        <span className="fw-bold text-dark">{comment.author}: </span>
-                        <span className="text-secondary">{comment.text}</span>
+            {loading ? (
+               <div className="text-center py-5">Đang tải dữ liệu...</div>
+            ) : posts.length === 0 ? (
+               <div className="text-center py-5 text-secondary">Chưa có bài đăng nào.</div>
+            ) : (
+              posts.map((post) => (
+                <Card key={post.id} className="border-0 shadow-sm p-4 mb-3">
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <div
+                        className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                        style={{ width: "40px", height: "40px", backgroundColor: "#0C8B72" }}
+                      >
+                        {post.author.charAt(0)}
                       </div>
-                    ))}
+                      <div>
+                        <h6 className="fw-bold mb-0" style={{ color: "#10393B" }}>
+                          {post.author}
+                        </h6>
+                        <span className="text-muted" style={{ fontSize: "0.75rem" }}>
+                          Sinh viên FPT CT · {post.time}
+                        </span>
+                      </div>
+                    </div>
+                    <Badge bg={post.statusVariant}>{post.status}</Badge>
                   </div>
-                )}
-              </Card>
-            ))}
+
+                  <Row className="g-3 my-1">
+                    <Col md={post.image ? 8 : 12}>
+                      <h5 className="fw-bold mb-2" style={{ color: "#10393B" }}>
+                        {post.title}
+                      </h5>
+                      <p className="text-secondary mb-3" style={{ fontSize: "0.9rem", lineHeight: "1.5" }}>
+                        {post.content}
+                      </p>
+
+                      <div className="d-flex flex-wrap gap-2 text-muted mb-2" style={{ fontSize: "0.8rem" }}>
+                        <span className="bg-light px-2 py-1 rounded border">
+                          <i className="bi bi-geo-alt me-1"></i> {post.location}
+                        </span>
+                        <span className="bg-light px-2 py-1 rounded border">
+                          <i className="bi bi-clock me-1"></i> {post.date}
+                        </span>
+                        <span className="bg-light px-2 py-1 rounded border">
+                          <i className="bi bi-tag me-1"></i> {post.category}
+                        </span>
+                      </div>
+                    </Col>
+
+                    {post.image && (
+                      <Col md={4} className="d-flex align-items-center justify-content-center">
+                        <Image
+                          src={post.image}
+                          alt={post.title}
+                          rounded
+                          className="w-100 object-fit-cover border"
+                          style={{ maxHeight: "160px" }}
+                        />
+                      </Col>
+                    )}
+                  </Row>
+
+                  <div className="d-flex gap-4 pt-2 border-top text-secondary" style={{ fontSize: "0.85rem" }}>
+                    <span style={{ cursor: "pointer" }}>
+                      <i className="bi bi-hand-thumbs-up me-1"></i> Đã thích ({post.likes})
+                    </span>
+                    <span style={{ cursor: "pointer" }}>
+                      <i className="bi bi-chat me-1"></i> Bình luận ({post.commentsCount})
+                    </span>
+                    <span className="ms-auto" style={{ cursor: "pointer" }}>
+                      <i className="bi bi-share me-1"></i> Chia sẻ
+                    </span>
+                  </div>
+
+                  {post.comments && post.comments.length > 0 && (
+                    <div className="mt-3 pt-2 bg-light p-3 rounded">
+                      {post.comments.map((comment, index) => (
+                        <div key={index} className="mb-1" style={{ fontSize: "0.85rem" }}>
+                          <span className="fw-bold text-dark">{comment.author}: </span>
+                          <span className="text-secondary">{comment.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              ))
+            )}
           </Col>
 
           {/* CỘT PHẢI: WIDGET PHỤ & HƯỚNG DẪN */}
           <Col lg={4}>
-            {/* Widget 1: Lời gọi hành động */}
             <Card className="border-0 shadow-sm p-3 mb-3 bg-white">
               <h6 className="fw-bold" style={{ color: "#10393B" }}>
                 <i className="bi bi-box-seam me-2" style={{ color: "#0C8B72" }}></i> Cùng tìm lại, cùng sẻ chia
@@ -426,47 +372,44 @@ const LostFoundPage = () => {
               </div>
             </Card>
 
-            {/* Widget 2: Danh mục tìm kiếm */}
             <Card className="border-0 shadow-sm p-3 mb-3">
               <h6 className="fw-bold mb-3" style={{ color: "#10393B" }}>
                 Bạn đang tìm gì?
               </h6>
               <ul className="list-unstyled mb-0 d-flex flex-column gap-2" style={{ fontSize: "0.875rem" }}>
-                <li className="d-flex justify-content-between text-secondary">
+                <li className="d-flex justify-content-between text-secondary" style={{ cursor: "pointer" }}>
                   <span><i className="bi bi-wallet2 me-2"></i>Ví & giấy tờ</span>
                   <i className="bi bi-chevron-right"></i>
                 </li>
-                <li className="d-flex justify-content-between text-secondary">
+                <li className="d-flex justify-content-between text-secondary" style={{ cursor: "pointer" }}>
                   <span><i className="bi bi-laptop me-2"></i>Đồ điện tử</span>
                   <i className="bi bi-chevron-right"></i>
                 </li>
-                <li className="d-flex justify-content-between text-secondary">
+                <li className="d-flex justify-content-between text-secondary" style={{ cursor: "pointer" }}>
                   <span><i className="bi bi-key me-2"></i>Chìa khóa</span>
                   <i className="bi bi-chevron-right"></i>
                 </li>
-                <li className="d-flex justify-content-between text-secondary">
+                <li className="d-flex justify-content-between text-secondary" style={{ cursor: "pointer" }}>
                   <span><i className="bi bi-backpack me-2"></i>Túi & balo</span>
                   <i className="bi bi-chevron-right"></i>
                 </li>
               </ul>
             </Card>
 
-            {/* Widget 3: Địa điểm trong Campus */}
             <Card className="border-0 shadow-sm p-3 mb-3">
               <h6 className="fw-bold mb-2" style={{ color: "#10393B" }}>
                 ĐỊA ĐIỂM TRONG CAMPUS
               </h6>
               <div className="d-flex flex-wrap gap-2" style={{ fontSize: "0.8rem" }}>
-                <span className="bg-light px-2 py-1 rounded border text-secondary">Thư viện</span>
-                <span className="bg-light px-2 py-1 rounded border text-secondary">Giảng đường</span>
-                <span className="bg-light px-2 py-1 rounded border text-secondary">Căn tin</span>
-                <span className="bg-light px-2 py-1 rounded border text-secondary">Ký túc xá</span>
-                <span className="bg-light px-2 py-1 rounded border text-secondary">Sân bóng</span>
+                <span className="bg-light px-2 py-1 rounded border text-secondary cursor-pointer">Thư viện</span>
+                <span className="bg-light px-2 py-1 rounded border text-secondary cursor-pointer">Giảng đường</span>
+                <span className="bg-light px-2 py-1 rounded border text-secondary cursor-pointer">Căn tin</span>
+                <span className="bg-light px-2 py-1 rounded border text-secondary cursor-pointer">Ký túc xá</span>
+                <span className="bg-light px-2 py-1 rounded border text-secondary cursor-pointer">Sân bóng</span>
               </div>
             </Card>
 
-            {/* Widget 4: Mẹo an toàn */}
-            <Card className="border-0 shadow-sm p-3 bg-light border-start border-4 border-teal">
+            <Card className="border-0 shadow-sm p-3 bg-light border-start border-4 border-success">
               <h6 className="fw-bold" style={{ color: "#10393B" }}>
                 <i className="bi bi-shield-check me-2 text-success"></i>Đăng tin rõ, trao đổi an toàn
               </h6>

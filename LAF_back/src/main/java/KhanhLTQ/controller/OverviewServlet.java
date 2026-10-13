@@ -18,15 +18,11 @@ public class OverviewServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Cấu hình UTF-8 & CORS cho Front-end React kết nối
         response.setContentType("application/json;charset=UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Methods", "GET");
-
+        
         OverviewDAO dao = new OverviewDAO();
         OverviewDTO stats = dao.getOverviewStats();
 
-        // Chuyển đối tượng DTO sang chuỗi JSON
         Gson gson = new Gson();
         String json = gson.toJson(stats);
 
