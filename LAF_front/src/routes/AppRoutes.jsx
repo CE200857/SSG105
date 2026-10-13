@@ -42,21 +42,20 @@ const MainLayout = ({ user, setUser }) => {
 export default function AppRoutes({ user, setUser }) {
   return (
     <Routes>
-      {/* 1. Các trang KHÔNG CẦN Header/Footer (như Đăng nhập, Đăng ký) */}
-      <Route path="/login" element={<Login setUser={setUser} />} />
-      <Route path="/forgot-password" element={<div>Trang quên mật khẩu</div>} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/create-profile" element={<CreateProfile />} />
-
       {/* 2. Các trang CÓ Header/Footer (bọc trong MainLayout) */}
       <Route element={<MainLayout user={user} setUser={setUser} />}>
         {/* Trang chủ */}
-        <Route
-          path="/"
-          element={user ? <Home /> : <Navigate to="/login" replace />}
-        />
+        {/* Dành cho Student (Role 2) */}
+        <Route path="/" element={<Home />} />
 
-        {/* 2 Trang đã tích hợp */}
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route
+          path="/forgot-password"
+          element={<div>Trang quên mật khẩu</div>}
+        />
+        <Route path="/register" element={<Register />} />
+        <Route path="/create-profile" element={<CreateProfile />} />
+          
         <Route path="/lost-found" element={<LostFoundPage />} />
         <Route path="/overview" element={<OverviewPage />} />
 
