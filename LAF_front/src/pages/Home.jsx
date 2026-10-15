@@ -11,7 +11,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const Home = () => {
+const Home = ({ user }) => {
   const primaryColor = "#0C8B72";
   const navigate = useNavigate();
 
@@ -80,8 +80,13 @@ const Home = () => {
     }
   }, [loading, recentPosts]);
 
-  // ===== HÀM XỬ LÝ TÌM KIẾM =====
+// ===== HÀM XỬ LÝ TÌM KIẾM =====
   const handleSearchSubmit = () => {
+    if (!user) {
+      // Nếu chưa đăng nhập thì đá qua login
+      navigate("/login");
+      return;
+    }
     navigate("/lost-found", { 
       state: { 
         keyword: searchKeyword, 
@@ -91,6 +96,10 @@ const Home = () => {
   };
 
   const handleQuickSearch = (keyword) => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     navigate("/lost-found", { 
       state: { 
         keyword: keyword, 
