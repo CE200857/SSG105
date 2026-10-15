@@ -2,10 +2,12 @@
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button, Badge, Image, Modal } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const LostFoundPage = () => {
+const LostFoundPage = ({ user }) => {
   const primaryColor = "#0C8B72";
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -198,152 +200,172 @@ const LostFoundPage = () => {
                 </Badge>
               </div>
 
-              <Form onSubmit={handleSubmitPost}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
-                    Tiêu đề bài đăng
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Ví dụ: Tìm ví da màu nâu bị mất ở thư viện"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    required
-                    className="shadow-none border-secondary-subtle"
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
-                    Danh mục món đồ
-                  </Form.Label>
-                  <Form.Select 
-                    value={newCategory} 
-                    onChange={(e) => setNewCategory(e.target.value)} 
-                    className="shadow-none border-secondary-subtle"
+              {/* KIỂM TRA ĐĂNG NHẬP */}
+              {!user ? (
+                <div className="text-center py-5 bg-light rounded-3 mt-3">
+                  <i className="bi bi-lock-fill fs-1 text-secondary opacity-50 mb-3 d-block"></i>
+                  <h6 className="fw-bold text-dark mb-2">Vui lòng đăng nhập để đăng tin</h6>
+                  <p className="text-secondary mb-4" style={{ fontSize: "0.9rem" }}>
+                    Chỉ sinh viên FPT Cần Thơ đã xác thực mới có thể đăng bài tìm đồ.
+                  </p>
+                  <Button 
+                    variant="outline-primary" 
+                    className="fw-semibold px-4 rounded-pill"
+                    style={{ borderColor: primaryColor, color: primaryColor }} 
+                    onClick={() => navigate("/login")} // Đảm bảo bạn đã import useNavigate
                   >
-                    <option value="Ví & giấy tờ">Ví & giấy tờ</option>
-                    <option value="Đồ điện tử">Đồ điện tử</option>
-                    <option value="Chìa khóa">Chìa khóa</option>
-                    <option value="Túi & balo">Túi & balo</option>
-                    <option value="Đồ dùng cá nhân">Đồ dùng cá nhân</option>
-                  </Form.Select>
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
-                    Mô tả & thông tin cần tìm
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    placeholder="Màu sắc, đặc điểm nhận biết, nơi bạn nhìn thấy lần cuối..."
-                    value={newContent}
-                    onChange={(e) => setNewContent(e.target.value)}
-                    required
-                    className="shadow-none border-secondary-subtle"
-                  />
-                </Form.Group>
-
-                <Row className="g-3 mb-3">
-                  <Col md={6}>
+                    <i className="bi bi-box-arrow-in-right me-2"></i> Đăng nhập ngay
+                  </Button>
+                </div>
+              ) : (
+                // Nếu đã đăng nhập thì hiện form
+                <Form onSubmit={handleSubmitPost}>
+                  <Form.Group className="mb-3">
                     <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
-                      Địa điểm mất
-                    </Form.Label>
-                    <Form.Select value={newLocation} onChange={(e) => setNewLocation(e.target.value)} className="shadow-none border-secondary-subtle">
-                      <option value="">Chọn khu vực trong campus</option>
-                      <option value="Tòa Alpha">Tòa Alpha</option>
-                      <option value="Tòa Beta">Tòa Beta</option>
-                      <option value="Tòa Gamma">Tòa Gamma</option>
-                      <option value="Giảng đường">Giảng đường</option>
-                      <option value="Thư viện">Thư viện</option>
-                      <option value="Căn tin">Căn tin</option>
-                      <option value="Hầm gửi xe">Hầm gửi xe</option>
-                      <option value="Bãi đổ xe ngoài trời">Bãi đổ xe ngoài trời</option>
-                      <option value="Sân trường">Sân trường</option>
-                      <option value="Sân bóng">Sân bóng</option>
-                      <option value="Sân pickleball">Sân pickleball</option>
-                      <option value="Nhà võ">Nhà võ</option>
-                    </Form.Select>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
-                      Thời gian mất
+                      Tiêu đề bài đăng
                     </Form.Label>
                     <Form.Control
                       type="text"
-                      placeholder="Ngày / tháng - Khoảng thời gian"
-                      value={newTime}
-                      onChange={(e) => setNewTime(e.target.value)}
+                      placeholder="Ví dụ: Tìm ví da màu nâu bị mất ở thư viện"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      required
                       className="shadow-none border-secondary-subtle"
                     />
-                  </Col>
-                </Row>
+                  </Form.Group>
 
-                {/* Upload Ảnh */}
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold text-secondary d-block" style={{ fontSize: "0.85rem" }}>
-                    Thêm ảnh món đồ (nếu có)
-                  </Form.Label>
-                  <div className="d-flex align-items-center gap-3">
-                    <Form.Control
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      id="upload-photo"
-                      className="d-none"
-                    />
-                    <label
-                      htmlFor="upload-photo"
-                      className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
+                      Danh mục món đồ
+                    </Form.Label>
+                    <Form.Select 
+                      value={newCategory} 
+                      onChange={(e) => setNewCategory(e.target.value)} 
+                      className="shadow-none border-secondary-subtle"
                     >
-                      <i className="bi bi-image"></i> Chọn ảnh đính kèm
-                    </label>
-                    {selectedImage && (
-                      <span className="text-success text-truncate" style={{ fontSize: "0.85rem" }}>
-                        <i className="bi bi-check-circle-fill me-1"></i> {selectedImage.name}
-                      </span>
-                    )}
-                  </div>
+                      <option value="Ví & giấy tờ">Ví & giấy tờ</option>
+                      <option value="Đồ điện tử">Đồ điện tử</option>
+                      <option value="Chìa khóa">Chìa khóa</option>
+                      <option value="Túi & balo">Túi & balo</option>
+                      <option value="Đồ dùng cá nhân">Đồ dùng cá nhân</option>
+                    </Form.Select>
+                  </Form.Group>
 
-                  {imagePreview && (
-                    <div className="mt-2 position-relative d-inline-block">
-                      <Image
-                        src={imagePreview}
-                        alt="Preview"
-                        rounded
-                        style={{ width: "120px", height: "120px", objectFit: "cover" }}
-                        className="border"
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
+                      Mô tả & thông tin cần tìm
+                    </Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Màu sắc, đặc điểm nhận biết, nơi bạn nhìn thấy lần cuối..."
+                      value={newContent}
+                      onChange={(e) => setNewContent(e.target.value)}
+                      required
+                      className="shadow-none border-secondary-subtle"
+                    />
+                  </Form.Group>
+
+                  <Row className="g-3 mb-3">
+                    <Col md={6}>
+                      <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
+                        Địa điểm mất
+                      </Form.Label>
+                      <Form.Select value={newLocation} onChange={(e) => setNewLocation(e.target.value)} className="shadow-none border-secondary-subtle">
+                        <option value="">Chọn khu vực trong campus</option>
+                        <option value="Tòa Alpha">Tòa Alpha</option>
+                        <option value="Tòa Beta">Tòa Beta</option>
+                        <option value="Tòa Gamma">Tòa Gamma</option>
+                        <option value="Giảng đường">Giảng đường</option>
+                        <option value="Thư viện">Thư viện</option>
+                        <option value="Căn tin">Căn tin</option>
+                        <option value="Hầm gửi xe">Hầm gửi xe</option>
+                        <option value="Bãi đổ xe ngoài trời">Bãi đổ xe ngoài trời</option>
+                        <option value="Sân trường">Sân trường</option>
+                        <option value="Sân bóng">Sân bóng</option>
+                        <option value="Sân pickleball">Sân pickleball</option>
+                        <option value="Nhà võ">Nhà võ</option>
+                      </Form.Select>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Label className="fw-semibold text-secondary" style={{ fontSize: "0.85rem" }}>
+                        Thời gian mất
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Ngày / tháng - Khoảng thời gian"
+                        value={newTime}
+                        onChange={(e) => setNewTime(e.target.value)}
+                        className="shadow-none border-secondary-subtle"
                       />
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        className="position-absolute top-0 end-0 rounded-circle p-0"
-                        style={{ width: "22px", height: "22px", lineHeight: 1 }}
-                        onClick={() => {
-                          setSelectedImage(null);
-                          setImagePreview(null);
-                        }}
-                      >
-                        &times;
-                      </Button>
-                    </div>
-                  )}
-                </Form.Group>
+                    </Col>
+                  </Row>
 
-                <div className="d-flex justify-content-between align-items-center pt-2 border-top">
-                  <span className="text-muted" style={{ fontSize: "0.75rem" }}>
-                    Không đăng thông tin nhạy cảm (CMND/STK...)
-                  </span>
-                  <Button
-                    type="submit"
-                    className="bg-primary-custom fw-semibold px-4"
-                    style={{ borderColor: primaryColor }}
-                  >
-                    Đăng bài tìm đồ
-                  </Button>
-                </div>
-              </Form>
+                  {/* Upload Ảnh */}
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-secondary d-block" style={{ fontSize: "0.85rem" }}>
+                      Thêm ảnh món đồ (nếu có)
+                    </Form.Label>
+                    <div className="d-flex align-items-center gap-3">
+                      <Form.Control
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        id="upload-photo"
+                        className="d-none"
+                      />
+                      <label
+                        htmlFor="upload-photo"
+                        className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+                      >
+                        <i className="bi bi-image"></i> Chọn ảnh đính kèm
+                      </label>
+                      {selectedImage && (
+                        <span className="text-success text-truncate" style={{ fontSize: "0.85rem" }}>
+                          <i className="bi bi-check-circle-fill me-1"></i> {selectedImage.name}
+                        </span>
+                      )}
+                    </div>
+
+                    {imagePreview && (
+                      <div className="mt-2 position-relative d-inline-block">
+                        <Image
+                          src={imagePreview}
+                          alt="Preview"
+                          rounded
+                          style={{ width: "120px", height: "120px", objectFit: "cover" }}
+                          className="border"
+                        />
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          className="position-absolute top-0 end-0 rounded-circle p-0"
+                          style={{ width: "22px", height: "22px", lineHeight: 1 }}
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setImagePreview(null);
+                          }}
+                        >
+                          &times;
+                        </Button>
+                      </div>
+                    )}
+                  </Form.Group>
+
+                  <div className="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <span className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      Không đăng thông tin nhạy cảm (CMND/STK...)
+                    </span>
+                    <Button
+                      type="submit"
+                      className="bg-primary-custom fw-semibold px-4"
+                      style={{ borderColor: primaryColor }}
+                    >
+                      Đăng bài tìm đồ
+                    </Button>
+                  </div>
+                </Form>
+              )}
             </Card>
 
             {/* DANH SÁCH BÀI ĐĂNG CỘNG ĐỒNG */}

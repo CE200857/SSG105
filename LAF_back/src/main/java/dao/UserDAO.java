@@ -91,4 +91,89 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
+    
+    // 1. Kiểm tra mật khẩu hiện tại
+    public boolean checkCurrentPassword(String email, String currentPassword) {
+        // Đã sửa 'Password' thành 'PasswordHash'
+        String query = "SELECT * FROM Users WHERE Email = ? AND PasswordHash = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, email);
+            ps.setString(2, currentPassword);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return true; // Mật khẩu đúng
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi checkCurrentPassword: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // 2. Cập nhật mật khẩu mới
+    public boolean changePassword(String email, String newPassword) {
+        // Đã sửa 'Password' thành 'PasswordHash'
+        String query = "UPDATE Users SET PasswordHash = ? WHERE Email = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, newPassword);
+            ps.setString(2, email);
+            int result = ps.executeUpdate();
+            return result > 0; // Trả về true nếu update thành công
+        } catch (Exception e) {
+            System.out.println("Lỗi changePassword: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    // 3. Kiểm tra trùng lặp khi Cập nhật (Bỏ qua chính user hiện tại)
+    public String checkDuplicateForUpdate(String currentEmail, String newUsername, String newEmail, String newPhone) {
+        try {
+            // Check Username
+            String q1 = "SELECT 1 FROM Users WHERE Username = ? AND Email != ?";
+            PreparedStatement p1 = conn.prepareStatement(q1);
+            p1.setString(1, newUsername);
+            p1.setString(2, currentEmail);
+            if (p1.executeQuery().next()) return "Tên người dùng (Username) đã có người sử dụng!";
+
+            // Check Email
+            String q2 = "SELECT 1 FROM Users WHERE Email = ? AND Email != ?";
+            PreparedStatement p2 = conn.prepareStatement(q2);
+            p2.setString(1, newEmail);
+            p2.setString(2, currentEmail);
+            if (p2.executeQuery().next()) return "Địa chỉ Email này đã được đăng ký cho tài khoản khác!";
+
+            // Check Phone
+            if (newPhone != null && !newPhone.trim().isEmpty()) {
+                String q3 = "SELECT 1 FROM Users WHERE Phone = ? AND Email != ?";
+                PreparedStatement p3 = conn.prepareStatement(q3);
+                p3.setString(1, newPhone);
+                p3.setString(2, currentEmail);
+                if (p3.executeQuery().next()) return "Số điện thoại này đã được sử dụng!";
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi checkDuplicateForUpdate: " + e.getMessage());
+            return "Lỗi cơ sở dữ liệu khi kiểm tra trùng lặp.";
+        }
+        return null; // Không trùng
+    }
+
+    // 4. Thực thi cập nhật Profile
+    public boolean updateProfile(String currentEmail, String username, String fullName, String newEmail, String phone, String campus, String gender) {
+        String query = "UPDATE Users SET Username=?, FullName=?, Email=?, Phone=?, Campus=?, Gender=? WHERE Email=?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, username);
+            ps.setNString(2, fullName);
+            ps.setString(3, newEmail);
+            ps.setString(4, phone);
+            ps.setNString(5, campus);
+            ps.setNString(6, gender);
+            ps.setString(7, currentEmail);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Lỗi updateProfile: " + e.getMessage());
+        }
+        return false;
+    }
 }

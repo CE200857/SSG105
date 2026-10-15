@@ -11,6 +11,10 @@ import Footer from "../components/Footer";
 import Home from "../pages/Home";
 import OverviewPage from "../pages/OverviewPage";
 import LostFoundPage from "../pages/LostFoundPage";
+import ProfilePage from '../pages/ProfilePage';
+import ChangePasswordPage from "../pages/ChangePasswordPage";
+import EditProfilePage from "../pages/EditProfilePage";
+import ReviewPage from "../pages/ReviewPage";
 
 // Khung bảo vệ Role
 const ProtectedRoute = ({ user, allowedRoles, children }) => {
@@ -46,7 +50,7 @@ export default function AppRoutes({ user, setUser }) {
       <Route element={<MainLayout user={user} setUser={setUser} />}>
         {/* Trang chủ */}
         {/* Dành cho Student (Role 2) */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home user={user} />} />
 
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route
@@ -56,26 +60,19 @@ export default function AppRoutes({ user, setUser }) {
         <Route path="/register" element={<Register />} />
         <Route path="/create-profile" element={<CreateProfile />} />
           
-        <Route path="/lost-found" element={<LostFoundPage />} />
+        <Route path="/lost-found" element={<LostFoundPage user={user} />} />
         <Route path="/overview" element={<OverviewPage />} />
+
+        <Route path="/profile" element={<ProfilePage user={user} />} />
+        <Route path="/change-password" element={<ChangePasswordPage user={user} />} />
+        <Route path="/edit-profile" element={<EditProfilePage user={user} setUser={setUser} />} />
 
         {/* Các trang tạm thời khác */}
         <Route
           path="/forum"
           element={<h3 className="text-center p-5">Trang diễn đàn</h3>}
         />
-        <Route
-          path="/review"
-          element={<h3 className="text-center p-5">Trang đánh giá</h3>}
-        />
-        <Route
-          path="/profile"
-          element={
-            <h3 className="text-center p-5">
-              Hồ sơ cá nhân của {user?.fullName}
-            </h3>
-          }
-        />
+        <Route path="/review" element={<ReviewPage user={user} />} />
 
         {/* Dành cho Admin (Role 1) */}
         <Route
