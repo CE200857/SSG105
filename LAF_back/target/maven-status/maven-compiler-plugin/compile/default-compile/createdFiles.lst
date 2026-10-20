@@ -5,6 +5,7 @@ entity\FoundImages.class
 entity\PostDTO.class
 com\mycompany\laf_back\resources\JakartaEE10Resource.class
 dao\LostPostDAO.class
+dao\AdminDAO.class
 dao\PostDAO.class
 controller\ChangePasswordServlet.class
 filter\AuthFilter.class
@@ -21,6 +22,7 @@ dao\FoundPostDAO.class
 controller\ProfileServlet.class
 com\mycompany\laf_back\JakartaRestConfiguration.class
 controller\NotificationServlet.class
+controller\AdminServlet.class
 controller\ReviewServlet.class
 controller\CheckUserExistServlet.class
 dao\ReviewDAO.class
