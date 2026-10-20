@@ -16,7 +16,6 @@ import java.util.Map;
 @WebServlet(name = "ReviewServlet", urlPatterns = {"/api/reviews"})
 public class ReviewServlet extends HttpServlet {
 
-    // Gọi API để lấy danh sách đánh giá
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -24,7 +23,7 @@ public class ReviewServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         int star = 0;
-        if(request.getParameter("star") != null && !request.getParameter("star").isEmpty()) {
+        if (request.getParameter("star") != null && !request.getParameter("star").isEmpty()) {
             star = Integer.parseInt(request.getParameter("star"));
         }
         String sort = request.getParameter("sort");
@@ -36,25 +35,40 @@ public class ReviewServlet extends HttpServlet {
         out.flush();
     }
 
-    // Gọi API để đăng đánh giá mới
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         Map<String, Object> result = new HashMap<>();
-
-        String email = request.getParameter("email");
-        int rating = Integer.parseInt(request.getParameter("rating"));
-        String comment = request.getParameter("comment");
-
         ReviewDAO dao = new ReviewDAO();
-        if(dao.addReview(email, rating, comment)) {
-            result.put("success", true);
-            result.put("message", "Cảm ơn bạn đã gửi đánh giá!");
+
+        String action = request.getParameter("action");
+        if (action == null) action = "create";
+
+        if ("update".equals(action) || "edit".equals(action)) {
+            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            int rating = Integer.parseInt(request.getParameter("rating"));
+            String comment = request.getParameter("comment");
+            boolean ok = dao.updateReview(reviewId, rating, comment);
+            result.put("success", ok);
+            result.put("message", ok ? "Cập nhật đánh giá thành công!" : "Lỗi cập nhật!");
+        } else if ("delete".equals(action)) {
+            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            boolean ok = dao.deleteReview(reviewId);
+            result.put("success", ok);
         } else {
-            result.put("success", false);
-            result.put("message", "Lỗi khi gửi đánh giá. Vui lòng thử lại!");
+            String email = request.getParameter("email");
+            int rating = Integer.parseInt(request.getParameter("rating"));
+            String comment = request.getParameter("comment");
+
+            if (dao.addReview(email, rating, comment)) {
+                result.put("success", true);
+                result.put("message", "Cảm ơn bạn đã gửi đánh giá!");
+            } else {
+                result.put("success", false);
+                result.put("message", "Lỗi khi gửi đánh giá. Vui lòng thử lại!");
+            }
         }
 
         out.print(new Gson().toJson(result));

@@ -28,12 +28,23 @@ const Home = ({ user }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Gọi API lấy bài diễn đàn
+  // Gọi API lấy bài diễn đàn (Đồng bộ lọc bỏ các bài đã xóa & cập nhật bài đã sửa)
   useEffect(() => {
     const fetchForumPosts = async () => {
       try {
         const response = await axios.get("/api/home/forum-posts");
-        setForumPosts(response.data);
+        const deletedForumIds =
+          JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
+        const editedForumMap =
+          JSON.parse(localStorage.getItem("laf_edited_forum_posts")) || {};
+
+        const filteredForum = (response.data || [])
+          .filter((p) => !deletedForumIds.includes(p.id))
+          .map((p) =>
+            editedForumMap[p.id] ? { ...p, ...editedForumMap[p.id] } : p,
+          );
+
+        setForumPosts(filteredForum);
       } catch (error) {
         console.error("Lỗi lấy dữ liệu diễn đàn:", error);
       }
@@ -41,12 +52,47 @@ const Home = ({ user }) => {
     fetchForumPosts();
   }, []);
 
-  // Gọi API lấy tin mới nhất
+  // Gọi API lấy tin mới nhất (Đồng bộ lọc bỏ các bài Lost & Found đã xóa)
   useEffect(() => {
     const fetchRecentPosts = async () => {
       try {
         const response = await axios.get("/api/home/recent-posts");
-        setRecentPosts(response.data);
+        const deletedLostIds =
+          JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
+        const deletedFoundIds =
+          JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
+        const editedLostMap =
+          JSON.parse(localStorage.getItem("laf_edited_lost_posts")) || {};
+        const editedFoundMap =
+          JSON.parse(localStorage.getItem("laf_edited_found_posts")) || {};
+
+        const filteredRecent = (response.data || [])
+          .filter((p) => {
+            if (p.type === "lost") return !deletedLostIds.includes(p.id);
+            if (p.type === "found") return !deletedFoundIds.includes(p.id);
+            return true;
+          })
+          .map((p) => {
+            if (p.type === "lost" && editedLostMap[p.id]) {
+              return {
+                ...p,
+                title: editedLostMap[p.id].title || p.title,
+                location: editedLostMap[p.id].location || p.location,
+                category: editedLostMap[p.id].category || p.category,
+              };
+            }
+            if (p.type === "found" && editedFoundMap[p.id]) {
+              return {
+                ...p,
+                title: editedFoundMap[p.id].itemName || p.title,
+                location: editedFoundMap[p.id].location || p.location,
+                category: editedFoundMap[p.id].category || p.category,
+              };
+            }
+            return p;
+          });
+
+        setRecentPosts(filteredRecent);
       } catch (error) {
         console.error("Lỗi lấy dữ liệu trang chủ:", error);
       } finally {
@@ -80,18 +126,18 @@ const Home = ({ user }) => {
     }
   }, [loading, recentPosts]);
 
-// ===== HÀM XỬ LÝ TÌM KIẾM =====
+  // ===== HÀM XỬ LÝ TÌM KIẾM =====
   const handleSearchSubmit = () => {
     if (!user) {
       // Nếu chưa đăng nhập thì đá qua login
       navigate("/login");
       return;
     }
-    navigate("/lost-found", { 
-      state: { 
-        keyword: searchKeyword, 
-        location: searchLocation || "Toàn campus" 
-      } 
+    navigate("/lost-found", {
+      state: {
+        keyword: searchKeyword,
+        location: searchLocation || "Toàn campus",
+      },
     });
   };
 
@@ -100,11 +146,11 @@ const Home = ({ user }) => {
       navigate("/login");
       return;
     }
-    navigate("/lost-found", { 
-      state: { 
-        keyword: keyword, 
-        location: "Toàn campus" 
-      } 
+    navigate("/lost-found", {
+      state: {
+        keyword: keyword,
+        location: "Toàn campus",
+      },
     });
   };
 
@@ -201,14 +247,18 @@ const Home = ({ user }) => {
                     padding: "12px 24px",
                     fontWeight: "600",
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#0a735e"} // Đổi màu xanh đậm hơn khi hover
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = primaryColor} // Trả lại màu cũ khi bỏ chuột
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#0a735e")
+                  } // Đổi màu xanh đậm hơn khi hover
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor = primaryColor)
+                  } // Trả lại màu cũ khi bỏ chuột
                 >
                   <i className="bi bi-search me-2"></i> Đăng tin mất đồ
                 </Button>
                 <Button
                   variant="light"
-                  onClick={() => navigate("/lost-found")}
+                  onClick={() => navigate("/found-items")} // Sửa từ /lost-found thành /found-items
                   className="shadow-sm"
                   style={{
                     borderRadius: "10px",
@@ -319,7 +369,9 @@ const Home = ({ user }) => {
                         placeholder="Ví, laptop, balo, chìa khóa..."
                         value={searchKeyword}
                         onChange={(e) => setSearchKeyword(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleSearchSubmit()
+                        }
                         className="border-0 shadow-none px-0"
                         style={{ fontSize: "1rem" }}
                       />
@@ -350,10 +402,10 @@ const Home = ({ user }) => {
                       >
                         ĐỊA ĐIỂM
                       </label>
-                      <Form.Select 
+                      <Form.Select
                         value={searchLocation}
                         onChange={(e) => setSearchLocation(e.target.value)}
-                        className="border-0 shadow-none px-0 text-secondary" 
+                        className="border-0 shadow-none px-0 text-secondary"
                         style={{ fontSize: "1rem", cursor: "pointer" }}
                       >
                         <option value="">Toàn campus</option>
@@ -364,7 +416,9 @@ const Home = ({ user }) => {
                         <option value="Thư viện">Thư viện</option>
                         <option value="Căn tin">Căn tin</option>
                         <option value="Hầm gửi xe">Hầm gửi xe</option>
-                        <option value="Bãi đổ xe ngoài trời">Bãi đổ xe ngoài trời</option>
+                        <option value="Bãi đổ xe ngoài trời">
+                          Bãi đổ xe ngoài trời
+                        </option>
                         <option value="Sân trường">Sân trường</option>
                         <option value="Sân bóng">Sân bóng</option>
                         <option value="Sân pickleball">Sân pickleball</option>
@@ -400,7 +454,9 @@ const Home = ({ user }) => {
               </span>
               <div className="d-flex gap-2">
                 <Badge
-                  pill bg="transparent" text="dark"
+                  pill
+                  bg="transparent"
+                  text="dark"
                   className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
                   onClick={() => handleQuickSearch("Ví")}
@@ -408,7 +464,9 @@ const Home = ({ user }) => {
                   Ví
                 </Badge>
                 <Badge
-                  pill bg="transparent" text="dark"
+                  pill
+                  bg="transparent"
+                  text="dark"
                   className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
                   onClick={() => handleQuickSearch("Chìa khóa")}
@@ -416,7 +474,9 @@ const Home = ({ user }) => {
                   Chìa khóa
                 </Badge>
                 <Badge
-                  pill bg="transparent" text="dark"
+                  pill
+                  bg="transparent"
+                  text="dark"
                   className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
                   onClick={() => handleQuickSearch("Thẻ")}
@@ -424,7 +484,9 @@ const Home = ({ user }) => {
                   Thẻ
                 </Badge>
                 <Badge
-                  pill bg="transparent" text="dark"
+                  pill
+                  bg="transparent"
+                  text="dark"
                   className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
                   onClick={() => handleQuickSearch("Balo")}
@@ -432,7 +494,9 @@ const Home = ({ user }) => {
                   Balo
                 </Badge>
                 <Badge
-                  pill bg="transparent" text="dark"
+                  pill
+                  bg="transparent"
+                  text="dark"
                   className="border fw-normal px-3 py-2 quick-search-badge"
                   style={{ borderColor: "#ced4da", fontSize: "0.9rem" }}
                   onClick={() => handleQuickSearch("Laptop")}
@@ -563,7 +627,12 @@ const Home = ({ user }) => {
                   }}
                 >
                   <Card
-                    onClick={() => navigate("/lost-found")}
+                    onClick={() =>
+                      navigate(
+                        post.type === "found" ? "/found-items" : "/lost-found",
+                        { state: { openPostId: post.id } },
+                      )
+                    }
                     className="h-100 border-0 shadow-sm overflow-hidden"
                     style={{
                       borderRadius: "15px",

@@ -17,8 +17,10 @@ controller\UpdateProfileServlet.class
 filter\CorsFilter.class
 controller\LostPostsServlet.class
 dao\UserDAO.class
+dao\FoundPostDAO.class
 controller\ProfileServlet.class
 com\mycompany\laf_back\JakartaRestConfiguration.class
+controller\NotificationServlet.class
 controller\ReviewServlet.class
 controller\CheckUserExistServlet.class
 dao\ReviewDAO.class
@@ -26,12 +28,16 @@ entity\Reviews.class
 controller\LoginServlet.class
 controller\AuthCheckServlet.class
 controller\ForumServlet.class
+dao\ShareDAO.class
 entity\Roles.class
+controller\ShareServlet.class
+controller\FoundPostsServlet.class
 util\DBContext.class
 controller\OverviewServlet.class
 filter\PasswordUtils.class
 controller\LogoutServlet.class
 dao\ForumDAO.class
+dao\NotificationDAO.class
 entity\Comments.class
 controller\RegisterServlet.class
 controller\HomeServlet.class
