@@ -28,7 +28,7 @@ const Header = ({ user, setUser }) => {
     const myLocalNotifs = localNotifs.filter(
       (n) =>
         (n.recipientEmail && n.recipientEmail === user.email) ||
-        (n.recipientName && n.recipientName === user.fullName)
+        (n.recipientName && n.recipientName === user.fullName),
     );
 
     try {
@@ -63,7 +63,7 @@ const Header = ({ user, setUser }) => {
     localNotifs = localNotifs.map((n) =>
       n.recipientEmail === user.email || n.recipientName === user.fullName
         ? { ...n, isRead: true }
-        : n
+        : n,
     );
     localStorage.setItem("laf_notifications", JSON.stringify(localNotifs));
     setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
@@ -82,11 +82,13 @@ const Header = ({ user, setUser }) => {
     let localNotifs =
       JSON.parse(localStorage.getItem("laf_notifications")) || [];
     localNotifs = localNotifs.map((n) =>
-      n.id === notif.id ? { ...n, isRead: true } : n
+      n.id === notif.id ? { ...n, isRead: true } : n,
     );
     localStorage.setItem("laf_notifications", JSON.stringify(localNotifs));
     setNotifications(
-      notifications.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
+      notifications.map((n) =>
+        n.id === notif.id ? { ...n, isRead: true } : n,
+      ),
     );
 
     if (notif.postType === "lost") {
@@ -133,7 +135,7 @@ const Header = ({ user, setUser }) => {
       <Container fluid className="px-4">
         <Navbar.Brand
           as={Link}
-          to={isAdmin ? "/admin" : "/"}
+          to="/"
           className="d-flex align-items-center fw-bold"
           style={{ color: "#10393B", fontSize: "1.25rem" }}
         >
@@ -152,74 +154,62 @@ const Header = ({ user, setUser }) => {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          {!isAdmin ? (
-            <Nav className="mx-auto" style={{ fontWeight: "500" }}>
-              <Nav.Link
-                as={Link}
-                to="/"
-                className={`px-3 ${
-                  isActive("/") ? "active-link" : "text-secondary"
-                }`}
-              >
-                Trang chủ
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                to="/lost-found"
-                className={`px-3 ${
-                  isActive("/lost-found") ? "active-link" : "text-secondary"
-                }`}
-              >
-                Đồ mất (Tìm đồ)
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                to="/found-items"
-                className={`px-3 ${
-                  isActive("/found-items") ? "active-link" : "text-secondary"
-                }`}
-              >
-                Đồ nhặt (Tìm chủ)
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                to="/forum"
-                className={`px-3 ${
-                  isActive("/forum") ? "active-link" : "text-secondary"
-                }`}
-              >
-                Diễn đàn
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                to="/review"
-                className={`px-3 ${
-                  isActive("/review") ? "active-link" : "text-secondary"
-                }`}
-              >
-                Đánh giá
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                to="/overview"
-                className={`px-3 ${
-                  isActive("/overview") ? "active-link" : "text-secondary"
-                }`}
-              >
-                Tổng quan
-              </Nav.Link>
-            </Nav>
-          ) : (
-            <Nav className="mx-auto">
-              <Nav.Link
-                as={Link}
-                to="/admin"
-                className="px-3 active-link"
-              >
-                Quản trị hệ thống (Admin)
-              </Nav.Link>
-            </Nav>
-          )}
+          <Nav className="mx-auto" style={{ fontWeight: "500" }}>
+            <Nav.Link
+              as={Link}
+              to="/"
+              className={`px-3 ${
+                isActive("/") ? "active-link" : "text-secondary"
+              }`}
+            >
+              Trang chủ
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/lost-found"
+              className={`px-3 ${
+                isActive("/lost-found") ? "active-link" : "text-secondary"
+              }`}
+            >
+              Đồ mất (Tìm đồ)
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/found-items"
+              className={`px-3 ${
+                isActive("/found-items") ? "active-link" : "text-secondary"
+              }`}
+            >
+              Đồ nhặt (Tìm chủ)
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/forum"
+              className={`px-3 ${
+                isActive("/forum") ? "active-link" : "text-secondary"
+              }`}
+            >
+              Diễn đàn
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/review"
+              className={`px-3 ${
+                isActive("/review") ? "active-link" : "text-secondary"
+              }`}
+            >
+              Đánh giá
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/overview"
+              className={`px-3 ${
+                isActive("/overview") ? "active-link" : "text-secondary"
+              }`}
+            >
+              Tổng quan
+            </Nav.Link>
+          </Nav>
 
           <Nav className="d-flex align-items-center gap-3">
             {user ? (
@@ -283,9 +273,7 @@ const Header = ({ user, setUser }) => {
                           onClick={() => handleNotificationClick(notif)}
                           className="px-3 py-3 border-bottom text-wrap"
                           style={{
-                            backgroundColor: notif.isRead
-                              ? "white"
-                              : "#EAF5F3",
+                            backgroundColor: notif.isRead ? "white" : "#EAF5F3",
                             transition: "0.2s",
                           }}
                         >
@@ -358,9 +346,16 @@ const Header = ({ user, setUser }) => {
                         {user.email}
                       </div>
                     </Dropdown.ItemText>
-                    {!isAdmin && (
-                      <Dropdown.Item as={Link} to="/profile" className="py-2">
-                        <i className="bi bi-person me-2"></i> Trang cá nhân
+                    <Dropdown.Item as={Link} to="/profile" className="py-2">
+                      <i className="bi bi-person me-2"></i> Trang cá nhân
+                    </Dropdown.Item>
+                    {isAdmin && (
+                      <Dropdown.Item
+                        as={Link}
+                        to="/admin?tab=lost"
+                        className="py-2 fw-semibold text-success"
+                      >
+                        <i className="bi bi-speedometer2 me-2"></i> Quản trị hệ thống
                       </Dropdown.Item>
                     )}
                     <Dropdown.Item

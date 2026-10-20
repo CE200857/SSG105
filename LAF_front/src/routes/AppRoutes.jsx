@@ -1,5 +1,12 @@
-import { Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
-import { Container, Card, Button, Badge } from "react-bootstrap";
+import {
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { Badge } from "react-bootstrap";
 import Login from "../components/DatNT/Login";
 import Register from "../components/DatNT/Register";
 import CreateProfile from "../components/DatNT/CreateProfile";
@@ -8,7 +15,7 @@ import CreateProfile from "../components/DatNT/CreateProfile";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-// Import các trang của Student
+// Import các trang
 import Home from "../pages/Home";
 import OverviewPage from "../pages/OverviewPage";
 import LostFoundPage from "../pages/LostFoundPage";
@@ -18,6 +25,7 @@ import EditProfilePage from "../pages/EditProfilePage";
 import ReviewPage from "../pages/ReviewPage";
 import ForumPage from "../pages/ForumPage";
 import FoundItemsPage from "../pages/FoundItemsPage";
+import AdminPage from "../pages/AdminPage";
 
 // Helper lấy chuẩn RoleID (1 = Admin, 2 = Student)
 const getUserRole = (user) => {
@@ -25,72 +33,171 @@ const getUserRole = (user) => {
   return Number(user.roleId || user.RoleID || 2);
 };
 
-// Bảo vệ các trang chỉ dành cho Role cụ thể (VD: Admin RoleID = 1)
+// Bảo vệ các trang yêu cầu đăng nhập theo Role
 const ProtectedRoute = ({ user, allowedRoles, children }) => {
   if (!user) return <Navigate to="/login" replace />;
   const roleId = getUserRole(user);
   if (!allowedRoles.includes(roleId)) {
-    return roleId === 1 ? (
-      <Navigate to="/admin" replace />
-    ) : (
-      <Navigate to="/" replace />
-    );
+    return <Navigate to="/" replace />;
   }
   return children;
 };
 
-// Bảo vệ các trang Student: Nếu Admin (RoleID = 1) đang đăng nhập thì tự chuyển sang trang /admin
-const StudentAreaRoute = ({ user, children }) => {
-  const roleId = getUserRole(user);
-  if (user && roleId === 1) {
-    return <Navigate to="/admin" replace />;
-  }
-  return children;
-};
-
-// Trang Admin tạm thời (sẽ thiết kế chi tiết sau)
-const AdminPlaceholder = ({ user, setUser }) => {
+// Sidebar bên trái chỉ xuất hiện khi tài khoản đăng nhập là Admin (Role 1)
+const AdminGlobalSidebar = ({ user }) => {
+  const primaryColor = "#0C8B72";
   const navigate = useNavigate();
-  const handleLogout = () => {
-    sessionStorage.removeItem("user");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login");
-  };
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const currentTab =
+    location.pathname === "/admin" ? searchParams.get("tab") || "lost" : "";
+
+  const adminMenus = [
+    {
+      key: "lost",
+      label: "Quản lý bài đăng Lost",
+      icon: "bi-search",
+    },
+    {
+      key: "found",
+      label: "Quản lý bài đăng Found",
+      icon: "bi-bag-check-fill",
+    },
+    {
+      key: "forum",
+      label: "Quản lý bài đăng Forum",
+      icon: "bi-chat-square-quote-fill",
+    },
+    {
+      key: "reviews",
+      label: "Quản lý bài đăng Review",
+      icon: "bi-star-fill",
+    },
+    {
+      key: "users",
+      label: "Quản lý Account Student",
+      icon: "bi-people-fill",
+    },
+  ];
 
   return (
-    <Container fluid className="py-5 px-4">
-      <Card className="border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-        <div className="mb-3">
-          <Badge bg="success" className="px-3 py-2 rounded-pill">
-            RoleID: 1 (Admin)
-          </Badge>
+    <aside
+      className="bg-white border-end shadow-sm flex-shrink-0 text-start d-none d-lg-block"
+      style={{ width: "270px", minHeight: "calc(100vh - 70px)" }}
+    >
+      <div className="p-3 sticky-top" style={{ top: "75px" }}>
+        <div
+          className="d-flex align-items-center gap-3 p-3 mb-3 rounded-4"
+          style={{ backgroundColor: "#EAF5F3" }}
+        >
+          <div
+            className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm flex-shrink-0"
+            style={{
+              width: "42px",
+              height: "42px",
+              backgroundColor: primaryColor,
+            }}
+          >
+            {user?.fullName ? user.fullName.charAt(0) : "A"}
+          </div>
+          <div className="text-truncate">
+            <Badge
+              bg="success"
+              className="mb-1 rounded-pill"
+              style={{ backgroundColor: primaryColor, fontSize: "0.68rem" }}
+            >
+              Administrator
+            </Badge>
+            <h6
+              className="fw-bold mb-0 text-dark text-truncate"
+              style={{ fontSize: "0.9rem" }}
+            >
+              {user?.fullName || "Quản trị viên"}
+            </h6>
+            <small
+              className="text-muted text-truncate d-block"
+              style={{ fontSize: "0.75rem" }}
+            >
+              {user?.email}
+            </small>
+          </div>
         </div>
-        <h2 className="fw-bold mb-2" style={{ color: "#10393B" }}>
-          Bảng điều khiển Quản trị viên (Admin)
-        </h2>
-        <p className="text-secondary mb-4">
-          Xin chào <strong>{user?.fullName}</strong> ({user?.email}). Giao diện
-          quản trị dành cho Admin sẽ được thiết kế tại đây.
-        </p>
-        <div>
-          <Button variant="danger" className="px-4" onClick={handleLogout}>
-            <i className="bi bi-box-arrow-right me-2"></i> Đăng xuất
-          </Button>
+
+        <div className="px-2 mb-2">
+          <small
+            className="fw-bold text-uppercase text-secondary"
+            style={{ fontSize: "0.72rem", letterSpacing: "0.5px" }}
+          >
+            Trang Quản Lý (Full CRUD)
+          </small>
         </div>
-      </Card>
-    </Container>
+
+        <div className="d-flex flex-column gap-2">
+          {adminMenus.map((item) => {
+            const isAct = currentTab === item.key;
+            return (
+              <div
+                key={item.key}
+                onClick={() => navigate(`/admin?tab=${item.key}`)}
+                className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-semibold"
+                style={{
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  backgroundColor: isAct ? primaryColor : "transparent",
+                  color: isAct ? "white" : "#334155",
+                  fontSize: "0.9rem",
+                }}
+              >
+                <i className={`bi ${item.icon} fs-5`}></i>
+                <span>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <hr className="my-3 opacity-25" />
+
+        <div
+          className="p-3 rounded-3"
+          style={{
+            backgroundColor: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            fontSize: "0.8rem",
+          }}
+        >
+          <div className="fw-bold text-dark mb-1">
+            <i
+              className="bi bi-shield-check me-2"
+              style={{ color: primaryColor }}
+            ></i>
+            Chế độ Quản trị viên
+          </div>
+          <p className="text-secondary mb-0">
+            Bạn có thể xem mọi trang trên thanh menu như sinh viên, hoặc chọn
+            các mục bên trên để thực hiện quyền CRUD tuyệt đối.
+          </p>
+        </div>
+      </div>
+    </aside>
   );
 };
 
-// Khung Layout chính có Header và Footer bọc lấy nội dung (Outlet)
+// Khung Layout chính: Nếu là Admin sẽ có thêm Sidebar bên trái
 const MainLayout = ({ user, setUser }) => {
+  const isAdmin = getUserRole(user) === 1;
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header user={user} setUser={setUser} />
-      <main className="flex-grow-1" style={{ backgroundColor: "#f8f9fa" }}>
-        <Outlet />
-      </main>
+      <div
+        className="d-flex flex-grow-1"
+        style={{ backgroundColor: "#f8f9fa" }}
+      >
+        {isAdmin && <AdminGlobalSidebar user={user} />}
+        <main className="flex-grow-1" style={{ minWidth: 0 }}>
+          <Outlet />
+        </main>
+      </div>
       <Footer />
     </div>
   );
@@ -109,67 +216,20 @@ export default function AppRoutes({ user, setUser }) {
         <Route path="/register" element={<Register />} />
         <Route path="/create-profile" element={<CreateProfile />} />
 
-        {/* ===== KHU VỰC DÀNH CHO STUDENT (RoleID = 2) ===== */}
-        <Route
-          path="/"
-          element={
-            <StudentAreaRoute user={user}>
-              <Home user={user} />
-            </StudentAreaRoute>
-          }
-        />
-        <Route
-          path="/lost-found"
-          element={
-            <StudentAreaRoute user={user}>
-              <LostFoundPage user={user} />
-            </StudentAreaRoute>
-          }
-        />
-        <Route
-          path="/found-items"
-          element={
-            <StudentAreaRoute user={user}>
-              <FoundItemsPage user={user} />
-            </StudentAreaRoute>
-          }
-        />
-        <Route
-          path="/forum"
-          element={
-            <StudentAreaRoute user={user}>
-              <ForumPage user={user} />
-            </StudentAreaRoute>
-          }
-        />
-        <Route
-          path="/review"
-          element={
-            <StudentAreaRoute user={user}>
-              <ReviewPage user={user} />
-            </StudentAreaRoute>
-          }
-        />
-        <Route
-          path="/overview"
-          element={
-            <StudentAreaRoute user={user}>
-              <OverviewPage />
-            </StudentAreaRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <StudentAreaRoute user={user}>
-              <ProfilePage user={user} />
-            </StudentAreaRoute>
-          }
-        />
+        {/* Các trang chung: Cả Student và Admin đều xem được bình thường */}
+        <Route path="/" element={<Home user={user} />} />
+        <Route path="/lost-found" element={<LostFoundPage user={user} />} />
+        <Route path="/found-items" element={<FoundItemsPage user={user} />} />
+        <Route path="/forum" element={<ForumPage user={user} />} />
+        <Route path="/review" element={<ReviewPage user={user} />} />
+        <Route path="/overview" element={<OverviewPage />} />
+        <Route path="/profile" element={<ProfilePage user={user} />} />
+
+        {/* Đổi mật khẩu & Sửa hồ sơ cho phép cả Role 1 (Admin) và Role 2 (Student) */}
         <Route
           path="/change-password"
           element={
-            <ProtectedRoute user={user} allowedRoles={[2]}>
+            <ProtectedRoute user={user} allowedRoles={[1, 2]}>
               <ChangePasswordPage user={user} />
             </ProtectedRoute>
           }
@@ -177,18 +237,18 @@ export default function AppRoutes({ user, setUser }) {
         <Route
           path="/edit-profile"
           element={
-            <ProtectedRoute user={user} allowedRoles={[2]}>
+            <ProtectedRoute user={user} allowedRoles={[1, 2]}>
               <EditProfilePage user={user} setUser={setUser} />
             </ProtectedRoute>
           }
         />
 
-        {/* ===== KHU VỰC DÀNH CHO ADMIN (RoleID = 1) ===== */}
+        {/* Trang Quản lý CRUD dành riêng cho Admin (Role 1) */}
         <Route
           path="/admin"
           element={
             <ProtectedRoute user={user} allowedRoles={[1]}>
-              <AdminPlaceholder user={user} setUser={setUser} />
+              <AdminPage user={user} />
             </ProtectedRoute>
           }
         />

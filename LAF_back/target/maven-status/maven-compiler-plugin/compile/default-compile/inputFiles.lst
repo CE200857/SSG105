@@ -14,6 +14,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\LogoutServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\UpdateProfileServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\FoundPostsServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\ShareDAO.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\AdminDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\ChangePasswordServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\CheckUserExistServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\Comments.java
@@ -37,6 +38,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\ForumDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\PostDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\ProfileDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\Roles.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\AdminServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\OverviewServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\LoginServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dto\OverviewDTO.java
