@@ -612,3 +612,46 @@
     padding-inline: 0.5rem !important;
   }
 }
+/* ===== MỞ RỘNG NỘI DUNG TRÀN RA 2 BÊN MÀN HÌNH ===== */
+.container,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl,
+.container-xxl,
+.container-fluid {
+  max-width: 96% !important;
+  width: 96% !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* ===== FIX LỖI KHÔNG CUỘN ĐƯỢC MODAL CHI TIẾT ===== */
+.modal {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.modal-dialog {
+  margin: 1.5rem auto !important;
+}
+
+.modal-content {
+  max-height: calc(100vh - 3rem) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.modal-body {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 180px) !important;
+  flex: 1 1 auto !important;
+}
+
+/* Ẩn mũi tên mặc định của nút 3 chấm (...) */
+.dots-dropdown .dropdown-toggle::after {
+  display: none !important;
+}

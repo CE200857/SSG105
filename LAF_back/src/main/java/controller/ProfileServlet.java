@@ -17,18 +17,17 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         
-        // Nhận email từ Frontend thay vì username
         String email = request.getParameter("email");
+        String username = request.getParameter("username");
+        String viewerEmail = request.getParameter("viewerEmail");
         
         ProfileDAO dao = new ProfileDAO();
-        Map<String, String> userProfile = dao.getUserProfile(email);
+        Map<String, Object> userProfile = dao.getFullProfile(email, username, viewerEmail);
         
-        Gson gson = new Gson();
-        out.print(gson.toJson(userProfile));
+        out.print(new Gson().toJson(userProfile));
         out.flush();
     }
 }
