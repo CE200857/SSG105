@@ -21,8 +21,6 @@ import { useSearchParams } from "react-router-dom";
 const AdminPage = ({ user }) => {
   const primaryColor = "#0C8B72";
 
-  
-
   // 5 Tab quản lý chính trên Sidebar
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab") || "lost";
@@ -40,6 +38,7 @@ const AdminPage = ({ user }) => {
     forumCount: 0,
     reviewCount: 0,
     studentCount: 0,
+    pendingCount: 0,
   });
 
   // Danh sách dữ liệu
@@ -97,6 +96,12 @@ const AdminPage = ({ user }) => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [pendingList, setPendingList] = useState([]);
+  const [pendingFilter, setPendingFilter] = useState("all");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [showPendingView, setShowPendingView] = useState(false);
+  const [pendingViewItem, setPendingViewItem] = useState(null);
 
   const showToast = (type, text) => {
     setFeedback({ type, text });
@@ -161,6 +166,11 @@ const AdminPage = ({ user }) => {
           },
         });
         setForumList(Array.isArray(res.data) ? res.data : []);
+      } else if (activeSection === "pending") {
+        const res = await axios.get("/api/admin", {
+          params: { type: "pending" },
+        });
+        setPendingList(Array.isArray(res.data) ? res.data : []);
       } else if (activeSection === "reviews") {
         const res = await axios.get("/api/admin", {
           params: {
@@ -341,7 +351,7 @@ const AdminPage = ({ user }) => {
           res.data.message ||
             (formMode === "create"
               ? "Thêm mới thành công!"
-              : "Cập nhật dữ liệu thành công!")
+              : "Cập nhật dữ liệu thành công!"),
         );
         setShowFormModal(false);
         fetchSectionData();
@@ -352,6 +362,30 @@ const AdminPage = ({ user }) => {
       showToast("danger", "Lỗi kết nối máy chủ khi lưu dữ liệu!");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleApprove = async (item) => {
+    try {
+      const params = new URLSearchParams();
+      params.append("entity", "moderation");
+      params.append("action", "approve");
+      params.append("postType", item.postType);
+      params.append("id", item.id);
+      params.append("adminEmail", user?.email || "");
+      const res = await axios.post("/api/admin", params);
+      if (res.data && res.data.success) {
+        showToast(
+          "success",
+          "Đã duyệt bài đăng và gửi thông báo cho sinh viên!",
+        );
+        setShowPendingView(false);
+        fetchSectionData();
+      } else {
+        showToast("danger", res.data?.message || "Không thể duyệt bài đăng!");
+      }
+    } catch (err) {
+      showToast("danger", "Lỗi kết nối máy chủ khi duyệt bài!");
     }
   };
 
@@ -367,13 +401,24 @@ const AdminPage = ({ user }) => {
         reviews: "review",
         users: "user",
       };
-      params.append("entity", entityMap[activeSection]);
+      // Ở tab "pending" thì lấy loại bài (lost/found/forum) từ chính bài đăng
+      const entity =
+        activeSection === "pending"
+          ? deleteTarget.postType
+          : entityMap[activeSection];
+      params.append("entity", entity);
       params.append("action", "delete");
 
       if (activeSection === "users") {
         params.append("userId", deleteTarget.userId);
       } else {
         params.append("id", deleteTarget.id);
+      }
+
+      // Bài đăng (lost/found/forum): gửi kèm lý do (không bắt buộc) để báo cho student
+      if (["lost", "found", "forum"].includes(entity)) {
+        params.append("reason", deleteReason.trim());
+        params.append("adminEmail", user?.email || "");
       }
 
       const res = await axios.post("/api/admin", params);
@@ -434,7 +479,22 @@ const AdminPage = ({ user }) => {
     );
   });
 
+  const pendingTypeMeta = {
+    lost: { label: "Lost – Tìm đồ", bg: "danger" },
+    found: { label: "Found – Nhặt đồ", bg: "success" },
+    forum: { label: "Forum – Diễn đàn", bg: "primary" },
+  };
+  const filteredPending = pendingList.filter(
+    (p) => pendingFilter === "all" || p.postType === pendingFilter,
+  );
+
   const sidebarItems = [
+    {
+      key: "pending",
+      label: "Bài đăng chờ duyệt",
+      icon: "bi-hourglass-split",
+      count: stats.pendingCount,
+    },
     {
       key: "lost",
       label: "Quản lý bài đăng Lost",
@@ -468,6 +528,12 @@ const AdminPage = ({ user }) => {
   ];
 
   const sectionMeta = {
+    pending: {
+      title: "Bài đăng chờ duyệt (Pending)",
+      subtitle:
+        "Kiểm tra bài đăng của sinh viên ở Lost, Found, Forum. Duyệt để hiển thị công khai hoặc xóa kèm lý do.",
+      addBtn: "",
+    },
     lost: {
       title: "Quản lý bài đăng Đồ thất lạc (Lost Posts)",
       subtitle:
@@ -531,19 +597,24 @@ const AdminPage = ({ user }) => {
               <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
                 {sectionMeta[activeSection].title}
               </h3>
-              <p className="text-secondary mb-0" style={{ fontSize: "0.92rem" }}>
+              <p
+                className="text-secondary mb-0"
+                style={{ fontSize: "0.92rem" }}
+              >
                 {sectionMeta[activeSection].subtitle}
               </p>
             </div>
 
-            <Button
-              className="fw-bold px-4 py-2 border-0 shadow-sm d-flex align-items-center text-white"
-              style={{ backgroundColor: primaryColor, borderRadius: "10px" }}
-              onClick={handleOpenCreate}
-            >
-              <i className="bi bi-plus-circle-fill me-2"></i>
-              {sectionMeta[activeSection].addBtn}
-            </Button>
+            {activeSection !== "pending" && (
+              <Button
+                className="fw-bold px-4 py-2 border-0 shadow-sm d-flex align-items-center text-white"
+                style={{ backgroundColor: primaryColor, borderRadius: "10px" }}
+                onClick={handleOpenCreate}
+              >
+                <i className="bi bi-plus-circle-fill me-2"></i>
+                {sectionMeta[activeSection].addBtn}
+              </Button>
+            )}
           </div>
         </Container>
       </div>
@@ -560,7 +631,6 @@ const AdminPage = ({ user }) => {
         )}
 
         <Row className="g-4">
-
           {/* ================= CỘT PHẢI: THỐNG KÊ, BỘ LỌC RIÊNG & BẢNG DỮ LIỆU ================= */}
           <Col lg={12}>
             {/* 5 Thẻ Thống Kê Nhanh */}
@@ -1145,6 +1215,52 @@ const AdminPage = ({ user }) => {
                   </Row>
                 </Form>
               )}
+              {activeSection === "pending" && (
+                <div className="d-flex flex-wrap gap-2 align-items-center">
+                  <span className="fw-semibold text-secondary small me-2">
+                    Lọc theo trang:
+                  </span>
+                  {[
+                    { key: "all", label: "Tất cả", count: pendingList.length },
+                    {
+                      key: "lost",
+                      label: "Lost",
+                      count: pendingList.filter((p) => p.postType === "lost")
+                        .length,
+                    },
+                    {
+                      key: "found",
+                      label: "Found",
+                      count: pendingList.filter((p) => p.postType === "found")
+                        .length,
+                    },
+                    {
+                      key: "forum",
+                      label: "Forum",
+                      count: pendingList.filter((p) => p.postType === "forum")
+                        .length,
+                    },
+                  ].map((t) => (
+                    <Button
+                      key={t.key}
+                      size="sm"
+                      variant={pendingFilter === t.key ? undefined : "light"}
+                      className={`fw-semibold border-0 px-3 ${pendingFilter === t.key ? "text-white" : ""}`}
+                      style={
+                        pendingFilter === t.key
+                          ? { backgroundColor: primaryColor }
+                          : {}
+                      }
+                      onClick={() => setPendingFilter(t.key)}
+                    >
+                      {t.label}{" "}
+                      <Badge bg="secondary" pill className="ms-1">
+                        {t.count}
+                      </Badge>
+                    </Button>
+                  ))}
+                </div>
+              )}
             </Card>
 
             {/* ================= BẢNG DỮ LIỆU QUẢN TRỊ ================= */}
@@ -1155,6 +1271,106 @@ const AdminPage = ({ user }) => {
                 </div>
               ) : (
                 <div className="table-responsive">
+                  {/* 0. BẢNG BÀI ĐĂNG CHỜ DUYỆT */}
+                  {activeSection === "pending" && (
+                    <Table hover className="align-middle mb-0">
+                      <thead>
+                        <tr>
+                          {[
+                            "Thuộc trang",
+                            "Nội dung",
+                            "Người đăng",
+                            "Thời gian đăng",
+                            "Thao tác",
+                          ].map((h, i) => (
+                            <th
+                              key={h}
+                              className={i === 0 ? "ps-4 py-3" : "py-3"}
+                              style={{
+                                backgroundColor: "#10393B",
+                                color: "#ffffff",
+                                fontSize: "0.8rem",
+                              }}
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPending.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={5}
+                              className="text-center text-muted py-5"
+                            >
+                              Không có bài đăng nào đang chờ duyệt.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredPending.map((item) => (
+                            <tr key={`${item.postType}-${item.id}`}>
+                              <td className="ps-4">
+                                <Badge bg={pendingTypeMeta[item.postType]?.bg}>
+                                  {pendingTypeMeta[item.postType]?.label}
+                                </Badge>
+                              </td>
+                              <td style={{ maxWidth: "380px" }}>
+                                <div className="fw-bold text-dark text-truncate">
+                                  {item.title}
+                                </div>
+                                <div className="text-secondary small text-truncate">
+                                  {item.content}
+                                </div>
+                              </td>
+                              <td>
+                                <div className="fw-semibold">{item.author}</div>
+                                <small className="text-muted">
+                                  {item.authorEmail}
+                                </small>
+                              </td>
+                              <td className="small text-secondary">
+                                {item.createdAt}
+                              </td>
+                              <td>
+                                <div className="d-flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="light"
+                                    title="Xem chi tiết"
+                                    onClick={() => {
+                                      setPendingViewItem(item);
+                                      setShowPendingView(true);
+                                    }}
+                                  >
+                                    <i className="bi bi-eye"></i>
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="border-0 text-white"
+                                    style={{ backgroundColor: primaryColor }}
+                                    onClick={() => handleApprove(item)}
+                                  >
+                                    <i className="bi bi-check-lg me-1"></i>Duyệt
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline-danger"
+                                    onClick={() => {
+                                      setDeleteTarget(item);
+                                      setShowDeleteModal(true);
+                                    }}
+                                  >
+                                    <i className="bi bi-trash me-1"></i>Xóa
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </Table>
+                  )}
                   {/* 1. BẢNG QUẢN LÝ LOST */}
                   {activeSection === "lost" && (
                     <Table hover className="align-middle mb-0">
@@ -1162,43 +1378,71 @@ const AdminPage = ({ user }) => {
                         <tr>
                           <th
                             className="ps-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             MÃ BÀI
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             BÀI ĐĂNG TÌM ĐỒ
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             DANH MỤC
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             ĐỊA ĐIỂM MẤT
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             NGƯỜI ĐĂNG & NGÀY
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TRẠNG THÁI
                           </th>
                           <th
                             className="text-end pe-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             THAO TÁC CRUD
                           </th>
@@ -1207,7 +1451,10 @@ const AdminPage = ({ user }) => {
                       <tbody>
                         {filteredLost.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="text-center py-4 text-muted">
+                            <td
+                              colSpan={7}
+                              className="text-center py-4 text-muted"
+                            >
                               Không có bài đăng Lost nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1240,21 +1487,29 @@ const AdminPage = ({ user }) => {
                                     {item.category}
                                   </span>
                                 </td>
-                                <td className="fw-medium text-dark">{item.location}</td>
+                                <td className="fw-medium text-dark">
+                                  {item.location}
+                                </td>
                                 <td>
                                   <div className="fw-semibold text-dark">
                                     {item.author}
                                   </div>
-                                  <small className="text-muted">{item.date}</small>
+                                  <small className="text-muted">
+                                    {item.date}
+                                  </small>
                                 </td>
                                 <td>
                                   <span
                                     className="px-3 py-1 rounded-pill fw-bold d-inline-block"
                                     style={{
                                       fontSize: "0.8rem",
-                                      backgroundColor: isFinding ? "#FEF3C7" : "#D1FAE5",
+                                      backgroundColor: isFinding
+                                        ? "#FEF3C7"
+                                        : "#D1FAE5",
                                       color: isFinding ? "#B45309" : "#065F46",
-                                      border: isFinding ? "1px solid #F59E0B" : "1px solid #10B981",
+                                      border: isFinding
+                                        ? "1px solid #F59E0B"
+                                        : "1px solid #10B981",
                                     }}
                                   >
                                     {isFinding ? "Đang tìm đồ" : "Đã tìm được"}
@@ -1312,43 +1567,71 @@ const AdminPage = ({ user }) => {
                         <tr>
                           <th
                             className="ps-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             MÃ BÀI
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             MÓN ĐỒ NHẶT ĐƯỢC
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             DANH MỤC
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             ĐỊA ĐIỂM NHẶT
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             NGƯỜI NHẶT & THỜI GIAN
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TRẠNG THÁI
                           </th>
                           <th
                             className="text-end pe-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             THAO TÁC CRUD
                           </th>
@@ -1357,7 +1640,10 @@ const AdminPage = ({ user }) => {
                       <tbody>
                         {filteredFound.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="text-center py-4 text-muted">
+                            <td
+                              colSpan={7}
+                              className="text-center py-4 text-muted"
+                            >
                               Không có bài đăng Found nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1405,24 +1691,36 @@ const AdminPage = ({ user }) => {
                                     {item.category}
                                   </span>
                                 </td>
-                                <td className="fw-medium text-dark">{item.location}</td>
+                                <td className="fw-medium text-dark">
+                                  {item.location}
+                                </td>
                                 <td>
                                   <div className="fw-semibold text-dark">
                                     {item.author}
                                   </div>
-                                  <small className="text-muted">{item.time}</small>
+                                  <small className="text-muted">
+                                    {item.time}
+                                  </small>
                                 </td>
                                 <td>
                                   <span
                                     className="px-3 py-1 rounded-pill fw-bold d-inline-block"
                                     style={{
                                       fontSize: "0.8rem",
-                                      backgroundColor: isUnclaimed ? "#FEF3C7" : "#D1FAE5",
-                                      color: isUnclaimed ? "#B45309" : "#065F46",
-                                      border: isUnclaimed ? "1px solid #F59E0B" : "1px solid #10B981",
+                                      backgroundColor: isUnclaimed
+                                        ? "#FEF3C7"
+                                        : "#D1FAE5",
+                                      color: isUnclaimed
+                                        ? "#B45309"
+                                        : "#065F46",
+                                      border: isUnclaimed
+                                        ? "1px solid #F59E0B"
+                                        : "1px solid #10B981",
                                     }}
                                   >
-                                    {isUnclaimed ? "Đang tìm chủ" : "Đã trao trả"}
+                                    {isUnclaimed
+                                      ? "Đang tìm chủ"
+                                      : "Đã trao trả"}
                                   </span>
                                 </td>
                                 <td className="text-end pe-4">
@@ -1474,43 +1772,71 @@ const AdminPage = ({ user }) => {
                         <tr>
                           <th
                             className="ps-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             MÃ BÀI
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TIÊU ĐỀ & NỘI DUNG
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             CHỦ ĐỀ
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TÁC GIẢ & NGÀY ĐĂNG
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TƯƠNG TÁC
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TRẠNG THÁI
                           </th>
                           <th
                             className="text-end pe-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             THAO TÁC CRUD
                           </th>
@@ -1519,7 +1845,10 @@ const AdminPage = ({ user }) => {
                       <tbody>
                         {filteredForum.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="text-center py-4 text-muted">
+                            <td
+                              colSpan={7}
+                              className="text-center py-4 text-muted"
+                            >
                               Không có bài viết diễn đàn nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1627,43 +1956,71 @@ const AdminPage = ({ user }) => {
                         <tr>
                           <th
                             className="ps-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             MÃ ĐG
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             NGƯỜI ĐÁNH GIÁ
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             SỐ SAO
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             NỘI DUNG NHẬN XÉT
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             NGÀY ĐĂNG
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             TRẠNG THÁI
                           </th>
                           <th
                             className="text-end pe-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             THAO TÁC CRUD
                           </th>
@@ -1672,7 +2029,10 @@ const AdminPage = ({ user }) => {
                       <tbody>
                         {filteredReviews.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="text-center py-4 text-muted">
+                            <td
+                              colSpan={7}
+                              className="text-center py-4 text-muted"
+                            >
                               Không có đánh giá nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1698,7 +2058,7 @@ const AdminPage = ({ user }) => {
                                         key={idx}
                                         className="bi bi-star-fill me-1"
                                       ></i>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               </td>
@@ -1708,7 +2068,9 @@ const AdminPage = ({ user }) => {
                                 </span>
                               </td>
                               <td>
-                                <small className="text-muted">{item.date}</small>
+                                <small className="text-muted">
+                                  {item.date}
+                                </small>
                               </td>
                               <td>
                                 <span
@@ -1716,16 +2078,22 @@ const AdminPage = ({ user }) => {
                                   style={{
                                     fontSize: "0.8rem",
                                     backgroundColor:
-                                      Number(item.rating) >= 4 ? "#D1FAE5" : "#FEF3C7",
+                                      Number(item.rating) >= 4
+                                        ? "#D1FAE5"
+                                        : "#FEF3C7",
                                     color:
-                                      Number(item.rating) >= 4 ? "#065F46" : "#B45309",
+                                      Number(item.rating) >= 4
+                                        ? "#065F46"
+                                        : "#B45309",
                                     border:
                                       Number(item.rating) >= 4
                                         ? "1px solid #10B981"
                                         : "1px solid #F59E0B",
                                   }}
                                 >
-                                  {Number(item.rating) >= 4 ? "Tích cực" : "Cần chú ý"}
+                                  {Number(item.rating) >= 4
+                                    ? "Tích cực"
+                                    : "Cần chú ý"}
                                 </span>
                               </td>
                               <td className="text-end pe-4">
@@ -1776,43 +2144,71 @@ const AdminPage = ({ user }) => {
                         <tr>
                           <th
                             className="ps-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             MÃ TK
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             HỌ TÊN & USERNAME
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             EMAIL & SĐT
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             CƠ SỞ
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             GIỚI TÍNH
                           </th>
                           <th
                             className="py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             VAI TRÒ & TRẠNG THÁI
                           </th>
                           <th
                             className="text-end pe-4 py-3"
-                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                            style={{
+                              backgroundColor: "#10393B",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
                           >
                             THAO TÁC CRUD
                           </th>
@@ -1821,7 +2217,10 @@ const AdminPage = ({ user }) => {
                       <tbody>
                         {userList.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="text-center py-4 text-muted">
+                            <td
+                              colSpan={7}
+                              className="text-center py-4 text-muted"
+                            >
                               Không tìm thấy tài khoản nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1938,7 +2337,9 @@ const AdminPage = ({ user }) => {
           <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
             <i
               className={`bi ${
-                formMode === "create" ? "bi-plus-circle-fill" : "bi-pencil-square"
+                formMode === "create"
+                  ? "bi-plus-circle-fill"
+                  : "bi-pencil-square"
               } me-2`}
               style={{ color: primaryColor }}
             ></i>
@@ -2495,9 +2896,7 @@ const AdminPage = ({ user }) => {
                   {viewItem.date || viewItem.time}
                 </p>
                 <p className="text-dark" style={{ whiteSpace: "pre-wrap" }}>
-                  {viewItem.content ||
-                    viewItem.description ||
-                    viewItem.comment}
+                  {viewItem.content || viewItem.description || viewItem.comment}
                 </p>
                 {viewItem.image && (
                   <Image
@@ -2528,9 +2927,86 @@ const AdminPage = ({ user }) => {
         </Modal>
       )}
 
+      {showPendingView && pendingViewItem && (
+        <Modal
+          show={showPendingView}
+          onHide={() => setShowPendingView(false)}
+          centered
+          size="lg"
+          contentClassName="border-0 shadow-lg rounded-4"
+        >
+          <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
+            <Modal.Title className="fw-bold text-dark">
+              Chi tiết bài chờ duyệt
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mx-3">
+            <Badge
+              bg={pendingTypeMeta[pendingViewItem.postType]?.bg}
+              className="mb-2"
+            >
+              {pendingTypeMeta[pendingViewItem.postType]?.label}
+            </Badge>
+            <h5 className="fw-bold">{pendingViewItem.title}</h5>
+            <p className="text-secondary small mb-2">
+              Người đăng: <strong>{pendingViewItem.author}</strong> (
+              {pendingViewItem.authorEmail}) · {pendingViewItem.createdAt}
+            </p>
+            <p className="text-secondary small mb-3">
+              {pendingViewItem.category && (
+                <>
+                  Danh mục: <strong>{pendingViewItem.category}</strong>
+                </>
+              )}
+              {pendingViewItem.location && (
+                <>
+                  {" "}
+                  · Địa điểm: <strong>{pendingViewItem.location}</strong>
+                </>
+              )}
+            </p>
+            {pendingViewItem.image && (
+              <Image
+                src={pendingViewItem.image}
+                fluid
+                rounded
+                className="mb-3"
+                style={{ maxHeight: "260px" }}
+              />
+            )}
+            <div style={{ whiteSpace: "pre-wrap" }}>
+              {pendingViewItem.content}
+            </div>
+          </Modal.Body>
+          <Modal.Footer className="border-0 pt-0 mb-3 mx-3">
+            <Button variant="light" onClick={() => setShowPendingView(false)}>
+              Đóng
+            </Button>
+            <Button
+              variant="outline-danger"
+              onClick={() => {
+                setShowPendingView(false);
+                setDeleteTarget(pendingViewItem);
+                setShowDeleteModal(true);
+              }}
+            >
+              Xóa
+            </Button>
+            <Button
+              className="text-white border-0"
+              style={{ backgroundColor: primaryColor }}
+              onClick={() => handleApprove(pendingViewItem)}
+            >
+              Duyệt bài
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+
       {/* ================= MODAL XÁC NHẬN XÓA (DELETE) ================= */}
       <Modal
         show={showDeleteModal}
+        onShow={() => setDeleteReason("")}
         onHide={() => setShowDeleteModal(false)}
         centered
         contentClassName="border-0 shadow-lg rounded-4"
@@ -2550,6 +3026,26 @@ const AdminPage = ({ user }) => {
               `#${deleteTarget?.id}`}
           </strong>{" "}
           khỏi cơ sở dữ liệu. Hành động này không thể hoàn tác!
+          {(activeSection === "pending" ||
+            ["lost", "found", "forum"].includes(activeSection)) && (
+            <Form.Group className="mt-3">
+              <Form.Label className="fw-semibold small text-dark">
+                Lý do xóa{" "}
+                <span className="text-muted fw-normal">
+                  (không bắt buộc – sẽ gửi cho sinh viên qua thông báo)
+                </span>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                maxLength={250}
+                placeholder="VD: Nội dung không phù hợp, thông tin trùng lặp..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="bg-light border-0"
+              />
+            </Form.Group>
+          )}
         </Modal.Body>
         <Modal.Footer className="border-0 pt-0 mb-3 mx-3">
           <Button variant="light" onClick={() => setShowDeleteModal(false)}>

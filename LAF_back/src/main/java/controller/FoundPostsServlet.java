@@ -1,7 +1,6 @@
 package controller;
 
 import dao.FoundPostDAO;
-import dao.ShareDAO;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -88,7 +87,7 @@ public class FoundPostsServlet extends HttpServlet {
 
             if (dao.addFoundPost(email, itemName, category, description, location, time, imageUrl)) {
                 result.put("success", true);
-                result.put("message", "Đăng tin nhặt được đồ thành công!");
+                result.put("message", "Đã gửi bài đăng! Bài sẽ hiển thị sau khi admin duyệt.");
             } else {
                 result.put("success", false);
                 result.put("message", "Lỗi khi đăng tin. Vui lòng thử lại!");

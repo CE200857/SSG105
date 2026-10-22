@@ -12,12 +12,12 @@ public class OverviewDAO extends DBContext {
 
         // Query truy vấn chuẩn xác theo bảng & ID trong CSDL LostAndFoundDB của bạn
         String query = "SELECT "
-                + "(SELECT COUNT(*) FROM LostPosts) AS totalLost, "
-                + "(SELECT COUNT(*) FROM LostPosts WHERE Status = 'Found') AS lostFound, "
-                + "(SELECT COUNT(*) FROM LostPosts WHERE Status = 'Not Found') AS lostNotFound, "
-                + "(SELECT COUNT(*) FROM FoundPosts) AS totalFound, "
-                + "(SELECT COUNT(*) FROM FoundPosts WHERE Status = 'Claimed') AS foundClaimed, "
-                + "(SELECT COUNT(*) FROM FoundPosts WHERE Status = 'Unclaimed') AS foundUnclaimed, "
+                + "(SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Approved') AS totalLost, "
+                + "(SELECT COUNT(*) FROM LostPosts WHERE Status = 'Found' AND ApprovalStatus = 'Approved') AS lostFound, "
+                + "(SELECT COUNT(*) FROM LostPosts WHERE Status = 'Not Found' AND ApprovalStatus = 'Approved') AS lostNotFound, "
+                + "(SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Approved') AS totalFound, "
+                + "(SELECT COUNT(*) FROM FoundPosts WHERE Status = 'Claimed' AND ApprovalStatus = 'Approved') AS foundClaimed, "
+                + "(SELECT COUNT(*) FROM FoundPosts WHERE Status = 'Unclaimed' AND ApprovalStatus = 'Approved') AS foundUnclaimed, "
                 + "(SELECT ISNULL(AVG(CAST(Rating AS FLOAT)), 0.0) FROM Reviews) AS avgRating, "
                 + "(SELECT COUNT(*) FROM Reviews) AS totalReviews";
 

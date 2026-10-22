@@ -1,3 +1,4 @@
+dao\ModerationDAO.class
 entity\Likes.class
 dao\ProfileDAO.class
 com\mycompany\laf_back\resources\TestResource.class

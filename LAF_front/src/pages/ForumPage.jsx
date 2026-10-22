@@ -217,7 +217,7 @@ const ForumPage = ({ user }) => {
         setNewContent("");
         setNewCategory("Mẹo campus");
         fetchPosts();
-        setTimeout(() => setShowModal(false), 1200);
+        setTimeout(() => setShowModal(false), 3000);
       } else {
         setSubmitMsg({ type: "danger", text: response.data.message });
       }

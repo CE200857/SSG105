@@ -43,7 +43,7 @@ const ProtectedRoute = ({ user, allowedRoles, children }) => {
 };
 
 // Sidebar bên trái chỉ xuất hiện khi tài khoản đăng nhập là Admin (Role 1)
-const AdminGlobalSidebar = ( ) => {
+const AdminGlobalSidebar = () => {
   const primaryColor = "#0C8B72";
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +52,11 @@ const AdminGlobalSidebar = ( ) => {
     location.pathname === "/admin" ? searchParams.get("tab") || "lost" : "";
 
   const adminMenus = [
+    {
+      key: "pending",
+      label: "Bài đăng chờ duyệt",
+      icon: "bi-hourglass-split",
+    },  
     {
       key: "lost",
       label: "Quản lý bài đăng Lost",

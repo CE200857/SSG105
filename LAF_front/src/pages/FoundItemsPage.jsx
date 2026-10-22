@@ -306,7 +306,7 @@ const FoundItemsPage = ({ user }) => {
         setSelectedImage(null);
         setImagePreview(null);
         fetchPosts();
-        setTimeout(() => setShowModal(false), 1500);
+        setTimeout(() => setShowModal(false), 3000);
       } else {
         setSubmitMsg({ type: "danger", text: response.data.message });
       }

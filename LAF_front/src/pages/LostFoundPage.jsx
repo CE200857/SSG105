@@ -308,6 +308,7 @@ const LostFoundPage = ({ user }) => {
         setSelectedImage(null);
         setImagePreview(null);
         fetchPosts();
+        alert(response.data.message);
       }
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
