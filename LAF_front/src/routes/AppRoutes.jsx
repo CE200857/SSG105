@@ -6,7 +6,6 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { Badge } from "react-bootstrap";
 import Login from "../components/DatNT/Login";
 import Register from "../components/DatNT/Register";
 import CreateProfile from "../components/DatNT/CreateProfile";
@@ -44,7 +43,7 @@ const ProtectedRoute = ({ user, allowedRoles, children }) => {
 };
 
 // Sidebar bên trái chỉ xuất hiện khi tài khoản đăng nhập là Admin (Role 1)
-const AdminGlobalSidebar = ({ user }) => {
+const AdminGlobalSidebar = ( ) => {
   const primaryColor = "#0C8B72";
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,44 +84,7 @@ const AdminGlobalSidebar = ({ user }) => {
       className="bg-white border-end shadow-sm flex-shrink-0 text-start d-none d-lg-block"
       style={{ width: "270px", minHeight: "calc(100vh - 70px)" }}
     >
-      <div className="p-3 sticky-top" style={{ top: "75px" }}>
-        <div
-          className="d-flex align-items-center gap-3 p-3 mb-3 rounded-4"
-          style={{ backgroundColor: "#EAF5F3" }}
-        >
-          <div
-            className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm flex-shrink-0"
-            style={{
-              width: "42px",
-              height: "42px",
-              backgroundColor: primaryColor,
-            }}
-          >
-            {user?.fullName ? user.fullName.charAt(0) : "A"}
-          </div>
-          <div className="text-truncate">
-            <Badge
-              bg="success"
-              className="mb-1 rounded-pill"
-              style={{ backgroundColor: primaryColor, fontSize: "0.68rem" }}
-            >
-              Administrator
-            </Badge>
-            <h6
-              className="fw-bold mb-0 text-dark text-truncate"
-              style={{ fontSize: "0.9rem" }}
-            >
-              {user?.fullName || "Quản trị viên"}
-            </h6>
-            <small
-              className="text-muted text-truncate d-block"
-              style={{ fontSize: "0.75rem" }}
-            >
-              {user?.email}
-            </small>
-          </div>
-        </div>
-
+      <div className="p-3 sticky-top" style={{ top: "80px", zIndex: 1000 }}>
         <div className="px-2 mb-2">
           <small
             className="fw-bold text-uppercase text-secondary"

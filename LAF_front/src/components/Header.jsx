@@ -131,7 +131,13 @@ const Header = ({ user, setUser }) => {
   };
 
   return (
-    <Navbar bg="white" expand="lg" className="shadow-sm py-2" sticky="top">
+    <Navbar
+      bg="white"
+      expand="lg"
+      className="shadow-sm py-2"
+      sticky="top"
+      style={{ zIndex: 1040 }}
+    >
       <Container fluid className="px-4">
         <Navbar.Brand
           as={Link}
@@ -355,7 +361,8 @@ const Header = ({ user, setUser }) => {
                         to="/admin?tab=lost"
                         className="py-2 fw-semibold text-success"
                       >
-                        <i className="bi bi-speedometer2 me-2"></i> Quản trị hệ thống
+                        <i className="bi bi-speedometer2 me-2"></i> Quản trị hệ
+                        thống
                       </Dropdown.Item>
                     )}
                     <Dropdown.Item

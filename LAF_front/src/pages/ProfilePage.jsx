@@ -572,7 +572,7 @@ const ProfilePage = ({ user }) => {
           <Col lg={4}>
             <Card
               className="border-0 shadow-sm rounded-4 p-4 text-start sticky-top"
-              style={{ top: "90px" }}
+              style={{ top: "85px", zIndex: 1000 }}
             >
               <h5 className="fw-bold mb-3" style={{ color: "#10393B" }}>
                 Thông tin cá nhân

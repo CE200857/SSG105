@@ -562,7 +562,7 @@ const AdminPage = ({ user }) => {
         <Row className="g-4">
 
           {/* ================= CỘT PHẢI: THỐNG KÊ, BỘ LỌC RIÊNG & BẢNG DỮ LIỆU ================= */}
-          <Col lg="{12}">
+          <Col lg={12}>
             {/* 5 Thẻ Thống Kê Nhanh */}
             <Row className="g-3 mb-4">
               {sidebarItems.map((st) => (
@@ -1158,15 +1158,50 @@ const AdminPage = ({ user }) => {
                   {/* 1. BẢNG QUẢN LÝ LOST */}
                   {activeSection === "lost" && (
                     <Table hover className="align-middle mb-0">
-                      <thead className="bg-light text-secondary small text-uppercase">
+                      <thead>
                         <tr>
-                          <th className="ps-4 py-3">ID</th>
-                          <th>Bài đăng tìm đồ</th>
-                          <th>Danh mục</th>
-                          <th>Địa điểm</th>
-                          <th>Người đăng</th>
-                          <th>Trạng thái</th>
-                          <th className="text-end pe-4">Thao tác CRUD</th>
+                          <th
+                            className="ps-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            MÃ BÀI
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            BÀI ĐĂNG TÌM ĐỒ
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            DANH MỤC
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            ĐỊA ĐIỂM MẤT
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            NGƯỜI ĐĂNG & NGÀY
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TRẠNG THÁI
+                          </th>
+                          <th
+                            className="text-end pe-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            THAO TÁC CRUD
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1177,87 +1212,94 @@ const AdminPage = ({ user }) => {
                             </td>
                           </tr>
                         ) : (
-                          filteredLost.map((item) => (
-                            <tr key={item.id}>
-                              <td className="ps-4 fw-bold text-secondary">
-                                #{item.id}
-                              </td>
-                              <td style={{ maxWidth: "260px" }}>
-                                <div className="fw-bold text-dark text-truncate">
-                                  {item.title}
-                                </div>
-                                <small className="text-muted text-truncate d-block">
-                                  {item.content}
-                                </small>
-                              </td>
-                              <td>
-                                <Badge bg="light" text="dark" className="border">
-                                  {item.category}
-                                </Badge>
-                              </td>
-                              <td>{item.location}</td>
-                              <td>
-                                <div className="fw-semibold text-dark">
-                                  {item.author}
-                                </div>
-                                <small className="text-muted">{item.date}</small>
-                              </td>
-                              <td>
-                                <Badge
-                                  bg={
-                                    item.status === "Đang tìm đồ"
-                                      ? "warning"
-                                      : "success"
-                                  }
-                                  text={
-                                    item.status === "Đang tìm đồ"
-                                      ? "dark"
-                                      : "white"
-                                  }
-                                  className="rounded-pill px-3 py-1"
-                                >
-                                  {item.status}
-                                </Badge>
-                              </td>
-                              <td className="text-end pe-4">
-                                <div className="d-flex justify-content-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="light"
-                                    onClick={() => {
-                                      setViewItem(item);
-                                      setShowViewModal(true);
+                          filteredLost.map((item) => {
+                            const isFinding = item.status === "Đang tìm đồ";
+                            return (
+                              <tr key={item.id}>
+                                <td className="ps-4 fw-bold text-secondary">
+                                  #{item.id}
+                                </td>
+                                <td style={{ maxWidth: "260px" }}>
+                                  <div className="fw-bold text-dark text-truncate">
+                                    {item.title}
+                                  </div>
+                                  <small className="text-muted text-truncate d-block">
+                                    {item.content}
+                                  </small>
+                                </td>
+                                <td>
+                                  <span
+                                    className="px-3 py-1 rounded-pill fw-semibold d-inline-block"
+                                    style={{
+                                      backgroundColor: "#F1F5F9",
+                                      color: "#334155",
+                                      border: "1px solid #CBD5E1",
+                                      fontSize: "0.8rem",
                                     }}
-                                    title="Xem chi tiết"
                                   >
-                                    <i className="bi bi-eye-fill text-secondary"></i>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="light"
-                                    onClick={() => handleOpenEdit(item)}
-                                    title="Chỉnh sửa"
-                                  >
-                                    <i
-                                      className="bi bi-pencil-square"
-                                      style={{ color: primaryColor }}
-                                    ></i>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="light"
-                                    onClick={() => {
-                                      setDeleteTarget(item);
-                                      setShowDeleteModal(true);
+                                    {item.category}
+                                  </span>
+                                </td>
+                                <td className="fw-medium text-dark">{item.location}</td>
+                                <td>
+                                  <div className="fw-semibold text-dark">
+                                    {item.author}
+                                  </div>
+                                  <small className="text-muted">{item.date}</small>
+                                </td>
+                                <td>
+                                  <span
+                                    className="px-3 py-1 rounded-pill fw-bold d-inline-block"
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      backgroundColor: isFinding ? "#FEF3C7" : "#D1FAE5",
+                                      color: isFinding ? "#B45309" : "#065F46",
+                                      border: isFinding ? "1px solid #F59E0B" : "1px solid #10B981",
                                     }}
-                                    title="Xóa"
                                   >
-                                    <i className="bi bi-trash3-fill text-danger"></i>
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
+                                    {isFinding ? "Đang tìm đồ" : "Đã tìm được"}
+                                  </span>
+                                </td>
+                                <td className="text-end pe-4">
+                                  <div className="d-flex justify-content-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="light"
+                                      onClick={() => {
+                                        setViewItem(item);
+                                        setShowViewModal(true);
+                                      }}
+                                      title="Xem chi tiết"
+                                    >
+                                      <i className="bi bi-eye-fill text-secondary"></i>
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="light"
+                                      onClick={() => handleOpenEdit(item)}
+                                      title="Chỉnh sửa"
+                                    >
+                                      <i
+                                        className="bi bi-pencil-square"
+                                        style={{ color: primaryColor }}
+                                      ></i>
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="light"
+                                      onClick={() => {
+                                        setDeleteTarget(item);
+                                        setShowDeleteModal(true);
+                                      }}
+                                      title="Xóa"
+                                    >
+                                      <i className="bi bi-trash3-fill text-danger"></i>
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
                         )}
                       </tbody>
                     </Table>
@@ -1266,15 +1308,50 @@ const AdminPage = ({ user }) => {
                   {/* 2. BẢNG QUẢN LÝ FOUND */}
                   {activeSection === "found" && (
                     <Table hover className="align-middle mb-0">
-                      <thead className="bg-light text-secondary small text-uppercase">
+                      <thead>
                         <tr>
-                          <th className="ps-4 py-3">ID</th>
-                          <th>Món đồ nhặt được</th>
-                          <th>Danh mục</th>
-                          <th>Địa điểm nhặt</th>
-                          <th>Người nhặt</th>
-                          <th>Trạng thái</th>
-                          <th className="text-end pe-4">Thao tác CRUD</th>
+                          <th
+                            className="ps-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            MÃ BÀI
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            MÓN ĐỒ NHẶT ĐƯỢC
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            DANH MỤC
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            ĐỊA ĐIỂM NHẶT
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            NGƯỜI NHẶT & THỜI GIAN
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TRẠNG THÁI
+                          </th>
+                          <th
+                            className="text-end pe-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            THAO TÁC CRUD
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1285,101 +1362,106 @@ const AdminPage = ({ user }) => {
                             </td>
                           </tr>
                         ) : (
-                          filteredFound.map((item) => (
-                            <tr key={item.id}>
-                              <td className="ps-4 fw-bold text-secondary">
-                                #{item.id}
-                              </td>
-                              <td style={{ maxWidth: "260px" }}>
-                                <div className="d-flex align-items-center gap-2">
-                                  {item.image && (
-                                    <Image
-                                      src={item.image}
-                                      rounded
-                                      style={{
-                                        width: "42px",
-                                        height: "42px",
-                                        objectFit: "cover",
-                                      }}
-                                    />
-                                  )}
-                                  <div className="text-truncate">
-                                    <div className="fw-bold text-dark text-truncate">
-                                      {item.itemName}
+                          filteredFound.map((item) => {
+                            const isUnclaimed = item.status === "Unclaimed";
+                            return (
+                              <tr key={item.id}>
+                                <td className="ps-4 fw-bold text-secondary">
+                                  #{item.id}
+                                </td>
+                                <td style={{ maxWidth: "260px" }}>
+                                  <div className="d-flex align-items-center gap-2">
+                                    {item.image && (
+                                      <Image
+                                        src={item.image}
+                                        rounded
+                                        style={{
+                                          width: "42px",
+                                          height: "42px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                    )}
+                                    <div className="text-truncate">
+                                      <div className="fw-bold text-dark text-truncate">
+                                        {item.itemName}
+                                      </div>
+                                      <small className="text-muted text-truncate d-block">
+                                        {item.description}
+                                      </small>
                                     </div>
-                                    <small className="text-muted text-truncate d-block">
-                                      {item.description}
-                                    </small>
                                   </div>
-                                </div>
-                              </td>
-                              <td>
-                                <Badge bg="light" text="dark" className="border">
-                                  {item.category}
-                                </Badge>
-                              </td>
-                              <td>{item.location}</td>
-                              <td>
-                                <div className="fw-semibold text-dark">
-                                  {item.author}
-                                </div>
-                                <small className="text-muted">{item.time}</small>
-                              </td>
-                              <td>
-                                <Badge
-                                  bg={
-                                    item.status === "Unclaimed"
-                                      ? "warning"
-                                      : "success"
-                                  }
-                                  text={
-                                    item.status === "Unclaimed"
-                                      ? "dark"
-                                      : "white"
-                                  }
-                                  className="rounded-pill px-3 py-1"
-                                >
-                                  {item.status === "Unclaimed"
-                                    ? "Đang tìm chủ"
-                                    : "Đã trao trả"}
-                                </Badge>
-                              </td>
-                              <td className="text-end pe-4">
-                                <div className="d-flex justify-content-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="light"
-                                    onClick={() => {
-                                      setViewItem(item);
-                                      setShowViewModal(true);
+                                </td>
+                                <td>
+                                  <span
+                                    className="px-3 py-1 rounded-pill fw-semibold d-inline-block"
+                                    style={{
+                                      backgroundColor: "#F1F5F9",
+                                      color: "#334155",
+                                      border: "1px solid #CBD5E1",
+                                      fontSize: "0.8rem",
                                     }}
                                   >
-                                    <i className="bi bi-eye-fill text-secondary"></i>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="light"
-                                    onClick={() => handleOpenEdit(item)}
-                                  >
-                                    <i
-                                      className="bi bi-pencil-square"
-                                      style={{ color: primaryColor }}
-                                    ></i>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="light"
-                                    onClick={() => {
-                                      setDeleteTarget(item);
-                                      setShowDeleteModal(true);
+                                    {item.category}
+                                  </span>
+                                </td>
+                                <td className="fw-medium text-dark">{item.location}</td>
+                                <td>
+                                  <div className="fw-semibold text-dark">
+                                    {item.author}
+                                  </div>
+                                  <small className="text-muted">{item.time}</small>
+                                </td>
+                                <td>
+                                  <span
+                                    className="px-3 py-1 rounded-pill fw-bold d-inline-block"
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      backgroundColor: isUnclaimed ? "#FEF3C7" : "#D1FAE5",
+                                      color: isUnclaimed ? "#B45309" : "#065F46",
+                                      border: isUnclaimed ? "1px solid #F59E0B" : "1px solid #10B981",
                                     }}
                                   >
-                                    <i className="bi bi-trash3-fill text-danger"></i>
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
+                                    {isUnclaimed ? "Đang tìm chủ" : "Đã trao trả"}
+                                  </span>
+                                </td>
+                                <td className="text-end pe-4">
+                                  <div className="d-flex justify-content-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="light"
+                                      onClick={() => {
+                                        setViewItem(item);
+                                        setShowViewModal(true);
+                                      }}
+                                    >
+                                      <i className="bi bi-eye-fill text-secondary"></i>
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="light"
+                                      onClick={() => handleOpenEdit(item)}
+                                    >
+                                      <i
+                                        className="bi bi-pencil-square"
+                                        style={{ color: primaryColor }}
+                                      ></i>
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="light"
+                                      onClick={() => {
+                                        setDeleteTarget(item);
+                                        setShowDeleteModal(true);
+                                      }}
+                                    >
+                                      <i className="bi bi-trash3-fill text-danger"></i>
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
                         )}
                       </tbody>
                     </Table>
@@ -1388,20 +1470,56 @@ const AdminPage = ({ user }) => {
                   {/* 3. BẢNG QUẢN LÝ FORUM */}
                   {activeSection === "forum" && (
                     <Table hover className="align-middle mb-0">
-                      <thead className="bg-light text-secondary small text-uppercase">
+                      <thead>
                         <tr>
-                          <th className="ps-4 py-3">ID</th>
-                          <th>Tiêu đề & Nội dung</th>
-                          <th>Chủ đề</th>
-                          <th>Tác giả</th>
-                          <th>Tương tác</th>
-                          <th className="text-end pe-4">Thao tác CRUD</th>
+                          <th
+                            className="ps-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            MÃ BÀI
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TIÊU ĐỀ & NỘI DUNG
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            CHỦ ĐỀ
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TÁC GIẢ & NGÀY ĐĂNG
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TƯƠNG TÁC
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TRẠNG THÁI
+                          </th>
+                          <th
+                            className="text-end pe-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            THAO TÁC CRUD
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredForum.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="text-center py-4 text-muted">
+                            <td colSpan={7} className="text-center py-4 text-muted">
                               Không có bài viết diễn đàn nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1411,7 +1529,7 @@ const AdminPage = ({ user }) => {
                               <td className="ps-4 fw-bold text-secondary">
                                 #{item.id}
                               </td>
-                              <td style={{ maxWidth: "300px" }}>
+                              <td style={{ maxWidth: "280px" }}>
                                 <div className="fw-bold text-dark text-truncate">
                                   {item.title}
                                 </div>
@@ -1420,9 +1538,17 @@ const AdminPage = ({ user }) => {
                                 </small>
                               </td>
                               <td>
-                                <Badge bg="success" className="rounded-pill px-3">
+                                <span
+                                  className="px-3 py-1 rounded-pill fw-semibold d-inline-block"
+                                  style={{
+                                    backgroundColor: "#E0F2FE",
+                                    color: "#0369A1",
+                                    border: "1px solid #7DD3FC",
+                                    fontSize: "0.8rem",
+                                  }}
+                                >
                                   {item.category}
-                                </Badge>
+                                </span>
                               </td>
                               <td>
                                 <div className="fw-semibold text-dark">
@@ -1433,12 +1559,25 @@ const AdminPage = ({ user }) => {
                                 </small>
                               </td>
                               <td>
-                                <small className="text-secondary">
+                                <small className="text-secondary fw-medium">
                                   <i className="bi bi-hand-thumbs-up me-1"></i>
                                   {item.likes || 0} •{" "}
                                   <i className="bi bi-chat-dots ms-1 me-1"></i>
                                   {(item.comments || []).length}
                                 </small>
+                              </td>
+                              <td>
+                                <span
+                                  className="px-3 py-1 rounded-pill fw-bold d-inline-block"
+                                  style={{
+                                    fontSize: "0.8rem",
+                                    backgroundColor: "#D1FAE5",
+                                    color: "#065F46",
+                                    border: "1px solid #10B981",
+                                  }}
+                                >
+                                  Đang hiển thị
+                                </span>
                               </td>
                               <td className="text-end pe-4">
                                 <div className="d-flex justify-content-end gap-2">
@@ -1484,20 +1623,56 @@ const AdminPage = ({ user }) => {
                   {/* 4. BẢNG QUẢN LÝ REVIEW */}
                   {activeSection === "reviews" && (
                     <Table hover className="align-middle mb-0">
-                      <thead className="bg-light text-secondary small text-uppercase">
+                      <thead>
                         <tr>
-                          <th className="ps-4 py-3">ID</th>
-                          <th>Người đánh giá</th>
-                          <th>Số sao</th>
-                          <th>Nội dung nhận xét</th>
-                          <th>Ngày đăng</th>
-                          <th className="text-end pe-4">Thao tác CRUD</th>
+                          <th
+                            className="ps-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            MÃ ĐG
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            NGƯỜI ĐÁNH GIÁ
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            SỐ SAO
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            NỘI DUNG NHẬN XÉT
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            NGÀY ĐĂNG
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            TRẠNG THÁI
+                          </th>
+                          <th
+                            className="text-end pe-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            THAO TÁC CRUD
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredReviews.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="text-center py-4 text-muted">
+                            <td colSpan={7} className="text-center py-4 text-muted">
                               Không có đánh giá nào khớp với bộ lọc.
                             </td>
                           </tr>
@@ -1527,13 +1702,31 @@ const AdminPage = ({ user }) => {
                                   )}
                                 </div>
                               </td>
-                              <td style={{ maxWidth: "340px" }}>
+                              <td style={{ maxWidth: "300px" }}>
                                 <span className="text-secondary">
                                   {item.comment}
                                 </span>
                               </td>
                               <td>
                                 <small className="text-muted">{item.date}</small>
+                              </td>
+                              <td>
+                                <span
+                                  className="px-3 py-1 rounded-pill fw-bold d-inline-block"
+                                  style={{
+                                    fontSize: "0.8rem",
+                                    backgroundColor:
+                                      Number(item.rating) >= 4 ? "#D1FAE5" : "#FEF3C7",
+                                    color:
+                                      Number(item.rating) >= 4 ? "#065F46" : "#B45309",
+                                    border:
+                                      Number(item.rating) >= 4
+                                        ? "1px solid #10B981"
+                                        : "1px solid #F59E0B",
+                                  }}
+                                >
+                                  {Number(item.rating) >= 4 ? "Tích cực" : "Cần chú ý"}
+                                </span>
                               </td>
                               <td className="text-end pe-4">
                                 <div className="d-flex justify-content-end gap-2">
@@ -1579,15 +1772,50 @@ const AdminPage = ({ user }) => {
                   {/* 5. BẢNG QUẢN LÝ ACCOUNT STUDENT */}
                   {activeSection === "users" && (
                     <Table hover className="align-middle mb-0">
-                      <thead className="bg-light text-secondary small text-uppercase">
+                      <thead>
                         <tr>
-                          <th className="ps-4 py-3">ID</th>
-                          <th>Họ tên & Username</th>
-                          <th>Email & SĐT</th>
-                          <th>Cơ sở</th>
-                          <th>Giới tính</th>
-                          <th>Vai trò</th>
-                          <th className="text-end pe-4">Thao tác CRUD</th>
+                          <th
+                            className="ps-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            MÃ TK
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            HỌ TÊN & USERNAME
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            EMAIL & SĐT
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            CƠ SỞ
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            GIỚI TÍNH
+                          </th>
+                          <th
+                            className="py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            VAI TRÒ & TRẠNG THÁI
+                          </th>
+                          <th
+                            className="text-end pe-4 py-3"
+                            style={{ backgroundColor: "#10393B", color: "#ffffff", fontSize: "0.8rem" }}
+                          >
+                            THAO TÁC CRUD
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1620,12 +1848,35 @@ const AdminPage = ({ user }) => {
                               <td>{u.campus}</td>
                               <td>{u.gender}</td>
                               <td>
-                                <Badge
-                                  bg={u.roleId === 1 ? "danger" : "primary"}
-                                  className="rounded-pill px-3 py-1"
-                                >
-                                  {u.roleId === 1 ? "Admin" : "Student"}
-                                </Badge>
+                                <div className="d-flex align-items-center gap-1 flex-wrap">
+                                  <span
+                                    className="px-3 py-1 rounded-pill fw-bold"
+                                    style={{
+                                      fontSize: "0.78rem",
+                                      backgroundColor:
+                                        u.roleId === 1 ? "#FEE2E2" : "#E0F2FE",
+                                      color:
+                                        u.roleId === 1 ? "#991B1B" : "#075985",
+                                      border:
+                                        u.roleId === 1
+                                          ? "1px solid #F87171"
+                                          : "1px solid #38BDF8",
+                                    }}
+                                  >
+                                    {u.roleId === 1 ? "Admin" : "Student"}
+                                  </span>
+                                  <span
+                                    className="px-2 py-1 rounded-pill fw-semibold"
+                                    style={{
+                                      fontSize: "0.75rem",
+                                      backgroundColor: "#D1FAE5",
+                                      color: "#065F46",
+                                      border: "1px solid #10B981",
+                                    }}
+                                  >
+                                    Đang hoạt động
+                                  </span>
+                                </div>
                               </td>
                               <td className="text-end pe-4">
                                 <div className="d-flex justify-content-end gap-2">
