@@ -91,6 +91,8 @@ const Header = ({ user, setUser }) => {
       ),
     );
 
+    if (notif.type === "POST_DELETED") return;
+
     if (notif.postType === "lost") {
       navigate("/lost-found", { state: { openPostId: notif.postId } });
     } else if (notif.postType === "found") {
@@ -125,13 +127,23 @@ const Header = ({ user, setUser }) => {
         return "bi-chat-dots-fill text-success";
       case "SHARE":
         return "bi-share-fill text-info";
+      case "POST_APPROVED":
+        return "bi-check-circle-fill text-success";
+      case "POST_DELETED":
+        return "bi-trash3-fill text-danger";
       default:
         return "bi-bell-fill text-warning";
     }
   };
 
   return (
-    <Navbar bg="white" expand="lg" className="shadow-sm py-2" sticky="top">
+    <Navbar
+      bg="white"
+      expand="lg"
+      className="shadow-sm py-2"
+      sticky="top"
+      style={{ zIndex: 1040 }}
+    >
       <Container fluid className="px-4">
         <Navbar.Brand
           as={Link}
@@ -355,7 +367,8 @@ const Header = ({ user, setUser }) => {
                         to="/admin?tab=lost"
                         className="py-2 fw-semibold text-success"
                       >
-                        <i className="bi bi-speedometer2 me-2"></i> Quản trị hệ thống
+                        <i className="bi bi-speedometer2 me-2"></i> Quản trị hệ
+                        thống
                       </Dropdown.Item>
                     )}
                     <Dropdown.Item

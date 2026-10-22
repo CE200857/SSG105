@@ -93,7 +93,7 @@ public class LostPostsServlet extends HttpServlet {
             String imageUrl = request.getParameter("imageUrl");
             boolean ok = dao.addLostPost(email, title, category, content, location, time, imageUrl);
             result.put("success", ok);
-            result.put("message", ok ? "Đăng tin tìm đồ thành công!" : "Lỗi khi đăng bài!");
+              result.put("message", ok ? "Đã gửi bài đăng! Bài sẽ hiển thị sau khi admin duyệt." : "Lỗi khi đăng bài!");
         }
 
         out.print(new Gson().toJson(result));

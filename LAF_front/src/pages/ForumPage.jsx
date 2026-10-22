@@ -217,7 +217,7 @@ const ForumPage = ({ user }) => {
         setNewContent("");
         setNewCategory("Mẹo campus");
         fetchPosts();
-        setTimeout(() => setShowModal(false), 1200);
+        setTimeout(() => setShowModal(false), 3000);
       } else {
         setSubmitMsg({ type: "danger", text: response.data.message });
       }
@@ -565,7 +565,7 @@ const ForumPage = ({ user }) => {
           <Col lg={3}>
             <Card
               className="border-0 shadow-sm rounded-4 p-4 text-start sticky-top"
-              style={{ top: "90px" }}
+              style={{ top: "85px", zIndex: 1000 }}
             >
               <h6 className="fw-bold text-dark mb-3">Lọc theo chủ đề</h6>
               <div className="d-flex flex-column gap-2">
@@ -1063,79 +1063,82 @@ const ForumPage = ({ user }) => {
             style={{ borderRadius: "20px", overflow: "hidden" }}
           >
             <Modal.Header closeButton className="border-0 pb-2 mt-2 mx-3">
-              <div
-                className="d-flex align-items-center gap-3"
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  setShowDetailModal(false);
-                  handleViewUserProfile(
-                    selectedPostDetail.fullName,
-                    selectedPostDetail.username
-                  );
-                }}
-              >
+              <div className="d-flex align-items-center justify-content-between w-100 me-2">
                 <div
-                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                  style={{
-                    width: "45px",
-                    height: "45px",
-                    backgroundColor: primaryColor,
+                  className="d-flex align-items-center gap-3"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleViewUserProfile(
+                      selectedPostDetail.fullName,
+                      selectedPostDetail.username
+                    );
                   }}
                 >
-                  {selectedPostDetail.fullName
-                    ? selectedPostDetail.fullName.charAt(0)
-                    : "U"}
+                  <div
+                    className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      backgroundColor: primaryColor,
+                    }}
+                  >
+                    {selectedPostDetail.fullName
+                      ? selectedPostDetail.fullName.charAt(0)
+                      : "U"}
+                  </div>
+                  <div>
+                    <h5 className="fw-bold mb-0 text-dark hover-primary">
+                      {selectedPostDetail.fullName}
+                    </h5>
+                    <span className="text-muted" style={{ fontSize: "0.85rem" }}>
+                      @{selectedPostDetail.username} • {selectedPostDetail.date}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h5 className="fw-bold mb-0 text-dark hover-primary">
-                    {selectedPostDetail.fullName}
-                  </h5>
-                  <span className="text-muted" style={{ fontSize: "0.85rem" }}>
-                    @{selectedPostDetail.username} • {selectedPostDetail.date}
-                  </span>
+
+                <div className="d-flex align-items-center gap-2">
+                  <Badge
+                    bg={getBadgeVariant(selectedPostDetail.category)}
+                    className="rounded-pill px-3 py-2 fw-semibold"
+                  >
+                    {selectedPostDetail.category}
+                  </Badge>
+
+                  {isOwner(selectedPostDetail) && (
+                    <Dropdown align="end">
+                      <Dropdown.Toggle
+                        variant="light"
+                        size="sm"
+                        className="rounded-circle border-0 shadow-sm p-0 d-flex align-items-center justify-content-center no-caret"
+                        style={{ width: "34px", height: "34px" }}
+                      >
+                        <i className="bi bi-three-dots fs-5 text-secondary"></i>
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu className="shadow border-0 rounded-3">
+                        <Dropdown.Item
+                          onClick={(e) =>
+                            handleOpenEditModal(selectedPostDetail, e)
+                          }
+                          className="py-2"
+                        >
+                          <i className="bi bi-pencil-square me-2 text-primary"></i>
+                          Chỉnh sửa bài viết
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            setSelectedPostId(selectedPostDetail.id);
+                            setShowDeleteModal(true);
+                          }}
+                          className="py-2 text-danger"
+                        >
+                          <i className="bi bi-trash3-fill me-2"></i>
+                          Xóa bài viết
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  )}
                 </div>
-              </div>
-
-              <div className="ms-auto d-flex align-items-center gap-2 me-2">
-                <Badge
-                  bg={getBadgeVariant(selectedPostDetail.category)}
-                  className="rounded-pill px-3 py-2 fw-semibold"
-                >
-                  {selectedPostDetail.category}
-                </Badge>
-
-                {isOwner(selectedPostDetail) && (
-                  <Dropdown align="end">
-                    <Dropdown.Toggle
-                      variant="light"
-                      size="sm"
-                      className="rounded-circle border-0 shadow-none p-1"
-                      style={{ width: "32px", height: "32px" }}
-                    >
-                      <i className="bi bi-three-dots fs-5 text-secondary"></i>
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu className="shadow border-0 rounded-3">
-                      <Dropdown.Item
-                        onClick={(e) =>
-                          handleOpenEditModal(selectedPostDetail, e)
-                        }
-                      >
-                        <i className="bi bi-pencil-square me-2 text-primary"></i>
-                        Chỉnh sửa bài viết
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => {
-                          setSelectedPostId(selectedPostDetail.id);
-                          setShowDeleteModal(true);
-                        }}
-                        className="text-danger"
-                      >
-                        <i className="bi bi-trash3-fill me-2"></i>
-                        Xóa bài viết
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                )}
               </div>
             </Modal.Header>
 

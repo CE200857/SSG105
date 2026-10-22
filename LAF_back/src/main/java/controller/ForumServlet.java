@@ -90,7 +90,7 @@ public class ForumServlet extends HttpServlet {
 
             if (dao.addForumPost(email, title, category, content)) {
                 result.put("success", true);
-                result.put("message", "Đăng bài viết thành công!");
+                result.put("message", "Đã gửi bài viết! Bài sẽ hiển thị sau khi admin duyệt.");
             } else {
                 result.put("success", false);
                 result.put("message", "Lỗi khi đăng bài. Vui lòng thử lại!");

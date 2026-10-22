@@ -10,19 +10,19 @@ import java.util.List;
 import java.util.Map;
 
 public class FoundPostDAO extends DBContext {
-    
+
     public List<Map<String, Object>> getFoundPosts(String keyword, String category, String location, String sort, String currentUserEmail) {
         List<Map<String, Object>> list = new ArrayList<>();
-        
+
         StringBuilder query = new StringBuilder(
-            "SELECT f.FoundPostID, f.Category, f.ItemName, f.Description, f.LocationFound, " +
-            "CONVERT(VARCHAR, f.TimeFound, 103) + ' - ' + CONVERT(VARCHAR, f.TimeFound, 108) as TimeFound, " +
-            "f.Status, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, " +
-            "(SELECT COUNT(*) FROM FoundLikes fl WHERE fl.FoundPostID = f.FoundPostID) as LikesCount, " +
-            "(SELECT COUNT(*) FROM FoundLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.FoundPostID = f.FoundPostID AND u2.Email = ?) as UserLiked " +
-            "FROM FoundPosts f " +
-            "JOIN Users u ON f.UserID = u.UserID " +
-            "LEFT JOIN FoundImages i ON f.FoundPostID = i.FoundPostID WHERE 1=1 "
+                "SELECT f.FoundPostID, f.Category, f.ItemName, f.Description, f.LocationFound, "
+                + "CONVERT(VARCHAR, f.TimeFound, 103) + ' - ' + CONVERT(VARCHAR, f.TimeFound, 108) as TimeFound, "
+                + "f.Status, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
+                + "(SELECT COUNT(*) FROM FoundLikes fl WHERE fl.FoundPostID = f.FoundPostID) as LikesCount, "
+                + "(SELECT COUNT(*) FROM FoundLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.FoundPostID = f.FoundPostID AND u2.Email = ?) as UserLiked "
+                + "FROM FoundPosts f "
+                + "JOIN Users u ON f.UserID = u.UserID "
+                + "LEFT JOIN FoundImages i ON f.FoundPostID = i.FoundPostID WHERE 1=1 AND f.ApprovalStatus = 'Approved' "
         );
 
         List<Object> params = new ArrayList<>();
@@ -41,7 +41,7 @@ public class FoundPostDAO extends DBContext {
             query.append("AND f.LocationFound = ? ");
             params.add(location.trim());
         }
-        
+
         if ("oldest".equals(sort)) {
             query.append("ORDER BY f.CreatedAt ASC");
         } else {
@@ -71,11 +71,11 @@ public class FoundPostDAO extends DBContext {
                 map.put("image", rs.getString("ImageURL") != null ? rs.getString("ImageURL") : "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80");
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
-                
+
                 List<Map<String, Object>> comments = getCommentsByPostId(postId, currentUserEmail);
                 map.put("comments", comments);
                 map.put("commentsCount", comments.size());
-                
+
                 list.add(map);
             }
         } catch (Exception e) {
@@ -86,13 +86,13 @@ public class FoundPostDAO extends DBContext {
 
     public List<Map<String, Object>> getCommentsByPostId(int foundPostId, String currentUserEmail) {
         List<Map<String, Object>> comments = new ArrayList<>();
-        String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, " +
-                       "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, " +
-                       "u.FullName, u.Username, " +
-                       "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'found' AND cl.CommentID = c.CommentID) as LikesCount, " +
-                       "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'found' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked " +
-                       "FROM FoundComments c JOIN Users u ON c.UserID = u.UserID " +
-                       "WHERE c.FoundPostID = ? ORDER BY c.CreatedAt DESC";
+        String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
+                + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
+                + "u.FullName, u.Username, "
+                + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'found' AND cl.CommentID = c.CommentID) as LikesCount, "
+                + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'found' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
+                + "FROM FoundComments c JOIN Users u ON c.UserID = u.UserID "
+                + "WHERE c.FoundPostID = ? ORDER BY c.CreatedAt DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, currentUserEmail != null ? currentUserEmail : "");
@@ -118,20 +118,25 @@ public class FoundPostDAO extends DBContext {
     }
 
     public boolean addFoundPost(String email, String itemName, String category, String description, String location, String time, String imageUrl) {
+        return addFoundPost(email, itemName, category, description, location, time, imageUrl, "Pending");
+    }
+
+    public boolean addFoundPost(String email, String itemName, String category, String description, String location, String time, String imageUrl, String approvalStatus) {
         String finalDescription = description;
         if (time != null && !time.trim().isEmpty()) {
             finalDescription += " (Thời gian nhặt: " + time.trim() + ")";
         }
 
-        String query = "INSERT INTO FoundPosts (UserID, Category, ItemName, Description, LocationFound, TimeFound, Status, CreatedAt) " +
-                       "SELECT UserID, ?, ?, ?, ?, GETDATE(), 'Unclaimed', GETDATE() FROM Users WHERE Email = ?";
+        String query = "INSERT INTO FoundPosts (UserID, Category, ItemName, Description, LocationFound, TimeFound, Status, CreatedAt, ApprovalStatus) "
+                + "SELECT UserID, ?, ?, ?, ?, GETDATE(), 'Unclaimed', GETDATE(), ? FROM Users WHERE Email = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             ps.setNString(1, category);
             ps.setNString(2, itemName);
             ps.setNString(3, finalDescription);
             ps.setNString(4, location);
-            ps.setString(5, email);
+            ps.setString(5, approvalStatus);
+            ps.setString(6, email);
             int affected = ps.executeUpdate();
             if (affected > 0) {
                 ResultSet keys = ps.getGeneratedKeys();
@@ -197,14 +202,17 @@ public class FoundPostDAO extends DBContext {
     }
 
     public boolean addComment(int foundPostId, String email, String content, Integer parentId) {
-        String query = "INSERT INTO FoundComments (FoundPostID, UserID, Content, ParentCommentID, CreatedAt) " +
-                       "SELECT ?, UserID, ?, ?, GETDATE() FROM Users WHERE Email = ?";
+        String query = "INSERT INTO FoundComments (FoundPostID, UserID, Content, ParentCommentID, CreatedAt) "
+                + "SELECT ?, UserID, ?, ?, GETDATE() FROM Users WHERE Email = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, foundPostId);
             ps.setNString(2, content);
-            if (parentId != null && parentId > 0) ps.setInt(3, parentId);
-            else ps.setNull(3, java.sql.Types.INTEGER);
+            if (parentId != null && parentId > 0) {
+                ps.setInt(3, parentId);
+            } else {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            }
             ps.setString(4, email);
             boolean ok = ps.executeUpdate() > 0;
             if (ok) {
@@ -247,7 +255,7 @@ public class FoundPostDAO extends DBContext {
         }
         return false;
     }
-    
+
     // 7. Chỉnh sửa bài đăng đồ nhặt được
     public boolean updateFoundPost(int foundPostId, String itemName, String category, String location, String description, String imageUrl) {
         String query = "UPDATE FoundPosts SET ItemName = ?, Category = ?, LocationFound = ?, Description = ? WHERE FoundPostID = ?";
@@ -300,7 +308,8 @@ public class FoundPostDAO extends DBContext {
                     PreparedStatement ps = conn.prepareStatement(q);
                     ps.setInt(1, foundPostId);
                     ps.executeUpdate();
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
             return true;
         } catch (Exception e) {

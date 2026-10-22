@@ -12,9 +12,9 @@ public class ForumDAO extends DBContext {
 
     public List<Map<String, Object>> getLatestForumPosts() {
         List<Map<String, Object>> list = new ArrayList<>();
-        String query = "SELECT TOP 2 PostID, Title, Category, " +
-                       "CONVERT(VARCHAR, CreatedAt, 103) as Date " +
-                       "FROM ForumPosts ORDER BY CreatedAt DESC";
+        String query = "SELECT TOP 2 PostID, Title, Category, "
+                + "CONVERT(VARCHAR, CreatedAt, 103) as Date "
+                + "FROM ForumPosts WHERE ApprovalStatus = 'Approved' ORDER BY CreatedAt DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
@@ -31,18 +31,18 @@ public class ForumDAO extends DBContext {
         }
         return list;
     }
-    
+
     public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
-            "SELECT f.PostID, f.Title, f.Category, f.Content, " +
-            "CONVERT(VARCHAR, f.CreatedAt, 103) as Date, " +
-            "u.FullName, u.Username, " +
-            "(SELECT COUNT(*) FROM ForumLikes fl WHERE fl.PostID = f.PostID) as LikesCount, " +
-            "(SELECT COUNT(*) FROM ForumLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.PostID = f.PostID AND u2.Email = ?) as UserLiked " +
-            "FROM ForumPosts f JOIN Users u ON f.UserID = u.UserID WHERE 1=1 "
+                "SELECT f.PostID, f.Title, f.Category, f.Content, "
+                + "CONVERT(VARCHAR, f.CreatedAt, 103) as Date, "
+                + "u.FullName, u.Username, "
+                + "(SELECT COUNT(*) FROM ForumLikes fl WHERE fl.PostID = f.PostID) as LikesCount, "
+                + "(SELECT COUNT(*) FROM ForumLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.PostID = f.PostID AND u2.Email = ?) as UserLiked "
+                + "FROM ForumPosts f JOIN Users u ON f.UserID = u.UserID WHERE 1=1 AND f.ApprovalStatus = 'Approved' "
         );
-        
+
         List<Object> params = new ArrayList<>();
         params.add(currentUserEmail != null ? currentUserEmail : "");
 
@@ -50,7 +50,7 @@ public class ForumDAO extends DBContext {
             query.append("AND f.Category = ? ");
             params.add(categoryFilter);
         }
-        
+
         if ("oldest".equals(sortBy)) {
             query.append("ORDER BY f.CreatedAt ASC");
         } else {
@@ -76,11 +76,11 @@ public class ForumDAO extends DBContext {
                 map.put("username", rs.getString("Username"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
-                
+
                 List<Map<String, Object>> comments = getCommentsByPostId(postId, currentUserEmail);
                 map.put("comments", comments);
                 map.put("commentsCount", comments.size());
-                
+
                 list.add(map);
             }
         } catch (Exception e) {
@@ -91,13 +91,13 @@ public class ForumDAO extends DBContext {
 
     public List<Map<String, Object>> getCommentsByPostId(int postId, String currentUserEmail) {
         List<Map<String, Object>> comments = new ArrayList<>();
-        String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, " +
-                       "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, " +
-                       "u.FullName, u.Username, " +
-                       "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID) as LikesCount, " +
-                       "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked " +
-                       "FROM ForumComments c JOIN Users u ON c.UserID = u.UserID " +
-                       "WHERE c.PostID = ? ORDER BY c.CreatedAt DESC";
+        String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
+                + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
+                + "u.FullName, u.Username, "
+                + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID) as LikesCount, "
+                + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
+                + "FROM ForumComments c JOIN Users u ON c.UserID = u.UserID "
+                + "WHERE c.PostID = ? ORDER BY c.CreatedAt DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, currentUserEmail != null ? currentUserEmail : "");
@@ -123,14 +123,19 @@ public class ForumDAO extends DBContext {
     }
 
     public boolean addForumPost(String email, String title, String category, String content) {
-        String query = "INSERT INTO ForumPosts (UserID, Title, Category, Content, CreatedAt) " +
-                       "SELECT UserID, ?, ?, ?, GETDATE() FROM Users WHERE Email = ?";
+        return addForumPost(email, title, category, content, "Pending");
+    }
+
+    public boolean addForumPost(String email, String title, String category, String content, String approvalStatus) {
+        String query = "INSERT INTO ForumPosts (UserID, Title, Category, Content, CreatedAt, ApprovalStatus) "
+                + "SELECT UserID, ?, ?, ?, GETDATE(), ? FROM Users WHERE Email = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setNString(1, title);
             ps.setNString(2, category);
             ps.setNString(3, content);
-            ps.setString(4, email);
+            ps.setString(4, approvalStatus);
+            ps.setString(5, email);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("Lỗi addForumPost: " + e.getMessage());
@@ -185,14 +190,17 @@ public class ForumDAO extends DBContext {
     }
 
     public boolean addComment(int postId, String email, String content, Integer parentId) {
-        String query = "INSERT INTO ForumComments (PostID, UserID, Content, ParentCommentID, CreatedAt) " +
-                       "SELECT ?, UserID, ?, ?, GETDATE() FROM Users WHERE Email = ?";
+        String query = "INSERT INTO ForumComments (PostID, UserID, Content, ParentCommentID, CreatedAt) "
+                + "SELECT ?, UserID, ?, ?, GETDATE() FROM Users WHERE Email = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, postId);
             ps.setNString(2, content);
-            if (parentId != null && parentId > 0) ps.setInt(3, parentId);
-            else ps.setNull(3, java.sql.Types.INTEGER);
+            if (parentId != null && parentId > 0) {
+                ps.setInt(3, parentId);
+            } else {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            }
             ps.setString(4, email);
             boolean ok = ps.executeUpdate() > 0;
             if (ok) {
@@ -223,6 +231,7 @@ public class ForumDAO extends DBContext {
         }
         return false;
     }
+
     public boolean updateForumPost(int postId, String title, String category, String content) {
         try {
             PreparedStatement ps = conn.prepareStatement("UPDATE ForumPosts SET Title = ?, Category = ?, Content = ? WHERE PostID = ?");
@@ -253,7 +262,8 @@ public class ForumDAO extends DBContext {
                     PreparedStatement ps = conn.prepareStatement(q);
                     ps.setInt(1, postId);
                     ps.executeUpdate();
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
             return true;
         } catch (Exception e) {

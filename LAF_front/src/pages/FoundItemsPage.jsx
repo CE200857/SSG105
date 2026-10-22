@@ -306,7 +306,7 @@ const FoundItemsPage = ({ user }) => {
         setSelectedImage(null);
         setImagePreview(null);
         fetchPosts();
-        setTimeout(() => setShowModal(false), 1500);
+        setTimeout(() => setShowModal(false), 3000);
       } else {
         setSubmitMsg({ type: "danger", text: response.data.message });
       }
@@ -716,7 +716,7 @@ const FoundItemsPage = ({ user }) => {
           <Col lg={3}>
             <Card
               className="border-0 shadow-sm rounded-4 p-4 sticky-top text-start"
-              style={{ top: "90px" }}
+              style={{ top: "85px", zIndex: 1000 }}
             >
               <h5 className="fw-bold mb-4" style={{ color: "#10393B" }}>
                 Tìm món đồ của bạn
@@ -1567,71 +1567,73 @@ const FoundItemsPage = ({ user }) => {
           contentClassName="border-0 shadow-lg rounded-4"
         >
           <Modal.Header closeButton className="border-0 pb-2 mt-2 mx-3">
-            <div
-              className="d-flex align-items-center gap-3"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                setShowDetailModal(false);
-                handleViewUserProfile(
-                  selectedPost.author,
-                  selectedPost.authorEmail,
-                );
-              }}
-            >
+            <div className="d-flex align-items-center justify-content-between w-100 me-2">
               <div
-                className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                style={{
-                  width: "45px",
-                  height: "45px",
-                  backgroundColor: primaryColor,
+                className="d-flex align-items-center gap-3"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setShowDetailModal(false);
+                  handleViewUserProfile(
+                    selectedPost.author,
+                    selectedPost.authorEmail
+                  );
                 }}
               >
-                {selectedPost.author ? selectedPost.author.charAt(0) : "U"}
-              </div>
-              <div>
-                <h5 className="fw-bold mb-0 text-dark hover-primary">
-                  {selectedPost.author}
-                </h5>
-                <span className="text-muted" style={{ fontSize: "0.85rem" }}>
-                  Đăng lúc: {selectedPost.time}
-                </span>
-              </div>
-            </div>
-
-            {isOwner(selectedPost) && (
-              <Dropdown align="end" className="ms-auto me-2">
-                <Dropdown.Toggle
-                  variant="light"
-                  size="sm"
-                  className="rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center p-0 no-caret"
-                  style={{ width: "34px", height: "34px" }}
+                <div
+                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                  style={{
+                    width: "45px",
+                    height: "45px",
+                    backgroundColor: primaryColor,
+                  }}
                 >
-                  <i className="bi bi-three-dots fs-5 text-secondary"></i>
-                </Dropdown.Toggle>
-                <Dropdown.Menu className="shadow border-0 rounded-3">
-                  <Dropdown.Item
-                    onClick={(e) => handleOpenEditModal(selectedPost, e)}
-                    className="py-2"
+                  {selectedPost.author ? selectedPost.author.charAt(0) : "U"}
+                </div>
+                <div>
+                  <h5 className="fw-bold mb-0 text-dark hover-primary">
+                    {selectedPost.author}
+                  </h5>
+                  <span className="text-muted" style={{ fontSize: "0.85rem" }}>
+                    Đăng lúc: {selectedPost.time}
+                  </span>
+                </div>
+              </div>
+
+              {isOwner(selectedPost) && (
+                <Dropdown align="end">
+                  <Dropdown.Toggle
+                    variant="light"
+                    size="sm"
+                    className="rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center p-0 no-caret"
+                    style={{ width: "34px", height: "34px" }}
                   >
-                    <i
-                      className="bi bi-pencil-square me-2"
-                      style={{ color: primaryColor }}
-                    ></i>
-                    Chỉnh sửa bài đăng
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      setSelectedPostId(selectedPost.id);
-                      setShowDeleteModal(true);
-                    }}
-                    className="py-2 text-danger"
-                  >
-                    <i className="bi bi-trash3-fill me-2"></i>
-                    Xóa bài đăng
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            )}
+                    <i className="bi bi-three-dots fs-5 text-secondary"></i>
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="shadow border-0 rounded-3">
+                    <Dropdown.Item
+                      onClick={(e) => handleOpenEditModal(selectedPost, e)}
+                      className="py-2"
+                    >
+                      <i
+                        className="bi bi-pencil-square me-2"
+                        style={{ color: primaryColor }}
+                      ></i>
+                      Chỉnh sửa bài đăng
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        setSelectedPostId(selectedPost.id);
+                        setShowDeleteModal(true);
+                      }}
+                      className="py-2 text-danger"
+                    >
+                      <i className="bi bi-trash3-fill me-2"></i>
+                      Xóa bài đăng
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              )}
+            </div>
           </Modal.Header>
 
           <Modal.Body

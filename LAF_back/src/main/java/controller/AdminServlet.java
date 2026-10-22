@@ -6,6 +6,7 @@ import dao.ForumDAO;
 import dao.FoundPostDAO;
 import dao.LostPostDAO;
 import dao.ReviewDAO;
+import dao.ModerationDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,7 +28,9 @@ public class AdminServlet extends HttpServlet {
         Gson gson = new Gson();
 
         String type = request.getParameter("type");
-        if (type == null) type = "stats";
+        if (type == null) {
+            type = "stats";
+        }
 
         AdminDAO adminDao = new AdminDAO();
 
@@ -74,8 +77,12 @@ public class AdminServlet extends HttpServlet {
                 int star = 0;
                 try {
                     star = Integer.parseInt(request.getParameter("star"));
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
                 out.print(gson.toJson(revDao.getReviews(star, request.getParameter("sort"))));
+                break;
+            case "pending":
+                out.print(gson.toJson(new ModerationDAO().getPendingPosts()));
                 break;
             default:
                 out.print(gson.toJson(adminDao.getDashboardStats()));
@@ -99,6 +106,7 @@ public class AdminServlet extends HttpServlet {
         FoundPostDAO foundDao = new FoundPostDAO();
         ForumDAO forumDao = new ForumDAO();
         ReviewDAO reviewDao = new ReviewDAO();
+        ModerationDAO modDao = new ModerationDAO();
 
         try {
             if ("user".equals(entity)) {
@@ -143,7 +151,8 @@ public class AdminServlet extends HttpServlet {
                             request.getParameter("content"),
                             request.getParameter("location"),
                             request.getParameter("time"),
-                            request.getParameter("imageUrl")
+                            request.getParameter("imageUrl"),
+                            "Approved"
                     );
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
@@ -162,7 +171,8 @@ public class AdminServlet extends HttpServlet {
                     }
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", lostDao.deletePost(Integer.parseInt(request.getParameter("id"))));
+                    result.put("success", modDao.deleteWithNotice("lost", Integer.parseInt(request.getParameter("id")),
+                            request.getParameter("reason"), request.getParameter("adminEmail")));
                 }
             } else if ("found".equals(entity)) {
                 if ("create".equals(action)) {
@@ -173,7 +183,8 @@ public class AdminServlet extends HttpServlet {
                             request.getParameter("description"),
                             request.getParameter("location"),
                             request.getParameter("time"),
-                            request.getParameter("imageUrl")
+                            request.getParameter("imageUrl"),
+                            "Approved"
                     );
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
@@ -192,7 +203,8 @@ public class AdminServlet extends HttpServlet {
                     }
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", foundDao.deletePost(Integer.parseInt(request.getParameter("id"))));
+                    result.put("success", modDao.deleteWithNotice("found", Integer.parseInt(request.getParameter("id")),
+                            request.getParameter("reason"), request.getParameter("adminEmail")));
                 }
             } else if ("forum".equals(entity)) {
                 if ("create".equals(action)) {
@@ -200,7 +212,8 @@ public class AdminServlet extends HttpServlet {
                             request.getParameter("email"),
                             request.getParameter("title"),
                             request.getParameter("category"),
-                            request.getParameter("content")
+                            request.getParameter("content"),
+                            "Approved"
                     );
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
@@ -212,7 +225,17 @@ public class AdminServlet extends HttpServlet {
                     );
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", forumDao.deleteForumPost(Integer.parseInt(request.getParameter("id"))));
+                    result.put("success", modDao.deleteWithNotice("forum", Integer.parseInt(request.getParameter("id")),
+                            request.getParameter("reason"), request.getParameter("adminEmail")));
+                }
+            } else if ("moderation".equals(entity)) {
+                if ("approve".equals(action)) {
+                    boolean ok = modDao.approvePost(
+                            request.getParameter("postType"),
+                            Integer.parseInt(request.getParameter("id")),
+                            request.getParameter("adminEmail"));
+                    result.put("success", ok);
+                    result.put("message", ok ? "Đã duyệt bài đăng!" : "Không thể duyệt (bài không còn ở trạng thái chờ duyệt).");
                 }
             } else if ("review".equals(entity)) {
                 if ("create".equals(action)) {

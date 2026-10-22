@@ -13,17 +13,17 @@ public class LostPostDAO extends DBContext {
 
     public List<Map<String, Object>> getAllLostPosts(String keyword, String category, String location, String currentUserEmail) {
         List<Map<String, Object>> list = new ArrayList<>();
-        
+
         StringBuilder query = new StringBuilder(
-            "SELECT l.LostPostID, l.Category, l.Title, l.Content, l.LocationLost, " +
-            "CONVERT(VARCHAR, l.TimeLost, 103) as DateLost, " +
-            "CONVERT(VARCHAR, l.CreatedAt, 103) as CreatedDate, " +
-            "l.Status, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, " +
-            "(SELECT COUNT(*) FROM LostLikes ll WHERE ll.LostPostID = l.LostPostID) as LikesCount, " +
-            "(SELECT COUNT(*) FROM LostLikes ll JOIN Users u2 ON ll.UserID = u2.UserID WHERE ll.LostPostID = l.LostPostID AND u2.Email = ?) as UserLiked " +
-            "FROM LostPosts l " +
-            "JOIN Users u ON l.UserID = u.UserID " +
-            "LEFT JOIN LostImages i ON l.LostPostID = i.LostPostID WHERE 1=1 "
+                "SELECT l.LostPostID, l.Category, l.Title, l.Content, l.LocationLost, "
+                + "CONVERT(VARCHAR, l.TimeLost, 103) as DateLost, "
+                + "CONVERT(VARCHAR, l.CreatedAt, 103) as CreatedDate, "
+                + "l.Status, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
+                + "(SELECT COUNT(*) FROM LostLikes ll WHERE ll.LostPostID = l.LostPostID) as LikesCount, "
+                + "(SELECT COUNT(*) FROM LostLikes ll JOIN Users u2 ON ll.UserID = u2.UserID WHERE ll.LostPostID = l.LostPostID AND u2.Email = ?) as UserLiked "
+                + "FROM LostPosts l "
+                + "JOIN Users u ON l.UserID = u.UserID "
+                + "LEFT JOIN LostImages i ON l.LostPostID = i.LostPostID WHERE 1=1 AND l.ApprovalStatus = 'Approved' "
         );
 
         List<Object> params = new ArrayList<>();
@@ -62,21 +62,21 @@ public class LostPostDAO extends DBContext {
                 map.put("location", rs.getString("LocationLost"));
                 map.put("date", rs.getString("DateLost") != null ? rs.getString("DateLost") : rs.getString("CreatedDate"));
                 map.put("time", rs.getString("CreatedDate"));
-                
+
                 String rawStatus = rs.getString("Status");
                 map.put("status", ("Found".equalsIgnoreCase(rawStatus) || "Đã tìm được".equalsIgnoreCase(rawStatus)) ? "Đã tìm được" : "Đang tìm đồ");
-                
+
                 map.put("author", rs.getString("FullName"));
                 map.put("username", rs.getString("Username"));
                 map.put("authorEmail", rs.getString("AuthorEmail"));
                 map.put("image", rs.getString("ImageURL"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
-                
+
                 List<Map<String, Object>> comments = getCommentsByPostId(postId, currentUserEmail);
                 map.put("comments", comments);
                 map.put("commentsCount", comments.size());
-                
+
                 list.add(map);
             }
         } catch (Exception e) {
@@ -87,13 +87,13 @@ public class LostPostDAO extends DBContext {
 
     public List<Map<String, Object>> getCommentsByPostId(int lostPostId, String currentUserEmail) {
         List<Map<String, Object>> comments = new ArrayList<>();
-        String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, " +
-                       "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, " +
-                       "u.FullName, u.Username, " +
-                       "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'lost' AND cl.CommentID = c.CommentID) as LikesCount, " +
-                       "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'lost' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked " +
-                       "FROM LostComments c JOIN Users u ON c.UserID = u.UserID " +
-                       "WHERE c.LostPostID = ? ORDER BY c.CreatedAt DESC";
+        String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
+                + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
+                + "u.FullName, u.Username, "
+                + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'lost' AND cl.CommentID = c.CommentID) as LikesCount, "
+                + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'lost' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
+                + "FROM LostComments c JOIN Users u ON c.UserID = u.UserID "
+                + "WHERE c.LostPostID = ? ORDER BY c.CreatedAt DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, currentUserEmail != null ? currentUserEmail : "");
@@ -119,19 +119,24 @@ public class LostPostDAO extends DBContext {
     }
 
     public boolean addLostPost(String email, String title, String category, String content, String location, String timeLost, String imageUrl) {
+        return addLostPost(email, title, category, content, location, timeLost, imageUrl, "Pending");
+    }
+
+    public boolean addLostPost(String email, String title, String category, String content, String location, String timeLost, String imageUrl, String approvalStatus) {
         String finalContent = content;
         if (timeLost != null && !timeLost.trim().isEmpty()) {
             finalContent += " (Thời gian mất: " + timeLost.trim() + ")";
         }
-        String query = "INSERT INTO LostPosts (UserID, Category, Title, Content, LocationLost, TimeLost, Status, CreatedAt) " +
-                       "SELECT UserID, ?, ?, ?, ?, GETDATE(), 'Not Found', GETDATE() FROM Users WHERE Email = ?";
+        String query = "INSERT INTO LostPosts (UserID, Category, Title, Content, LocationLost, TimeLost, Status, CreatedAt, ApprovalStatus) "
+                + "SELECT UserID, ?, ?, ?, ?, GETDATE(), 'Not Found', GETDATE(), ? FROM Users WHERE Email = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             ps.setNString(1, category);
             ps.setNString(2, title);
             ps.setNString(3, finalContent);
             ps.setNString(4, location);
-            ps.setString(5, email);
+            ps.setString(5, approvalStatus);
+            ps.setString(6, email);
             int affected = ps.executeUpdate();
             if (affected > 0) {
                 ResultSet keys = ps.getGeneratedKeys();
@@ -198,14 +203,17 @@ public class LostPostDAO extends DBContext {
     }
 
     public boolean addComment(int lostPostId, String email, String content, Integer parentId) {
-        String query = "INSERT INTO LostComments (LostPostID, UserID, Content, ParentCommentID, CreatedAt) " +
-                       "SELECT ?, UserID, ?, ?, GETDATE() FROM Users WHERE Email = ?";
+        String query = "INSERT INTO LostComments (LostPostID, UserID, Content, ParentCommentID, CreatedAt) "
+                + "SELECT ?, UserID, ?, ?, GETDATE() FROM Users WHERE Email = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, lostPostId);
             ps.setNString(2, content);
-            if (parentId != null && parentId > 0) ps.setInt(3, parentId);
-            else ps.setNull(3, java.sql.Types.INTEGER);
+            if (parentId != null && parentId > 0) {
+                ps.setInt(3, parentId);
+            } else {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            }
             ps.setString(4, email);
             boolean ok = ps.executeUpdate() > 0;
             if (ok) {
@@ -298,7 +306,8 @@ public class LostPostDAO extends DBContext {
                     PreparedStatement ps = conn.prepareStatement(q);
                     ps.setInt(1, lostPostId);
                     ps.executeUpdate();
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
             return true;
         } catch (Exception e) {

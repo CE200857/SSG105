@@ -252,7 +252,7 @@ const ReviewPage = ({ user }) => {
           <Col lg={4}>
             <Card
               className="border-0 shadow-sm rounded-4 p-4 text-start sticky-top"
-              style={{ top: "90px" }}
+              style={{ top: "85px", zIndex: 1000 }}
             >
               <h5 className="fw-bold mb-3" style={{ color: "#10393B" }}>
                 Viết đánh giá của bạn
@@ -677,71 +677,73 @@ const ReviewPage = ({ user }) => {
             contentClassName="border-0 shadow-lg rounded-4"
           >
             <Modal.Header closeButton className="border-0 pb-0 mt-2 mx-3">
-              <div
-                className="d-flex align-items-center gap-3"
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  setShowDetailModal(false);
-                  handleViewUserProfile(
-                    selectedReview.fullName,
-                    selectedReview.username,
-                  );
-                }}
-              >
+              <div className="d-flex align-items-center justify-content-between w-100 me-2">
                 <div
-                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                  style={{
-                    width: "45px",
-                    height: "45px",
-                    backgroundColor: primaryColor,
+                  className="d-flex align-items-center gap-3"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleViewUserProfile(
+                      selectedReview.fullName,
+                      selectedReview.username
+                    );
                   }}
                 >
-                  {selectedReview.fullName.charAt(0)}
-                </div>
-                <div>
-                  <h6 className="fw-bold mb-0 text-dark hover-primary">
-                    {selectedReview.fullName}
-                  </h6>
-                  <small className="text-muted">
-                    @{selectedReview.username} • {selectedReview.date}
-                  </small>
-                </div>
-              </div>
-
-              {isOwner(selectedReview) && (
-                <Dropdown align="end" className="ms-auto me-2">
-                  <Dropdown.Toggle
-                    variant="light"
-                    size="sm"
-                    className="rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center p-0 no-caret"
-                    style={{ width: "32px", height: "32px" }}
+                  <div
+                    className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      backgroundColor: primaryColor,
+                    }}
                   >
-                    <i className="bi bi-three-dots fs-5 text-secondary"></i>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className="shadow border-0 rounded-3">
-                    <Dropdown.Item
-                      onClick={(e) => handleOpenEditModal(selectedReview, e)}
-                      className="py-2"
+                    {selectedReview.fullName.charAt(0)}
+                  </div>
+                  <div>
+                    <h6 className="fw-bold mb-0 text-dark hover-primary">
+                      {selectedReview.fullName}
+                    </h6>
+                    <small className="text-muted">
+                      @{selectedReview.username} • {selectedReview.date}
+                    </small>
+                  </div>
+                </div>
+
+                {isOwner(selectedReview) && (
+                  <Dropdown align="end">
+                    <Dropdown.Toggle
+                      variant="light"
+                      size="sm"
+                      className="rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center p-0 no-caret"
+                      style={{ width: "32px", height: "32px" }}
                     >
-                      <i
-                        className="bi bi-pencil-square me-2"
-                        style={{ color: primaryColor }}
-                      ></i>
-                      Chỉnh sửa đánh giá
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        setSelectedReviewId(selectedReview.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="py-2 text-danger"
-                    >
-                      <i className="bi bi-trash3-fill me-2"></i>
-                      Xóa đánh giá
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              )}
+                      <i className="bi bi-three-dots fs-5 text-secondary"></i>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="shadow border-0 rounded-3">
+                      <Dropdown.Item
+                        onClick={(e) => handleOpenEditModal(selectedReview, e)}
+                        className="py-2"
+                      >
+                        <i
+                          className="bi bi-pencil-square me-2"
+                          style={{ color: primaryColor }}
+                        ></i>
+                        Chỉnh sửa đánh giá
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => {
+                          setSelectedReviewId(selectedReview.id);
+                          setShowDeleteModal(true);
+                        }}
+                        className="py-2 text-danger"
+                      >
+                        <i className="bi bi-trash3-fill me-2"></i>
+                        Xóa đánh giá
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                )}
+              </div>
             </Modal.Header>
 
             <Modal.Body className="mx-3 py-4 text-start">

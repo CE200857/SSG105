@@ -29,13 +29,16 @@ public class AdminDAO extends DBContext {
     // 1. Thống kê tổng quan Dashboard
     public Map<String, Integer> getDashboardStats() {
         Map<String, Integer> stats = new HashMap<>();
-        String[] keys = {"lostCount", "foundCount", "forumCount", "reviewCount", "studentCount"};
+        String[] keys = {"lostCount", "foundCount", "forumCount", "reviewCount", "studentCount", "pendingCount"};
         String[] queries = {
-            "SELECT COUNT(*) FROM LostPosts",
-            "SELECT COUNT(*) FROM FoundPosts",
-            "SELECT COUNT(*) FROM ForumPosts",
+            "SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Approved'",
+            "SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Approved'",
+            "SELECT COUNT(*) FROM ForumPosts WHERE ApprovalStatus = 'Approved'",
             "SELECT COUNT(*) FROM Reviews",
-            "SELECT COUNT(*) FROM Users WHERE RoleID = 2"
+            "SELECT COUNT(*) FROM Users WHERE RoleID = 2",
+            "SELECT (SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Pending') + "
+            + "(SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Pending') + "
+            + "(SELECT COUNT(*) FROM ForumPosts WHERE ApprovalStatus = 'Pending')"
         };
         for (int i = 0; i < keys.length; i++) {
             try {
@@ -53,8 +56,8 @@ public class AdminDAO extends DBContext {
     public List<Map<String, Object>> getAllUsers(String keyword, String campus, String gender, String roleId) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
-            "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, RoleID, " +
-            "CONVERT(VARCHAR, CreatedAt, 103) as CreatedDate FROM Users WHERE 1=1 "
+                "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, RoleID, "
+                + "CONVERT(VARCHAR, CreatedAt, 103) as CreatedDate FROM Users WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
 
@@ -116,8 +119,8 @@ public class AdminDAO extends DBContext {
                 return "Username hoặc Email đã tồn tại trong hệ thống!";
             }
 
-            String query = "INSERT INTO Users (Username, FullName, Email, Phone, Campus, Gender, PasswordHash, RoleID, CreatedAt) " +
-                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+            String query = "INSERT INTO Users (Username, FullName, Email, Phone, Campus, Gender, PasswordHash, RoleID, CreatedAt) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, username.trim());
             ps.setNString(2, fullName.trim());
@@ -210,7 +213,8 @@ public class AdminDAO extends DBContext {
                     PreparedStatement ps = conn.prepareStatement(q);
                     ps.setInt(1, userId);
                     ps.executeUpdate();
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
             return true;
         } catch (Exception e) {
