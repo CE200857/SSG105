@@ -74,12 +74,19 @@ public class LostPostsServlet extends HttpServlet {
             result.put("success", dao.updateStatus(postId, status));
         }else if ("update".equals(action) || "edit".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
-            String itemName = request.getParameter("itemName");
+            // Frontend gửi title/content (bài Lost); vẫn nhận itemName/description để tương thích
+            String itemName = request.getParameter("title");
+            if (itemName == null) itemName = request.getParameter("itemName");
             String category = request.getParameter("category");
             String location = request.getParameter("location");
-            String description = request.getParameter("description");
+            String description = request.getParameter("content");
+            if (description == null) description = request.getParameter("description");
             String imageUrl = request.getParameter("imageUrl");
             result.put("success", dao.updateLostPost(postId, itemName, category, location, description, imageUrl));
+        } else if ("visibility".equals(action)) {
+            int visId = Integer.parseInt(request.getParameter("postId"));
+            result.put("success", new dao.VisibilityDAO().setVisibility("lost", visId,
+                    request.getParameter("email"), request.getParameter("visibility")));
         } else if ("delete".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
             result.put("success", dao.deletePost(postId));

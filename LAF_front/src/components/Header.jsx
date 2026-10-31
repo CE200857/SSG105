@@ -16,7 +16,7 @@ import axios from "axios";
 const Header = ({ user, setUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
 
   const [notifications, setNotifications] = useState([]);
   const isAdmin = user && Number(user.roleId || user.RoleID) === 1;
@@ -149,19 +149,20 @@ const Header = ({ user, setUser }) => {
           as={Link}
           to="/"
           className="d-flex align-items-center fw-bold"
-          style={{ color: "#10393B", fontSize: "1.25rem" }}
+          style={{ color: "#12345a", fontSize: "1.25rem" }}
         >
-          <div
-            className="d-flex align-items-center justify-content-center me-2 text-white rounded-3"
-            style={{
-              width: "40px",
-              height: "40px",
-              backgroundColor: primaryColor,
-            }}
-          >
-            <i className="bi bi-box-seam fs-5"></i>
-          </div>
-          FPT CT Lost & Found
+          <img
+            src="/logo.png"
+            alt="Lost&Found"
+            className="me-2"
+            style={{ width: "44px", height: "44px", objectFit: "contain" }}
+          />
+          <span className="lf-brand-text">
+            <span className="lf-brand-light">Lost</span>
+            <span className="lf-brand-amp">&amp;</span>
+            <span className="lf-brand-bold">Found</span>
+            <small className="lf-brand-tag">FPT CT</small>
+          </span>
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -255,7 +256,7 @@ const Header = ({ user, setUser }) => {
                     }}
                   >
                     <div className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom bg-light">
-                      <h6 className="fw-bold mb-0" style={{ color: "#10393B" }}>
+                      <h6 className="fw-bold mb-0" style={{ color: "#12345a" }}>
                         Thông báo
                       </h6>
                       {unreadCount > 0 && (
@@ -285,7 +286,7 @@ const Header = ({ user, setUser }) => {
                           onClick={() => handleNotificationClick(notif)}
                           className="px-3 py-3 border-bottom text-wrap"
                           style={{
-                            backgroundColor: notif.isRead ? "white" : "#EAF5F3",
+                            backgroundColor: notif.isRead ? "white" : "#eaf3fc",
                             transition: "0.2s",
                           }}
                         >
@@ -422,8 +423,8 @@ const Header = ({ user, setUser }) => {
           transition: all 0.2s ease-in-out;
         }
         .btn-solid-custom:hover {
-          background-color: #0a735e !important;
-          border-color: #0a735e !important;
+          background-color: #1858a0 !important;
+          border-color: #1858a0 !important;
           color: white !important;
         }
         .btn-outline-custom {

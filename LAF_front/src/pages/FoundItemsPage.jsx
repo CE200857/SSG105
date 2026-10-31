@@ -18,10 +18,13 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { setPostVisibility } from "../utils/visibility";
+import { VisibilityBadge } from "../components/Visibility";
+import { compressImage } from "../utils/compressImage";
 import { postImgProps, getPostImage } from "../utils/postImage";
 
 const FoundItemsPage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const locationData = useLocation();
   const navState = locationData.state || {};
@@ -75,6 +78,20 @@ const FoundItemsPage = ({ user }) => {
   const [postToShare, setPostToShare] = useState(null);
   const [shareCaption, setShareCaption] = useState("");
   const [shareSuccessMsg, setShareSuccessMsg] = useState("");
+
+  // Đổi chế độ xem bài của mình: Công khai <-> Riêng tư
+  const handleToggleVisibility = async (item) => {
+    const next = item.visibility === "Private" ? "Public" : "Private";
+    const ok = await setPostVisibility("found", item.id, user?.email, next);
+    if (ok) {
+      setPosts((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, visibility: next } : p)),
+      );
+      setSelectedPost((prev) =>
+        prev && prev.id === item.id ? { ...prev, visibility: next } : prev,
+      );
+    }
+  };
 
   const isOwner = (post) => {
     if (!user || !post) return false;
@@ -255,22 +272,14 @@ const FoundItemsPage = ({ user }) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      compressImage(file).then(setImagePreview);
     }
   };
 
   const handleEditImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      compressImage(file).then(setEditImagePreview);
     }
   };
 
@@ -288,6 +297,9 @@ const FoundItemsPage = ({ user }) => {
       params.append("description", newDescription);
       params.append("location", newLocation || "Giảng đường");
       params.append("time", newTime);
+      if (imagePreview) {
+        params.append("imageUrl", imagePreview);
+      }
 
       const response = await axios.post("/api/found-posts", params);
 
@@ -351,6 +363,9 @@ const FoundItemsPage = ({ user }) => {
       params.append("category", updatedFields.category);
       params.append("location", updatedFields.location);
       params.append("description", updatedFields.description);
+      if (updatedFields.image) {
+        params.append("imageUrl", updatedFields.image);
+      }
       await axios.post("/api/found-posts", params);
     } catch {
       // Lưu đồng bộ ở client bên dưới
@@ -679,7 +694,7 @@ const FoundItemsPage = ({ user }) => {
               </p>
               <h2
                 className="fw-bold mb-2"
-                style={{ color: "#10393B", fontSize: "2rem" }}
+                style={{ color: "#12345a", fontSize: "2rem" }}
               >
                 Đồ đã nhặt được, đang tìm chủ
               </h2>
@@ -719,7 +734,7 @@ const FoundItemsPage = ({ user }) => {
               className="border-0 shadow-sm rounded-4 p-4 sticky-top text-start"
               style={{ top: "85px", zIndex: 1000 }}
             >
-              <h5 className="fw-bold mb-4" style={{ color: "#10393B" }}>
+              <h5 className="fw-bold mb-4" style={{ color: "#12345a" }}>
                 Tìm món đồ của bạn
               </h5>
 
@@ -813,7 +828,7 @@ const FoundItemsPage = ({ user }) => {
               <div
                 className="mt-5 p-3 rounded-3"
                 style={{
-                  backgroundColor: "#EAF5F3",
+                  backgroundColor: "#eaf3fc",
                   border: `1px solid ${primaryColor}40`,
                 }}
               >
@@ -915,6 +930,7 @@ const FoundItemsPage = ({ user }) => {
                           style={{ zIndex: 3 }}
                           onClick={(e) => e.stopPropagation()}
                         >
+                          <VisibilityBadge visibility={post.visibility} />
                           <div
                             onClick={(e) => handleToggleStatus(post, e)}
                             className="px-3 py-1 rounded-pill fw-bold shadow-sm"
@@ -931,7 +947,7 @@ const FoundItemsPage = ({ user }) => {
                               backgroundColor:
                                 post.status === "Unclaimed"
                                   ? "#fff9e6"
-                                  : "#0C8B72",
+                                  : "#198754",
                               cursor: isOwner(post) ? "pointer" : "default",
                             }}
                             title={
@@ -969,6 +985,21 @@ const FoundItemsPage = ({ user }) => {
                                   ></i>
                                   Chỉnh sửa bài đăng
                                 </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(post);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {post.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                                 <Dropdown.Item
                                   onClick={() => {
                                     setSelectedPostId(post.id);
@@ -1020,7 +1051,7 @@ const FoundItemsPage = ({ user }) => {
 
                         <Card.Title
                           className="fw-bold text-truncate"
-                          style={{ color: "#10393B", fontSize: "1.1rem" }}
+                          style={{ color: "#12345a", fontSize: "1.1rem" }}
                         >
                           {post.itemName}
                         </Card.Title>
@@ -1051,7 +1082,7 @@ const FoundItemsPage = ({ user }) => {
                         </div>
 
                         <div
-                          className="mt-3 pt-3 border-top d-flex justify-content-between text-secondary"
+                          className="mt-3 pt-3 post-actions border-top d-flex justify-content-between text-secondary"
                           style={{ fontSize: "0.85rem" }}
                         >
                           <span
@@ -1338,7 +1369,7 @@ const FoundItemsPage = ({ user }) => {
         contentClassName="border-0 shadow-lg rounded-4"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-2 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             <i
               className="bi bi-pencil-square me-2"
               style={{ color: primaryColor }}
@@ -1492,7 +1523,7 @@ const FoundItemsPage = ({ user }) => {
         contentClassName="border-0 shadow-lg rounded-4"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             <i
               className="bi bi-share-fill me-2"
               style={{ color: primaryColor }}
@@ -1622,6 +1653,21 @@ const FoundItemsPage = ({ user }) => {
                       Chỉnh sửa bài đăng
                     </Dropdown.Item>
                     <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(selectedPost);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${selectedPost.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {selectedPost.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
+                    <Dropdown.Item
                       onClick={() => {
                         setSelectedPostId(selectedPost.id);
                         setShowDeleteModal(true);
@@ -1664,7 +1710,7 @@ const FoundItemsPage = ({ user }) => {
               </Badge>
             </div>
 
-            <h4 className="fw-bold mb-3" style={{ color: "#10393B" }}>
+            <h4 className="fw-bold mb-3" style={{ color: "#12345a" }}>
               {selectedPost.itemName}
             </h4>
             <p

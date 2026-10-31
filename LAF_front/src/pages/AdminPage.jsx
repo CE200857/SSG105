@@ -17,11 +17,12 @@ import {
   Image,
 } from "react-bootstrap";
 import axios from "axios";
+import { compressImage } from "../utils/compressImage";
 import { postImgProps, getPostImage } from "../utils/postImage";
 import { useSearchParams } from "react-router-dom";
 
 const AdminPage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
 
   // 5 Tab quản lý chính trên Sidebar
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,6 +60,7 @@ const AdminPage = ({ user }) => {
     category: "Tất cả danh mục",
     location: "Toàn campus",
     status: "Tất cả",
+    visibility: "Tất cả",
   });
   // 2. Bộ lọc Found
   const [foundFilter, setFoundFilter] = useState({
@@ -66,18 +68,21 @@ const AdminPage = ({ user }) => {
     category: "Tất cả danh mục",
     location: "Toàn campus",
     status: "Tất cả",
+    visibility: "Tất cả",
   });
   // 3. Bộ lọc Forum
   const [forumFilter, setForumFilter] = useState({
     keyword: "",
     category: "Tất cả",
     sort: "newest",
+    visibility: "Tất cả",
   });
   // 4. Bộ lọc Review
   const [reviewFilter, setReviewFilter] = useState({
     keyword: "",
     star: 0,
     sort: "newest",
+    visibility: "Tất cả",
   });
   // 5. Bộ lọc Student Account
   const [userFilter, setUserFilter] = useState({
@@ -315,11 +320,9 @@ const AdminPage = ({ user }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, imageUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      compressImage(file).then((dataUrl) =>
+        setFormData((prev) => ({ ...prev, imageUrl: dataUrl })),
+      );
     }
   };
 
@@ -365,6 +368,61 @@ const AdminPage = ({ user }) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Admin đổi chế độ xem (Công khai <-> Riêng tư) của bất kỳ bài nào
+  const handleToggleVisibility = async (entity, item) => {
+    const next = item.visibility === "Private" ? "Public" : "Private";
+    try {
+      const params = new URLSearchParams();
+      params.append("entity", entity);
+      params.append("action", "visibility");
+      params.append("id", item.id);
+      params.append("visibility", next);
+      const res = await axios.post("/api/admin", params);
+      if (res.data && res.data.success) {
+        showToast(
+          "success",
+          next === "Private"
+            ? "Đã chuyển bài sang chế độ Riêng tư!"
+            : "Đã chuyển bài sang chế độ Công khai!",
+        );
+        fetchSectionData();
+      } else {
+        showToast("danger", res.data?.message || "Không thể đổi chế độ xem!");
+      }
+    } catch (err) {
+      showToast("danger", "Lỗi kết nối máy chủ!");
+    }
+  };
+
+  // Ô "Chế độ xem" trong bảng quản lý (bấm để đổi)
+  const renderVisibilityCell = (entity, item) => {
+    const isPrivate = item.visibility === "Private";
+    return (
+      <td>
+        <button
+          type="button"
+          onClick={() => handleToggleVisibility(entity, item)}
+          title={
+            isPrivate
+              ? "Đang riêng tư – bấm để chuyển sang Công khai"
+              : "Đang công khai – bấm để chuyển sang Riêng tư"
+          }
+          className="px-3 py-1 rounded-pill fw-semibold d-inline-flex align-items-center"
+          style={{
+            fontSize: "0.8rem",
+            cursor: "pointer",
+            backgroundColor: isPrivate ? "#FEE2E2" : "#E1EFFC",
+            color: isPrivate ? "#991B1B" : "#1858A0",
+            border: isPrivate ? "1px solid #FCA5A5" : "1px solid #9CC7EF",
+          }}
+        >
+          <i className={`bi ${isPrivate ? "bi-lock-fill" : "bi-globe2"} me-1`}></i>
+          {isPrivate ? "Riêng tư" : "Công khai"}
+        </button>
+      </td>
+    );
   };
 
   // Ban / Mở khóa tài khoản student
@@ -463,6 +521,12 @@ const AdminPage = ({ user }) => {
     }
   };
 
+  // Lọc theo chế độ xem (Tất cả / Public / Private)
+  const visMatches = (f, item) =>
+    !f.visibility ||
+    f.visibility === "Tất cả" ||
+    (item.visibility || "Public") === f.visibility;
+
   // Lọc nhanh trên giao diện kết hợp cùng dữ liệu từ Server
   const filteredLost = lostList.filter((item) => {
     const matchStatus =
@@ -473,7 +537,7 @@ const AdminPage = ({ user }) => {
       (item.title && item.title.toLowerCase().includes(kw)) ||
       (item.author && item.author.toLowerCase().includes(kw)) ||
       (item.content && item.content.toLowerCase().includes(kw));
-    return matchStatus && matchKw;
+    return matchStatus && matchKw && visMatches(lostFilter, item);
   });
 
   const filteredFound = foundList.filter((item) => {
@@ -485,26 +549,30 @@ const AdminPage = ({ user }) => {
       (item.itemName && item.itemName.toLowerCase().includes(kw)) ||
       (item.author && item.author.toLowerCase().includes(kw)) ||
       (item.description && item.description.toLowerCase().includes(kw));
-    return matchStatus && matchKw;
+    return matchStatus && matchKw && visMatches(foundFilter, item);
   });
 
   const filteredForum = forumList.filter((item) => {
     const kw = forumFilter.keyword.toLowerCase();
     return (
+      visMatches(forumFilter, item) &&
+      (
       !kw ||
       (item.title && item.title.toLowerCase().includes(kw)) ||
       (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
-      (item.content && item.content.toLowerCase().includes(kw))
+      (item.content && item.content.toLowerCase().includes(kw)))
     );
   });
 
   const filteredReviews = reviewList.filter((item) => {
     const kw = reviewFilter.keyword.toLowerCase();
     return (
+      visMatches(reviewFilter, item) &&
+      (
       !kw ||
       (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
       (item.username && item.username.toLowerCase().includes(kw)) ||
-      (item.comment && item.comment.toLowerCase().includes(kw))
+      (item.comment && item.comment.toLowerCase().includes(kw)))
     );
   });
 
@@ -599,7 +667,7 @@ const AdminPage = ({ user }) => {
     <div
       className="text-start"
       style={{
-        backgroundColor: "#F4F7F6",
+        backgroundColor: "#f4f9ff",
         minHeight: "calc(100vh - 70px)",
         paddingBottom: "50px",
       }}
@@ -623,7 +691,7 @@ const AdminPage = ({ user }) => {
                 ></i>
                 TRUNG TÂM QUẢN TRỊ HỆ THỐNG - CAMPUS FPT CẦN THƠ
               </p>
-              <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+              <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>
                 {sectionMeta[activeSection].title}
               </h3>
               <p
@@ -687,7 +755,7 @@ const AdminPage = ({ user }) => {
                         </small>
                         <h4
                           className="fw-bold mb-0 mt-1"
-                          style={{ color: "#10393B" }}
+                          style={{ color: "#12345a" }}
                         >
                           {st.count}
                         </h4>
@@ -697,7 +765,7 @@ const AdminPage = ({ user }) => {
                         style={{
                           width: "42px",
                           height: "42px",
-                          backgroundColor: "#EAF5F3",
+                          backgroundColor: "#eaf3fc",
                           color: primaryColor,
                         }}
                       >
@@ -799,6 +867,22 @@ const AdminPage = ({ user }) => {
                         <option value="Tất cả">Tất cả</option>
                         <option value="Đang tìm đồ">Đang tìm đồ</option>
                         <option value="Đã tìm được">Đã tìm được</option>
+                      </Form.Select>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Label className="fw-semibold text-secondary small">
+                        Chế độ xem
+                      </Form.Label>
+                      <Form.Select
+                        value={lostFilter.visibility || "Tất cả"}
+                        onChange={(e) =>
+                          setLostFilter({ ...lostFilter, visibility: e.target.value })
+                        }
+                        className="bg-light border-0"
+                      >
+                        <option value="Tất cả">Tất cả</option>
+                        <option value="Public">Công khai</option>
+                        <option value="Private">Riêng tư</option>
                       </Form.Select>
                     </Col>
                     <Col md={2} className="d-flex gap-2">
@@ -919,6 +1003,22 @@ const AdminPage = ({ user }) => {
                         <option value="Claimed">Đã trao trả</option>
                       </Form.Select>
                     </Col>
+                    <Col md={2}>
+                      <Form.Label className="fw-semibold text-secondary small">
+                        Chế độ xem
+                      </Form.Label>
+                      <Form.Select
+                        value={foundFilter.visibility || "Tất cả"}
+                        onChange={(e) =>
+                          setFoundFilter({ ...foundFilter, visibility: e.target.value })
+                        }
+                        className="bg-light border-0"
+                      >
+                        <option value="Tất cả">Tất cả</option>
+                        <option value="Public">Công khai</option>
+                        <option value="Private">Riêng tư</option>
+                      </Form.Select>
+                    </Col>
                     <Col md={2} className="d-flex gap-2">
                       <Button
                         type="submit"
@@ -1013,6 +1113,22 @@ const AdminPage = ({ user }) => {
                         <option value="oldest">Cũ nhất</option>
                       </Form.Select>
                     </Col>
+                    <Col md={2}>
+                      <Form.Label className="fw-semibold text-secondary small">
+                        Chế độ xem
+                      </Form.Label>
+                      <Form.Select
+                        value={forumFilter.visibility || "Tất cả"}
+                        onChange={(e) =>
+                          setForumFilter({ ...forumFilter, visibility: e.target.value })
+                        }
+                        className="bg-light border-0"
+                      >
+                        <option value="Tất cả">Tất cả</option>
+                        <option value="Public">Công khai</option>
+                        <option value="Private">Riêng tư</option>
+                      </Form.Select>
+                    </Col>
                     <Col md={2} className="d-flex gap-2">
                       <Button
                         type="submit"
@@ -1103,6 +1219,22 @@ const AdminPage = ({ user }) => {
                       >
                         <option value="newest">Mới nhất</option>
                         <option value="oldest">Cũ nhất</option>
+                      </Form.Select>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Label className="fw-semibold text-secondary small">
+                        Chế độ xem
+                      </Form.Label>
+                      <Form.Select
+                        value={reviewFilter.visibility || "Tất cả"}
+                        onChange={(e) =>
+                          setReviewFilter({ ...reviewFilter, visibility: e.target.value })
+                        }
+                        className="bg-light border-0"
+                      >
+                        <option value="Tất cả">Tất cả</option>
+                        <option value="Public">Công khai</option>
+                        <option value="Private">Riêng tư</option>
                       </Form.Select>
                     </Col>
                     <Col md={2} className="d-flex gap-2">
@@ -1316,7 +1448,7 @@ const AdminPage = ({ user }) => {
                               key={h}
                               className={i === 0 ? "ps-4 py-3" : "py-3"}
                               style={{
-                                backgroundColor: "#10393B",
+                                backgroundColor: "#12345a",
                                 color: "#ffffff",
                                 fontSize: "0.8rem",
                               }}
@@ -1408,7 +1540,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="ps-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1418,7 +1550,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1428,7 +1560,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1438,7 +1570,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1448,7 +1580,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1458,7 +1590,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1466,9 +1598,19 @@ const AdminPage = ({ user }) => {
                             TRẠNG THÁI
                           </th>
                           <th
+                            className="py-3"
+                            style={{
+                              backgroundColor: "#12345A",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            CHẾ ĐỘ XEM
+                          </th>
+                          <th
                             className="text-end pe-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1481,7 +1623,7 @@ const AdminPage = ({ user }) => {
                         {filteredLost.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={7}
+                              colSpan={8}
                               className="text-center py-4 text-muted"
                             >
                               Không có bài đăng Lost nào khớp với bộ lọc.
@@ -1544,6 +1686,7 @@ const AdminPage = ({ user }) => {
                                     {isFinding ? "Đang tìm đồ" : "Đã tìm được"}
                                   </span>
                                 </td>
+                                {renderVisibilityCell("lost", item)}
                                 <td className="text-end pe-4">
                                   <div className="d-flex justify-content-end gap-2">
                                     <Button
@@ -1597,7 +1740,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="ps-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1607,7 +1750,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1617,7 +1760,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1627,7 +1770,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1637,7 +1780,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1647,7 +1790,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1655,9 +1798,19 @@ const AdminPage = ({ user }) => {
                             TRẠNG THÁI
                           </th>
                           <th
+                            className="py-3"
+                            style={{
+                              backgroundColor: "#12345A",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            CHẾ ĐỘ XEM
+                          </th>
+                          <th
                             className="text-end pe-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1670,7 +1823,7 @@ const AdminPage = ({ user }) => {
                         {filteredFound.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={7}
+                              colSpan={8}
                               className="text-center py-4 text-muted"
                             >
                               Không có bài đăng Found nào khớp với bộ lọc.
@@ -1750,6 +1903,7 @@ const AdminPage = ({ user }) => {
                                       : "Đã trao trả"}
                                   </span>
                                 </td>
+                                {renderVisibilityCell("found", item)}
                                 <td className="text-end pe-4">
                                   <div className="d-flex justify-content-end gap-2">
                                     <Button
@@ -1800,7 +1954,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="ps-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1810,7 +1964,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1820,7 +1974,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1830,7 +1984,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1840,7 +1994,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1850,7 +2004,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1858,9 +2012,19 @@ const AdminPage = ({ user }) => {
                             TRẠNG THÁI
                           </th>
                           <th
+                            className="py-3"
+                            style={{
+                              backgroundColor: "#12345A",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            CHẾ ĐỘ XEM
+                          </th>
+                          <th
                             className="text-end pe-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1873,7 +2037,7 @@ const AdminPage = ({ user }) => {
                         {filteredForum.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={7}
+                              colSpan={8}
                               className="text-center py-4 text-muted"
                             >
                               Không có bài viết diễn đàn nào khớp với bộ lọc.
@@ -1935,6 +2099,7 @@ const AdminPage = ({ user }) => {
                                   Đang hiển thị
                                 </span>
                               </td>
+                              {renderVisibilityCell("forum", item)}
                               <td className="text-end pe-4">
                                 <div className="d-flex justify-content-end gap-2">
                                   <Button
@@ -1984,7 +2149,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="ps-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -1994,7 +2159,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2004,7 +2169,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2014,7 +2179,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2024,7 +2189,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2034,7 +2199,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2042,9 +2207,19 @@ const AdminPage = ({ user }) => {
                             TRẠNG THÁI
                           </th>
                           <th
+                            className="py-3"
+                            style={{
+                              backgroundColor: "#12345A",
+                              color: "#ffffff",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            CHẾ ĐỘ XEM
+                          </th>
+                          <th
                             className="text-end pe-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2057,7 +2232,7 @@ const AdminPage = ({ user }) => {
                         {filteredReviews.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={7}
+                              colSpan={8}
                               className="text-center py-4 text-muted"
                             >
                               Không có đánh giá nào khớp với bộ lọc.
@@ -2123,6 +2298,7 @@ const AdminPage = ({ user }) => {
                                     : "Cần chú ý"}
                                 </span>
                               </td>
+                              {renderVisibilityCell("review", item)}
                               <td className="text-end pe-4">
                                 <div className="d-flex justify-content-end gap-2">
                                   <Button
@@ -2172,7 +2348,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="ps-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2182,7 +2358,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2192,7 +2368,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2202,7 +2378,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2212,7 +2388,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2222,7 +2398,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2232,7 +2408,7 @@ const AdminPage = ({ user }) => {
                           <th
                             className="text-end pe-4 py-3"
                             style={{
-                              backgroundColor: "#10393B",
+                              backgroundColor: "#12345a",
                               color: "#ffffff",
                               fontSize: "0.8rem",
                             }}
@@ -2393,7 +2569,7 @@ const AdminPage = ({ user }) => {
         contentClassName="border-0 shadow-lg rounded-4"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-2 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             <i
               className={`bi ${
                 formMode === "create"
@@ -2911,7 +3087,7 @@ const AdminPage = ({ user }) => {
           contentClassName="border-0 shadow-lg rounded-4"
         >
           <Modal.Header closeButton className="border-0 pb-0 mt-2 mx-3">
-            <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+            <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
               Chi tiết bản ghi #{viewItem.id || viewItem.userId}
             </Modal.Title>
           </Modal.Header>

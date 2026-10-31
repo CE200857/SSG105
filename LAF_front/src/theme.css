@@ -1,0 +1,239 @@
+/* =====================================================================
+   THEME LOST&FOUND – xanh dương nhẹ & trắng, hiện đại
+   Bảng màu lấy từ poster: navy #12345A · xanh #1F6DBA · nền trời #CAE5FB
+   ===================================================================== */
+:root {
+  --lf-navy: #12345a;
+  --lf-blue-700: #1858a0;
+  --lf-blue-600: #1f6dba;
+  --lf-blue-500: #3b8fdc;
+  --lf-blue-300: #9cc7ef;
+  --lf-blue-200: #cae5fb;
+  --lf-blue-100: #e1effc;
+  --lf-blue-50: #f4f9ff;
+  --lf-radius: 18px;
+  --lf-shadow: 0 10px 30px rgba(18, 52, 90, 0.08);
+  --lf-shadow-hover: 0 16px 38px rgba(31, 109, 186, 0.18);
+
+  /* Ghi đè biến cũ của App.css */
+  --seoul-50: var(--lf-blue-50);
+  --seoul-100: var(--lf-blue-100);
+  --seoul-200: var(--lf-blue-200);
+  --seoul-300: var(--lf-blue-300);
+  --seoul-500: var(--lf-blue-500);
+  --seoul-600: var(--lf-blue-600);
+  --seoul-700: var(--lf-blue-700);
+  --seoul-800: var(--lf-navy);
+  --seoul-900: #0c2746;
+  --seoul-border: #d6e6f7;
+  --seoul-ink: #1b2f4b;
+  --seoul-muted: #5f7392;
+  --seoul-shadow: var(--lf-shadow);
+
+  /* Bootstrap */
+  --bs-primary: #1f6dba;
+  --bs-primary-rgb: 31, 109, 186;
+  --bs-link-color: #1f6dba;
+  --bs-link-hover-color: #12345a;
+  --bs-body-color: #1b2f4b;
+  --bs-font-sans-serif: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+}
+
+html,
+body {
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  color: #1b2f4b;
+  letter-spacing: normal;
+  background: linear-gradient(180deg, #d9ebfc 0, #f4f9ff 460px, #ffffff 100%)
+    fixed;
+}
+#root {
+  border-inline: none !important;
+  background: transparent;
+}
+h1, h2, h3, h4, h5, h6 {
+  color: var(--lf-navy);
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Thanh điều hướng ---------- */
+.navbar {
+  background: rgba(255, 255, 255, 0.86) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #d6e6f7;
+  box-shadow: 0 6px 24px rgba(18, 52, 90, 0.06) !important;
+}
+.lf-brand-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--lf-navy);
+}
+.lf-brand-light { font-weight: 400; }
+.lf-brand-amp { font-weight: 800; color: var(--lf-blue-600); }
+.lf-brand-bold { font-weight: 800; }
+.lf-brand-tag {
+  margin-left: 8px;
+  align-self: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--lf-blue-700);
+  background: var(--lf-blue-100);
+}
+.navbar .nav-link {
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+.navbar .nav-link:hover {
+  background: var(--lf-blue-100);
+  color: var(--lf-blue-700) !important;
+}
+
+/* ---------- Thẻ (card) & bài đăng ---------- */
+.card {
+  border-radius: var(--lf-radius) !important;
+  border: 1px solid #e1effc !important;
+  box-shadow: var(--lf-shadow);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.card.rounded-4:not(.sticky-top):hover {
+  transform: translateY(-3px);
+  box-shadow: var(--lf-shadow-hover);
+}
+.modal-content {
+  border-radius: 22px !important;
+  border: 0 !important;
+  box-shadow: 0 24px 60px rgba(18, 52, 90, 0.25) !important;
+}
+.modal-backdrop.show {
+  background: #0c2746;
+  opacity: 0.45;
+  backdrop-filter: blur(3px);
+}
+.dropdown-menu {
+  border-radius: 14px !important;
+  border: 1px solid #e1effc !important;
+  box-shadow: 0 14px 34px rgba(18, 52, 90, 0.16) !important;
+  padding: 6px;
+}
+.dropdown-item { border-radius: 10px; }
+.dropdown-item:hover,
+.dropdown-item:focus { background: var(--lf-blue-100); color: var(--lf-blue-700); }
+.dropdown-item.text-danger:hover { background: #fee2e2; color: #b42318 !important; }
+
+/* ---------- Nút ---------- */
+.btn {
+  border-radius: 12px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.btn:not(.btn-link):not(.btn-light):hover { transform: translateY(-1px); }
+/* Nút nền xanh thương hiệu (viết inline) -> gradient + bóng */
+.btn[style*="rgb(31, 109, 186)"] {
+  background-image: linear-gradient(135deg, #3b8fdc 0%, #1858a0 100%) !important;
+  border: 0 !important;
+  box-shadow: 0 8px 20px rgba(31, 109, 186, 0.28);
+  color: #fff;
+}
+.btn[style*="rgb(31, 109, 186)"]:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 12px 26px rgba(31, 109, 186, 0.36);
+}
+.btn-light { background: var(--lf-blue-50); border-color: #e1effc; }
+.btn-light:hover { background: var(--lf-blue-100); }
+
+/* ---------- Ô nhập liệu ---------- */
+.form-control,
+.form-select {
+  border-radius: 12px;
+}
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--lf-blue-500) !important;
+  box-shadow: 0 0 0 0.22rem rgba(59, 143, 220, 0.22) !important;
+}
+.bg-light { background-color: #eef5fd !important; }
+
+/* ---------- Nút Thích / Bình luận / Chia sẻ (tách rời nhau) ---------- */
+.post-actions {
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.post-actions > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--lf-blue-50);
+  border: 1px solid #e1effc;
+  transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+  user-select: none;
+}
+.post-actions > span i { margin: 0 !important; }
+.post-actions > span:hover {
+  background: var(--lf-blue-100);
+  color: var(--lf-blue-700) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(31, 109, 186, 0.15);
+}
+.post-actions > span.ms-auto { margin-left: auto !important; }
+
+/* ---------- Bảng quản trị ---------- */
+.table > thead > tr > th {
+  background-color: var(--lf-navy) !important;
+  color: #fff !important;
+  letter-spacing: 0.04em;
+}
+.table-hover > tbody > tr:hover > * { background-color: var(--lf-blue-50); }
+
+/* ---------- Thanh cuộn ---------- */
+* { scrollbar-width: thin; scrollbar-color: #9cc7ef transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #9cc7ef; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3b8fdc; }
+
+/* ---------- Footer ---------- */
+.lf-footer {
+  margin-top: 40px;
+  padding: 48px 0 18px;
+  color: #cfe0f5;
+  background: linear-gradient(160deg, #12345a 0%, #1858a0 100%);
+  border-radius: 28px 28px 0 0;
+}
+.lf-footer-logo {
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+.lf-footer-logo img { width: 100%; height: 100%; object-fit: contain; }
+.lf-brand-on-dark { color: #fff; }
+.lf-brand-on-dark .lf-brand-amp { color: #8fc4f5; }
+.lf-footer-muted { color: #a9c6e6; }
+.lf-footer-link { color: #cfe0f5 !important; transition: color 0.2s, padding 0.2s; }
+.lf-footer-link:hover { color: #fff !important; padding-left: 4px; }
+.lf-footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.18); color: #a9c6e6; }
+
+/* ---------- Giữ đúng nghĩa màu "thành công / thông tin" ---------- */
+.badge.bg-success, .bg-success { background-color: #16a34a !important; color: #fff !important; }
+.text-success { color: #15803d !important; }
+.btn-success {
+  --bs-btn-bg: #16a34a;
+  --bs-btn-border-color: #16a34a;
+  --bs-btn-hover-bg: #15803d;
+  --bs-btn-hover-border-color: #15803d;
+  --bs-btn-active-bg: #166534;
+  --bs-btn-active-border-color: #166534;
+}
+.badge.bg-info, .bg-info { background-color: #0ea5e9 !important; color: #fff !important; }

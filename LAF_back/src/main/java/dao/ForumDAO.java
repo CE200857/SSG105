@@ -14,7 +14,7 @@ public class ForumDAO extends DBContext {
         List<Map<String, Object>> list = new ArrayList<>();
         String query = "SELECT TOP 2 PostID, Title, Category, "
                 + "CONVERT(VARCHAR, CreatedAt, 103) as Date "
-                + "FROM ForumPosts WHERE ApprovalStatus = 'Approved' ORDER BY CreatedAt DESC";
+                + "FROM ForumPosts WHERE ApprovalStatus = 'Approved' AND Visibility = 'Public' ORDER BY CreatedAt DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
@@ -33,11 +33,16 @@ public class ForumDAO extends DBContext {
     }
 
     public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail) {
+        return getForumPosts(categoryFilter, sortBy, currentUserEmail, false, null);
+    }
+
+    // adminView = true: thấy cả bài riêng tư (trang quản lý), có thể lọc theo visibility (Public/Private)
+    public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail, boolean adminView, String visibilityFilter) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
                 "SELECT f.PostID, f.Title, f.Category, f.Content, "
                 + "CONVERT(VARCHAR, f.CreatedAt, 103) as Date, "
-                + "u.FullName, u.Username, "
+                + "f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, "
                 + "(SELECT COUNT(*) FROM ForumLikes fl WHERE fl.PostID = f.PostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM ForumLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.PostID = f.PostID AND u2.Email = ?) as UserLiked "
                 + "FROM ForumPosts f JOIN Users u ON f.UserID = u.UserID WHERE 1=1 AND f.ApprovalStatus = 'Approved' "
@@ -45,6 +50,17 @@ public class ForumDAO extends DBContext {
 
         List<Object> params = new ArrayList<>();
         params.add(currentUserEmail != null ? currentUserEmail : "");
+
+        if (adminView) {
+            if ("Public".equals(visibilityFilter) || "Private".equals(visibilityFilter)) {
+                query.append("AND f.Visibility = ? ");
+                params.add(visibilityFilter);
+            }
+        } else {
+            // Người xem thường: chỉ thấy bài công khai + bài riêng tư của chính mình
+            query.append("AND (f.Visibility = 'Public' OR u.Email = ?) ");
+            params.add(currentUserEmail != null ? currentUserEmail : "");
+        }
 
         if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("Tất cả")) {
             query.append("AND f.Category = ? ");
@@ -74,6 +90,8 @@ public class ForumDAO extends DBContext {
                 map.put("date", rs.getString("Date"));
                 map.put("fullName", rs.getString("FullName"));
                 map.put("username", rs.getString("Username"));
+                map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("visibility", rs.getString("Visibility"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
 

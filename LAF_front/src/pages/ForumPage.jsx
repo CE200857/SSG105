@@ -17,6 +17,8 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { setPostVisibility } from "../utils/visibility";
+import { VisibilityBadge } from "../components/Visibility";
 
 // Mác phân loại chủ đề của bài viết Forum
 const CATEGORY_META = {
@@ -74,7 +76,7 @@ const CategoryBadge = ({ category, large = false }) => {
 };
 
 const ForumPage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const locationData = useLocation();
   const navState = locationData.state || {};
@@ -83,6 +85,7 @@ const ForumPage = ({ user }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState("Tất cả");
+  const [onlyMine, setOnlyMine] = useState(false); // lọc bài của bản thân
   const [sortBy, setSortBy] = useState("newest");
 
   // State cho Modal Tạo bài viết mới
@@ -129,6 +132,20 @@ const ForumPage = ({ user }) => {
   };
 
   // Kiểm tra quyền tác giả bài viết
+  // Đổi chế độ xem bài của mình: Công khai <-> Riêng tư
+  const handleToggleVisibility = async (item) => {
+    const next = item.visibility === "Private" ? "Public" : "Private";
+    const ok = await setPostVisibility("forum", item.id, user?.email, next);
+    if (ok) {
+      setPosts((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, visibility: next } : p)),
+      );
+      setSelectedPostDetail((prev) =>
+        prev && prev.id === item.id ? { ...prev, visibility: next } : prev,
+      );
+    }
+  };
+
   const isOwner = (post) => {
     if (!user || !post) return false;
     return (
@@ -579,10 +596,13 @@ const ForumPage = ({ user }) => {
     }, 1200);
   };
 
+  // Danh sách hiển thị: có thể chỉ giữ bài của chính mình
+  const visiblePosts = onlyMine ? posts.filter((p) => isOwner(p)) : posts;
+
   return (
     <div
       style={{
-        backgroundColor: "#F4F7F6",
+        backgroundColor: "#f4f9ff",
         minHeight: "100vh",
         padding: "40px 0",
       }}
@@ -591,7 +611,7 @@ const ForumPage = ({ user }) => {
         {/* Header Trang */}
         <div className="d-flex flex-wrap justify-content-between align-items-end mb-4">
           <div className="text-start mb-3 mb-md-0">
-            <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+            <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>
               Diễn đàn sinh viên
             </h3>
             <p className="text-secondary mb-0">
@@ -631,7 +651,7 @@ const ForumPage = ({ user }) => {
                       cursor: "pointer",
                       transition: "0.2s",
                       backgroundColor:
-                        categoryFilter === cat ? "#EAF5F3" : "transparent",
+                        categoryFilter === cat ? "#eaf3fc" : "transparent",
                       color: categoryFilter === cat ? primaryColor : "inherit",
                       borderLeft:
                         categoryFilter === cat
@@ -643,6 +663,25 @@ const ForumPage = ({ user }) => {
                   </div>
                 ))}
               </div>
+
+              {user && (
+                <div
+                  onClick={() => setOnlyMine(!onlyMine)}
+                  className="mt-4 p-2 rounded-3 fw-semibold d-flex align-items-center justify-content-between"
+                  style={{
+                    cursor: "pointer",
+                    transition: "0.2s",
+                    backgroundColor: onlyMine ? primaryColor : "#EAF3FC",
+                    color: onlyMine ? "#fff" : primaryColor,
+                  }}
+                >
+                  <span>
+                    <i className="bi bi-person-check-fill me-2"></i>
+                    Bài viết của tôi
+                  </span>
+                  {onlyMine && <i className="bi bi-check-lg"></i>}
+                </div>
+              )}
 
               <h6 className="fw-bold text-dark mb-3 mt-5">Sắp xếp bài viết</h6>
               <Form.Select
@@ -662,7 +701,7 @@ const ForumPage = ({ user }) => {
               <div className="text-center py-5">
                 <Spinner animation="border" style={{ color: primaryColor }} />
               </div>
-            ) : posts.length === 0 ? (
+            ) : visiblePosts.length === 0 ? (
               <div className="text-center py-5 text-secondary">
                 <i className="bi bi-journal-x fs-1 opacity-50 mb-3 d-block"></i>
                 <h5 className="fw-bold">Chưa có bài viết nào</h5>
@@ -670,7 +709,7 @@ const ForumPage = ({ user }) => {
               </div>
             ) : (
               <div className="d-flex flex-column gap-3">
-                {posts.map((post) => (
+                {visiblePosts.map((post) => (
                   <Card
                     key={post.id}
                     className="border-0 shadow-sm rounded-4 p-4 text-start transition-hover"
@@ -715,6 +754,7 @@ const ForumPage = ({ user }) => {
                         className="ms-auto d-flex align-items-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <VisibilityBadge visibility={post.visibility} />
                         <CategoryBadge category={post.category} />
 
                         {/* MENU BA CHẤM (...) CHO BÀI VIẾT CỦA CHÍNH MÌNH */}
@@ -736,6 +776,21 @@ const ForumPage = ({ user }) => {
                                 <i className="bi bi-pencil-square me-2 text-primary"></i>
                                 Chỉnh sửa bài viết
                               </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(post);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {post.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setSelectedPostId(post.id);
@@ -752,7 +807,7 @@ const ForumPage = ({ user }) => {
                       </div>
                     </div>
 
-                    <h5 className="fw-bold mb-2" style={{ color: "#10393B" }}>
+                    <h5 className="fw-bold mb-2" style={{ color: "#12345a" }}>
                       {post.title}
                     </h5>
                     <p
@@ -763,7 +818,7 @@ const ForumPage = ({ user }) => {
                     </p>
 
                     <div
-                      className="mt-3 pt-3 border-top d-flex justify-content-between text-secondary"
+                      className="mt-3 pt-3 post-actions border-top d-flex justify-content-between text-secondary"
                       style={{ fontSize: "0.85rem" }}
                     >
                       <span
@@ -927,7 +982,7 @@ const ForumPage = ({ user }) => {
           style={{ borderRadius: "20px", overflow: "hidden" }}
         >
           <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
-            <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+            <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
               <i
                 className="bi bi-pencil-square me-2"
                 style={{ color: primaryColor }}
@@ -1037,7 +1092,7 @@ const ForumPage = ({ user }) => {
           style={{ borderRadius: "20px", overflow: "hidden" }}
         >
           <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
-            <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+            <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
               <i
                 className="bi bi-share-fill me-2"
                 style={{ color: primaryColor }}
@@ -1172,6 +1227,21 @@ const ForumPage = ({ user }) => {
                           <i className="bi bi-pencil-square me-2 text-primary"></i>
                           Chỉnh sửa bài viết
                         </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(selectedPostDetail);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${selectedPostDetail.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {selectedPostDetail.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                         <Dropdown.Item
                           onClick={() => {
                             setSelectedPostId(selectedPostDetail.id);
@@ -1199,7 +1269,7 @@ const ForumPage = ({ user }) => {
                   Chủ đề bài viết
                 </span>
               </div>
-              <h4 className="fw-bold mb-3" style={{ color: "#10393B" }}>
+              <h4 className="fw-bold mb-3" style={{ color: "#12345a" }}>
                 {selectedPostDetail.title}
               </h4>
               <p

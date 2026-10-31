@@ -7,6 +7,7 @@ import dao.FoundPostDAO;
 import dao.LostPostDAO;
 import dao.ReviewDAO;
 import dao.ModerationDAO;
+import dao.VisibilityDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -51,7 +52,9 @@ public class AdminServlet extends HttpServlet {
                         request.getParameter("keyword"),
                         request.getParameter("category"),
                         request.getParameter("location"),
-                        ""
+                        "",
+                        true,
+                        request.getParameter("visibility")
                 )));
                 break;
             case "found":
@@ -61,7 +64,9 @@ public class AdminServlet extends HttpServlet {
                         request.getParameter("category"),
                         request.getParameter("location"),
                         request.getParameter("sort"),
-                        ""
+                        "",
+                        true,
+                        request.getParameter("visibility")
                 )));
                 break;
             case "forum":
@@ -69,7 +74,9 @@ public class AdminServlet extends HttpServlet {
                 out.print(gson.toJson(forumDao.getForumPosts(
                         request.getParameter("category"),
                         request.getParameter("sort"),
-                        ""
+                        "",
+                        true,
+                        request.getParameter("visibility")
                 )));
                 break;
             case "reviews":
@@ -79,7 +86,7 @@ public class AdminServlet extends HttpServlet {
                     star = Integer.parseInt(request.getParameter("star"));
                 } catch (Exception ignore) {
                 }
-                out.print(gson.toJson(revDao.getReviews(star, request.getParameter("sort"))));
+                out.print(gson.toJson(revDao.getReviews(star, request.getParameter("sort"), "", true, request.getParameter("visibility"))));
                 break;
             case "pending":
                 out.print(gson.toJson(new ModerationDAO().getPendingPosts()));
@@ -109,7 +116,15 @@ public class AdminServlet extends HttpServlet {
         ModerationDAO modDao = new ModerationDAO();
 
         try {
-            if ("user".equals(entity)) {
+            if ("visibility".equals(action)) {
+                // Admin đổi chế độ xem của mọi bài (lost / found / forum / review)
+                boolean ok = new VisibilityDAO().setVisibilityAdmin(
+                        entity,
+                        Integer.parseInt(request.getParameter("id")),
+                        request.getParameter("visibility"));
+                result.put("success", ok);
+                result.put("message", ok ? "Đã đổi chế độ xem!" : "Không thể đổi chế độ xem!");
+            } else if ("user".equals(entity)) {
                 if ("create".equals(action)) {
                     String err = adminDao.createUserByAdmin(
                             request.getParameter("username"),

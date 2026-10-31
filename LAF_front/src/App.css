@@ -1,17 +1,17 @@
 :root {
-  --seoul-50: #f4f7f6;
-  --seoul-100: #e3f1ee;
-  --seoul-200: #cde7e1;
-  --seoul-300: #9fd3c7;
-  --seoul-500: #11a084;
-  --seoul-600: #0c8b72;
-  --seoul-700: #0a735f;
-  --seoul-800: #10393b;
-  --seoul-900: #0b2a2c;
-  --seoul-border: #dce8e5;
-  --seoul-ink: #1f2d2b;
+  --seoul-50: #f4f9ff;
+  --seoul-100: #e1effc;
+  --seoul-200: #cfe3f8;
+  --seoul-300: #9cc7ef;
+  --seoul-500: #3b8fdc;
+  --seoul-600: #1f6dba;
+  --seoul-700: #1858a0;
+  --seoul-800: #12345a;
+  --seoul-900: #0c2746;
+  --seoul-border: #d6e6f7;
+  --seoul-ink: #1b2f4b;
   --seoul-muted: #6b7c79;
-  --seoul-shadow: 0 6px 20px rgba(16, 57, 59, 0.08);
+  --seoul-shadow: 0 6px 20px rgba(18, 52, 90, 0.08);
 }
 #root {
   width: 100%;
@@ -42,7 +42,7 @@
   min-height: 72px;
   background: rgba(255, 255, 255, 0.94) !important;
   border-bottom: 1px solid var(--seoul-border);
-  box-shadow: 0 4px 18px rgba(112, 24, 67, 0.06);
+  box-shadow: 0 4px 18px rgba(18, 52, 90, 0.06);
   backdrop-filter: blur(12px);
 }
 
@@ -93,7 +93,7 @@
   min-width: 88px !important;
   background: rgba(255, 255, 255, 0.62) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 8px 0 30px rgba(112, 24, 67, 0.08), inset -1px 0 0 rgba(255, 255, 255, 0.65);
+  box-shadow: 8px 0 30px rgba(18, 52, 90, 0.08), inset -1px 0 0 rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
 }
@@ -187,14 +187,14 @@
 .app-sidebar.collapsed .app-nav-link:focus-visible {
   background: rgba(255, 255, 255, 0.78);
   border-color: rgba(197, 45, 105, 0.16);
-  box-shadow: 0 8px 20px rgba(112, 24, 67, 0.1);
+  box-shadow: 0 8px 20px rgba(18, 52, 90, 0.1);
   transform: translateY(-2px);
 }
 
 .app-sidebar.collapsed .app-nav-link:hover .bi,
 .app-sidebar.collapsed .app-nav-link:focus-visible .bi {
   transform: scale(1.08);
-  filter: drop-shadow(0 2px 3px rgba(112, 24, 67, 0.18));
+  filter: drop-shadow(0 2px 3px rgba(18, 52, 90, 0.18));
 }
 
 .app-sidebar.collapsed .app-nav-link.active {
@@ -211,7 +211,7 @@
 .app-sidebar-toggle:hover,
 .app-sidebar-toggle:focus-visible {
   border-color: var(--seoul-300) !important;
-  box-shadow: 0 0 0 4px rgba(197, 45, 105, 0.08), 0 8px 18px rgba(112, 24, 67, 0.08);
+  box-shadow: 0 0 0 4px rgba(197, 45, 105, 0.08), 0 8px 18px rgba(18, 52, 90, 0.08);
   transform: translateY(-1px);
   outline: none;
 }
@@ -241,7 +241,7 @@
 .app-footer {
   color: #fff;
   background: linear-gradient(115deg, #a71953 0%, #8f174b 48%, #741541 100%);
-  box-shadow: 0 -10px 30px rgba(112, 24, 67, 0.1);
+  box-shadow: 0 -10px 30px rgba(18, 52, 90, 0.1);
 }
 
 .app-footer-grid {
@@ -290,7 +290,7 @@
 .app-login-card {
   border: 1px solid rgba(238, 221, 229, 0.9) !important;
   border-radius: 22px !important;
-  box-shadow: 0 22px 55px rgba(112, 24, 67, 0.12) !important;
+  box-shadow: 0 22px 55px rgba(18, 52, 90, 0.12) !important;
 }
 
 .btn {

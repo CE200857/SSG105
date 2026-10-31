@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Home = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
 
   const [recentPosts, setRecentPosts] = useState([]);
@@ -190,7 +190,7 @@ const Home = ({ user }) => {
 
       <section
         style={{
-          backgroundColor: "#EAF5F3",
+          backgroundColor: "#eaf3fc",
           paddingTop: "60px",
           paddingBottom: "60px",
         }}
@@ -212,7 +212,7 @@ const Home = ({ user }) => {
               <h1
                 className="fw-bold mb-4"
                 style={{
-                  color: "#10393B",
+                  color: "#12345a",
                   fontSize: "3.2rem",
                   lineHeight: "1.2",
                 }}
@@ -248,7 +248,7 @@ const Home = ({ user }) => {
                     fontWeight: "600",
                   }}
                   onMouseOver={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#0a735e")
+                    (e.currentTarget.style.backgroundColor = "#1858a0")
                   } // Đổi màu xanh đậm hơn khi hover
                   onMouseOut={(e) =>
                     (e.currentTarget.style.backgroundColor = primaryColor)
@@ -264,7 +264,7 @@ const Home = ({ user }) => {
                     borderRadius: "10px",
                     padding: "12px 24px",
                     fontWeight: "600",
-                    color: "#10393B",
+                    color: "#12345a",
                     border: "1px solid #dee2e6",
                   }}
                 >
@@ -304,7 +304,7 @@ const Home = ({ user }) => {
                     borderRadius: "30px",
                     fontSize: "0.85rem",
                     fontWeight: "600",
-                    color: "#10393B",
+                    color: "#12345a",
                   }}
                 >
                   <i className="bi bi-geo-alt text-danger"></i> Campus FPT Cần
@@ -330,7 +330,7 @@ const Home = ({ user }) => {
                     <div>
                       <h6
                         className="mb-1 fw-bold"
-                        style={{ fontSize: "0.95rem", color: "#10393B" }}
+                        style={{ fontSize: "0.95rem", color: "#12345a" }}
                       >
                         Tìm lại đồ, kết nối bạn bè
                       </h6>
@@ -360,7 +360,7 @@ const Home = ({ user }) => {
                     <div className="flex-grow-1">
                       <label
                         className="fw-bold mb-0"
-                        style={{ fontSize: "0.85rem", color: "#10393B" }}
+                        style={{ fontSize: "0.85rem", color: "#12345a" }}
                       >
                         TÌM ĐỒ TRONG CAMPUS
                       </label>
@@ -398,7 +398,7 @@ const Home = ({ user }) => {
                     <div className="flex-grow-1">
                       <label
                         className="fw-bold mb-0"
-                        style={{ fontSize: "0.85rem", color: "#10393B" }}
+                        style={{ fontSize: "0.85rem", color: "#12345a" }}
                       >
                         ĐỊA ĐIỂM
                       </label>
@@ -567,7 +567,7 @@ const Home = ({ user }) => {
       <Container className="py-5 mt-4 text-start">
         <div className="d-flex justify-content-between align-items-end mb-4">
           <div>
-            <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+            <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>
               Tin mới từ sinh viên trong campus
             </h3>
             <p className="text-secondary mb-0">
@@ -676,7 +676,7 @@ const Home = ({ user }) => {
                       </p>
                       <Card.Title
                         className="fw-bold fs-6 mb-3 text-truncate"
-                        style={{ color: "#10393B" }}
+                        style={{ color: "#12345a" }}
                       >
                         {post.title}
                       </Card.Title>
@@ -744,7 +744,7 @@ const Home = ({ user }) => {
         <Container className="text-start">
           <div className="d-flex justify-content-between align-items-end mb-5">
             <div>
-              <h3 className="fw-bold mb-2" style={{ color: "#10393B" }}>
+              <h3 className="fw-bold mb-2" style={{ color: "#12345a" }}>
                 Tìm đồ trong campus, chỉ 3 bước
               </h3>
               <p className="text-secondary mb-0">
@@ -844,7 +844,7 @@ const Home = ({ user }) => {
       <Container className="py-5 text-start">
         <div className="d-flex justify-content-between align-items-end mb-4">
           <div>
-            <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+            <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>
               Cộng đồng FPT Cần Thơ cùng kết nối
             </h3>
             <p className="text-secondary mb-0">
@@ -870,7 +870,7 @@ const Home = ({ user }) => {
                     style={{ height: "100%", objectFit: "cover" }}
                   />
                 </Col>
-                <Col md={7} style={{ backgroundColor: "#EAF5F3" }}>
+                <Col md={7} style={{ backgroundColor: "#eaf3fc" }}>
                   <Card.Body className="d-flex flex-column justify-content-center h-100 p-4 p-lg-5 text-start">
                     <p
                       className="fw-bold mb-3 text-primary-custom"
@@ -880,13 +880,13 @@ const Home = ({ user }) => {
                     </p>
                     <h4
                       className="fw-bold mb-4"
-                      style={{ color: "#10393B", lineHeight: "1.4" }}
+                      style={{ color: "#12345a", lineHeight: "1.4" }}
                     >
                       Nhặt được đồ? Hãy đăng tin và giữ kín một vài đặc điểm để
                       xác minh đúng chủ trước khi trao trả.
                     </h4>
                     <div className="mt-auto">
-                      <p className="mb-0 fw-bold" style={{ color: "#10393B" }}>
+                      <p className="mb-0 fw-bold" style={{ color: "#12345a" }}>
                         Cùng xây dựng campus tử tế
                       </p>
                       <p
@@ -911,7 +911,7 @@ const Home = ({ user }) => {
                 >
                   <i className="bi bi-chat-square-text text-secondary fs-5"></i>
                 </div>
-                <h5 className="fw-bold mb-0" style={{ color: "#10393B" }}>
+                <h5 className="fw-bold mb-0" style={{ color: "#12345a" }}>
                   Diễn đàn sinh viên
                 </h5>
               </div>

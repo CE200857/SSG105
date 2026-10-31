@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const EditProfilePage = ({ user, setUser }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -124,10 +124,10 @@ const EditProfilePage = ({ user, setUser }) => {
   }
 
   return (
-    <div style={{ backgroundColor: "#F4F7F6", minHeight: "100vh", padding: "40px 0" }}>
+    <div style={{ backgroundColor: "#f4f9ff", minHeight: "100vh", padding: "40px 0" }}>
       <Container>
         <div className="mb-4 text-start">
-          <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>Chỉnh sửa hồ sơ</h3>
+          <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>Chỉnh sửa hồ sơ</h3>
           <p className="text-secondary mb-0">Cập nhật thông tin cá nhân của bạn.</p>
         </div>
 
@@ -150,7 +150,7 @@ const EditProfilePage = ({ user, setUser }) => {
                         onChange={handleChange}
                         required
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "600", border: "1px solid #e2e8f0" }}
+                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       />
                     </Form.Group>
                   </Col>
@@ -165,7 +165,7 @@ const EditProfilePage = ({ user, setUser }) => {
                         onChange={handleChange}
                         required
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "600", border: "1px solid #e2e8f0" }}
+                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       />
                     </Form.Group>
                   </Col>
@@ -180,7 +180,7 @@ const EditProfilePage = ({ user, setUser }) => {
                         onChange={handleChange}
                         required
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "600", border: "1px solid #e2e8f0" }}
+                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       />
                     </Form.Group>
                   </Col>
@@ -194,7 +194,7 @@ const EditProfilePage = ({ user, setUser }) => {
                         value={formData.phone} 
                         onChange={handleChange}
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "600", border: "1px solid #e2e8f0" }}
+                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       />
                     </Form.Group>
                   </Col>
@@ -207,7 +207,7 @@ const EditProfilePage = ({ user, setUser }) => {
                         value={formData.campus} 
                         onChange={handleChange}
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "600", border: "1px solid #e2e8f0" }}
+                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       >
                         <option value="">-- Chọn cơ sở --</option>
                         <option value="Hà Nội">Hà Nội</option>
@@ -227,7 +227,7 @@ const EditProfilePage = ({ user, setUser }) => {
                         value={formData.gender} 
                         onChange={handleChange}
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "600", border: "1px solid #e2e8f0" }}
+                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       >
                         <option value="">-- Chọn giới tính --</option>
                         <option value="Nam">Nam</option>

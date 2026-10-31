@@ -41,15 +41,15 @@ const OverviewPage = () => {
   };
 
   return (
-    <div className="text-start" style={{ backgroundColor: '#F4F7F6', minHeight: '100vh', padding: '40px 0' }}>
+    <div className="text-start" style={{ backgroundColor: '#f4f9ff', minHeight: '100vh', padding: '40px 0' }}>
       <Container>
         
         {/* Header trang */}
         <div className="mb-5">
-          <p className="fw-semibold mb-1" style={{ color: '#0C8B72', fontSize: '0.9rem' }}>
+          <p className="fw-semibold mb-1" style={{ color: '#1f6dba', fontSize: '0.9rem' }}>
             CAMPUS FPT CẦN THƠ - TỔNG QUAN CỘNG ĐỒNG
           </p>
-          <h2 className="fw-bold mb-2" style={{ color: '#10393B' }}>
+          <h2 className="fw-bold mb-2" style={{ color: '#12345a' }}>
             Hiểu hoạt động, an tâm kết nối.
           </h2>
           <p className="text-secondary mb-0">
@@ -58,7 +58,7 @@ const OverviewPage = () => {
         </div>
 
         {/* Thống kê 4 thẻ con số */}
-        <h5 className="fw-bold mb-3" style={{ color: '#10393B' }}>Cộng đồng qua những con số</h5>
+        <h5 className="fw-bold mb-3" style={{ color: '#12345a' }}>Cộng đồng qua những con số</h5>
         <Row className="g-3 mb-4">
           
           <Col lg={3} md={6}>
@@ -69,12 +69,12 @@ const OverviewPage = () => {
                   <i className="bi bi-star-fill text-warning fs-5"></i>
                 </div>
                 <div className="d-flex align-items-baseline gap-1 my-2">
-                  <span className="display-6 fw-bold" style={{ color: '#10393B' }}>{stats.avgRating}</span>
+                  <span className="display-6 fw-bold" style={{ color: '#12345a' }}>{stats.avgRating}</span>
                   <span className="text-muted">/ 5</span>
                 </div>
                 <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>Dựa trên {stats.totalReviews} đánh giá thực tế từ người dùng.</p>
                 <div>
-                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#0C8B72', border: '1px solid #0C8B72' }}>Dữ liệu thực</Badge>
+                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#1f6dba', border: '1px solid #1f6dba' }}>Dữ liệu thực</Badge>
                 </div>
               </Card.Body>
             </Card>
@@ -88,12 +88,12 @@ const OverviewPage = () => {
                   <i className="bi bi-card-checklist text-secondary fs-5"></i>
                 </div>
                 <div className="d-flex align-items-baseline gap-1 my-2">
-                  <span className="display-6 fw-bold" style={{ color: '#10393B' }}>{stats.totalPosts}</span>
+                  <span className="display-6 fw-bold" style={{ color: '#12345a' }}>{stats.totalPosts}</span>
                   <span className="text-muted">bài</span>
                 </div>
                 <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{stats.totalLost} bài tìm đồ bị mất và {stats.totalFound} bài đồ nhặt được.</p>
                 <div>
-                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#0C8B72', border: '1px solid #0C8B72' }}>Dữ liệu thực</Badge>
+                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#1f6dba', border: '1px solid #1f6dba' }}>Dữ liệu thực</Badge>
                 </div>
               </Card.Body>
             </Card>
@@ -107,12 +107,12 @@ const OverviewPage = () => {
                   <i className="bi bi-check-circle-fill text-success fs-5"></i>
                 </div>
                 <div className="d-flex align-items-baseline gap-1 my-2">
-                  <span className="display-6 fw-bold" style={{ color: '#10393B' }}>{stats.resolvedPosts}</span>
+                  <span className="display-6 fw-bold" style={{ color: '#12345a' }}>{stats.resolvedPosts}</span>
                   <span className="text-muted">bài</span>
                 </div>
                 <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{stats.lostFound} bài đã tìm được + {stats.foundClaimed} bài đã trao trả. Chiếm {calcPercent(stats.resolvedPosts, stats.totalPosts)}%.</p>
                 <div>
-                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#0C8B72', border: '1px solid #0C8B72' }}>Dữ liệu thực</Badge>
+                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#1f6dba', border: '1px solid #1f6dba' }}>Dữ liệu thực</Badge>
                 </div>
               </Card.Body>
             </Card>
@@ -126,12 +126,12 @@ const OverviewPage = () => {
                   <i className="bi bi-hourglass-split text-primary fs-5"></i>
                 </div>
                 <div className="d-flex align-items-baseline gap-1 my-2">
-                  <span className="display-6 fw-bold" style={{ color: '#10393B' }}>{stats.waitingPosts}</span>
+                  <span className="display-6 fw-bold" style={{ color: '#12345a' }}>{stats.waitingPosts}</span>
                   <span className="text-muted">bài</span>
                 </div>
                 <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{stats.lostNotFound} bài đang tìm đồ và {stats.foundUnclaimed} bài đồ nhặt đang chờ.</p>
                 <div>
-                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#0C8B72', border: '1px solid #0C8B72' }}>Dữ liệu thực</Badge>
+                  <Badge bg="success" className="bg-opacity-10" style={{ color: '#1f6dba', border: '1px solid #1f6dba' }}>Dữ liệu thực</Badge>
                 </div>
               </Card.Body>
             </Card>
@@ -142,7 +142,7 @@ const OverviewPage = () => {
           
           <Col md={6}>
             <Card className="border-0 shadow-sm h-100 p-4 text-start">
-              <h5 className="fw-bold mb-4" style={{ color: '#10393B' }}>Bài đăng đang ở trạng thái nào?</h5>
+              <h5 className="fw-bold mb-4" style={{ color: '#12345a' }}>Bài đăng đang ở trạng thái nào?</h5>
               
               <div className="mb-4">
                 <div className="d-flex justify-content-between fw-semibold text-dark mb-1" style={{ fontSize: '0.9rem' }}>
@@ -150,7 +150,7 @@ const OverviewPage = () => {
                   <span>{stats.totalLost} bài</span>
                 </div>
                 <ProgressBar className="mb-1" style={{ height: '10px' }}>
-                  <ProgressBar now={calcPercent(stats.lostFound, stats.totalLost)} style={{ backgroundColor: '#0C8B72' }} key={1} />
+                  <ProgressBar now={calcPercent(stats.lostFound, stats.totalLost)} style={{ backgroundColor: '#1f6dba' }} key={1} />
                   <ProgressBar now={calcPercent(stats.lostNotFound, stats.totalLost)} style={{ backgroundColor: '#E2E8F0' }} key={2} />
                 </ProgressBar>
                 <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.75rem' }}>
@@ -165,7 +165,7 @@ const OverviewPage = () => {
                   <span>{stats.totalFound} bài</span>
                 </div>
                 <ProgressBar className="mb-1" style={{ height: '10px' }}>
-                  <ProgressBar now={calcPercent(stats.foundClaimed, stats.totalFound)} style={{ backgroundColor: '#0C8B72' }} key={1} />
+                  <ProgressBar now={calcPercent(stats.foundClaimed, stats.totalFound)} style={{ backgroundColor: '#1f6dba' }} key={1} />
                   <ProgressBar now={calcPercent(stats.foundUnclaimed, stats.totalFound)} style={{ backgroundColor: '#E2E8F0' }} key={2} />
                 </ProgressBar>
                 <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.75rem' }}>
@@ -178,12 +178,12 @@ const OverviewPage = () => {
 
           <Col md={6}>
             <Card className="border-0 shadow-sm h-100 p-4 text-start">
-              <h5 className="fw-bold mb-3" style={{ color: '#10393B' }}>Góc nhìn cộng đồng</h5>
+              <h5 className="fw-bold mb-3" style={{ color: '#12345a' }}>Góc nhìn cộng đồng</h5>
               
               <div className="d-flex align-items-end gap-3 mb-4 text-start">
-                <span className="display-4 fw-bold" style={{ color: '#10393B', lineHeight: 1 }}>{stats.avgRating}</span>
+                <span className="display-4 fw-bold" style={{ color: '#12345a', lineHeight: 1 }}>{stats.avgRating}</span>
                 <div>
-                  <div className="fw-semibold" style={{ color: '#0C8B72' }}>{stats.totalReviews} đánh giá thực tế</div>
+                  <div className="fw-semibold" style={{ color: '#1f6dba' }}>{stats.totalReviews} đánh giá thực tế</div>
                   <div className="text-muted" style={{ fontSize: '0.85rem' }}>/ 5 sao</div>
                 </div>
               </div>
@@ -202,7 +202,7 @@ const OverviewPage = () => {
                       <div className="w-100 bg-light rounded" style={{ height: '8px', overflow: 'hidden' }}>
                         <div 
                           className="h-100 rounded" 
-                          style={{ width: `${item.percent}%`, backgroundColor: '#0C8B72' }}
+                          style={{ width: `${item.percent}%`, backgroundColor: '#1f6dba' }}
                         ></div>
                       </div>
                     </div>
