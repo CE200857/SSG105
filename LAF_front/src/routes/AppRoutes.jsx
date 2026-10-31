@@ -44,7 +44,7 @@ const ProtectedRoute = ({ user, allowedRoles, children }) => {
 
 // Sidebar bên trái chỉ xuất hiện khi tài khoản đăng nhập là Admin (Role 1)
 const AdminGlobalSidebar = () => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);

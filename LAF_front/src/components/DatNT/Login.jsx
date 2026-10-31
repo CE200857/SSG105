@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Login = ({ setUser }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
 
   const [identifier, setIdentifier] = useState("");
@@ -118,7 +118,7 @@ const Login = ({ setUser }) => {
   return (
     <div
       style={{
-        backgroundColor: "#EAF5F3",
+        backgroundColor: "#eaf3fc",
         minHeight: "calc(100vh - 70px)",
         padding: "40px 0",
       }}
@@ -142,7 +142,7 @@ const Login = ({ setUser }) => {
             </p>
             <h1
               className="fw-bold mb-3"
-              style={{ color: "#10393B", fontSize: "3rem", lineHeight: "1.2" }}
+              style={{ color: "#12345a", fontSize: "3rem", lineHeight: "1.2" }}
             >
               Tìm lại đồ thất lạc. <br />
               <span style={{ color: primaryColor }}>
@@ -176,13 +176,13 @@ const Login = ({ setUser }) => {
                   style={{
                     width: "48px",
                     height: "48px",
-                    backgroundColor: "#EAF5F3",
+                    backgroundColor: "#eaf3fc",
                     color: primaryColor,
                   }}
                 >
                   <i className="bi bi-box-arrow-in-right fs-4"></i>
                 </div>
-                <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+                <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>
                   Đăng nhập
                 </h3>
                 <p

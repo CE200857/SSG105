@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios"; // Thêm axios để gọi API
 
 const Register = () => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,7 +72,7 @@ const Register = () => {
   };
 
   return (
-    <div className="text-start" style={{ backgroundColor: "#EAF5F3", minHeight: "calc(100vh - 150px)", padding: "40px 0" }}>
+    <div className="text-start" style={{ backgroundColor: "#eaf3fc", minHeight: "calc(100vh - 150px)", padding: "40px 0" }}>
       <Container>
         {/* Nút quay lại */}
         <div className="mb-4 text-start">
@@ -93,7 +93,7 @@ const Register = () => {
               <i className="bi bi-circle-fill me-2" style={{ fontSize: "8px" }}></i>
               CAMPUS FPT CẦN THƠ
             </p>
-            <h1 className="fw-bold mb-3" style={{ color: "#10393B", fontSize: "3rem", lineHeight: "1.2" }}>
+            <h1 className="fw-bold mb-3" style={{ color: "#12345a", fontSize: "3rem", lineHeight: "1.2" }}>
               Tìm lại đồ thất lạc. <br />
               <span style={{ color: primaryColor }}>Kết nối lại với cộng đồng.</span>
             </h1>
@@ -115,7 +115,7 @@ const Register = () => {
                     <i className="bi bi-check2"></i>
                   </div>
                   <div>
-                    <h6 className="mb-1 fw-bold" style={{ fontSize: "0.9rem", color: "#10393B" }}>Tìm lại đồ, kết nối bạn bè</h6>
+                    <h6 className="mb-1 fw-bold" style={{ fontSize: "0.9rem", color: "#12345a" }}>Tìm lại đồ, kết nối bạn bè</h6>
                     <p className="mb-0 text-secondary" style={{ fontSize: "0.75rem" }}>Cùng giúp nhau trong campus FPT Cần Thơ.</p>
                   </div>
                 </div>
@@ -135,7 +135,7 @@ const Register = () => {
                   <div className="bg-success bg-opacity-10 rounded d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "50px", height: "50px", color: primaryColor }}>
                     <i className="bi bi-person-plus fs-4"></i>
                   </div>
-                  <h3 className="fw-bold mb-2" style={{ color: "#10393B" }}>Đăng ký</h3>
+                  <h3 className="fw-bold mb-2" style={{ color: "#12345a" }}>Đăng ký</h3>
                   <p className="text-secondary" style={{ fontSize: "0.95rem" }}>
                     Tạo tài khoản để cùng kết nối và giúp nhau tìm lại đồ thất lạc trong campus.
                   </p>

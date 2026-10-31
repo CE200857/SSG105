@@ -15,9 +15,11 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { setPostVisibility } from "../utils/visibility";
+import { VisibilityBadge } from "../components/Visibility";
 
 const ReviewPage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
 
   // State cho danh sách và bộ lọc
@@ -48,6 +50,20 @@ const ReviewPage = ({ user }) => {
   const [selectedReviewId, setSelectedReviewId] = useState(null);
 
   // Kiểm tra quyền tác giả của bài đánh giá
+  // Đổi chế độ xem bài của mình: Công khai <-> Riêng tư
+  const handleToggleVisibility = async (item) => {
+    const next = item.visibility === "Private" ? "Public" : "Private";
+    const ok = await setPostVisibility("review", item.id, user?.email, next);
+    if (ok) {
+      setReviews((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, visibility: next } : p)),
+      );
+      setSelectedReview((prev) =>
+        prev && prev.id === item.id ? { ...prev, visibility: next } : prev,
+      );
+    }
+  };
+
   const isOwner = (rev) => {
     if (!user || !rev) return false;
     return (
@@ -75,7 +91,11 @@ const ReviewPage = ({ user }) => {
     setLoading(true);
     try {
       const response = await axios.get("/api/reviews", {
-        params: { star: starFilter, sort: sortBy },
+        params: {
+          star: starFilter,
+          sort: sortBy,
+          email: user ? user.email : "",
+        },
       });
       const editedMap =
         JSON.parse(localStorage.getItem("laf_edited_reviews")) || {};
@@ -232,14 +252,14 @@ const ReviewPage = ({ user }) => {
   return (
     <div
       style={{
-        backgroundColor: "#F4F7F6",
+        backgroundColor: "#f4f9ff",
         minHeight: "100vh",
         padding: "40px 0",
       }}
     >
       <Container>
         <div className="mb-4 text-start">
-          <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+          <h3 className="fw-bold mb-1" style={{ color: "#12345a" }}>
             Cộng đồng Đánh giá
           </h3>
           <p className="text-secondary mb-0">
@@ -254,7 +274,7 @@ const ReviewPage = ({ user }) => {
               className="border-0 shadow-sm rounded-4 p-4 text-start sticky-top"
               style={{ top: "85px", zIndex: 1000 }}
             >
-              <h5 className="fw-bold mb-3" style={{ color: "#10393B" }}>
+              <h5 className="fw-bold mb-3" style={{ color: "#12345a" }}>
                 Viết đánh giá của bạn
               </h5>
 
@@ -604,6 +624,7 @@ const ReviewPage = ({ user }) => {
                         className="d-flex align-items-center gap-2 ms-auto"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <VisibilityBadge visibility={rev.visibility} />
                         <div className="d-flex gap-1 text-warning">
                           {[...Array(5)].map((_, i) => (
                             <i
@@ -638,6 +659,21 @@ const ReviewPage = ({ user }) => {
                                 ></i>
                                 Chỉnh sửa đánh giá
                               </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(rev);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${rev.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {rev.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setSelectedReviewId(rev.id);
@@ -730,6 +766,21 @@ const ReviewPage = ({ user }) => {
                         ></i>
                         Chỉnh sửa đánh giá
                       </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(selectedReview);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${selectedReview.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {selectedReview.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                       <Dropdown.Item
                         onClick={() => {
                           setSelectedReviewId(selectedReview.id);
@@ -777,7 +828,7 @@ const ReviewPage = ({ user }) => {
           contentClassName="border-0 shadow-lg rounded-4"
         >
           <Modal.Header closeButton className="border-0 pb-0 mt-2 mx-3">
-            <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+            <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
               <i
                 className="bi bi-pencil-square me-2"
                 style={{ color: primaryColor }}

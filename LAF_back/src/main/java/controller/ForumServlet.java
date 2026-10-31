@@ -79,6 +79,10 @@ public class ForumServlet extends HttpServlet {
             String category = request.getParameter("category");
             String content = request.getParameter("content");
             result.put("success", dao.updateForumPost(postId, title, category, content));
+        } else if ("visibility".equals(action)) {
+            int visId = Integer.parseInt(request.getParameter("postId"));
+            result.put("success", new dao.VisibilityDAO().setVisibility("forum", visId,
+                    request.getParameter("email"), request.getParameter("visibility")));
         } else if ("delete".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
             result.put("success", dao.deleteForumPost(postId));

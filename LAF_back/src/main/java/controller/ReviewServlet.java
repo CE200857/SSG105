@@ -29,7 +29,7 @@ public class ReviewServlet extends HttpServlet {
         String sort = request.getParameter("sort");
 
         ReviewDAO dao = new ReviewDAO();
-        List<Map<String, Object>> reviews = dao.getReviews(star, sort);
+        List<Map<String, Object>> reviews = dao.getReviews(star, sort, request.getParameter("email"), false, null);
 
         out.print(new Gson().toJson(reviews));
         out.flush();
@@ -53,6 +53,10 @@ public class ReviewServlet extends HttpServlet {
             boolean ok = dao.updateReview(reviewId, rating, comment);
             result.put("success", ok);
             result.put("message", ok ? "Cập nhật đánh giá thành công!" : "Lỗi cập nhật!");
+        } else if ("visibility".equals(action)) {
+            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            result.put("success", new dao.VisibilityDAO().setVisibility("review", reviewId,
+                    request.getParameter("email"), request.getParameter("visibility")));
         } else if ("delete".equals(action)) {
             int reviewId = Integer.parseInt(request.getParameter("reviewId"));
             boolean ok = dao.deleteReview(reviewId);

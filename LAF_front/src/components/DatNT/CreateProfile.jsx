@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const CreateProfile = () => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const location = useLocation();
   const registerData = location.state;
@@ -76,7 +76,7 @@ const CreateProfile = () => {
   if (!registerData) return null;
 
   return (
-    <div className="text-start" style={{ backgroundColor: "#EAF5F3", minHeight: "calc(100vh - 150px)", padding: "40px 0" }}>
+    <div className="text-start" style={{ backgroundColor: "#eaf3fc", minHeight: "calc(100vh - 150px)", padding: "40px 0" }}>
       <Container>
         <div className="mb-4 text-start">
           <Button 
@@ -95,7 +95,7 @@ const CreateProfile = () => {
               <i className="bi bi-circle-fill me-2" style={{ fontSize: "8px" }}></i>
               CAMPUS FPT CẦN THƠ
             </p>
-            <h1 className="fw-bold mb-3" style={{ color: "#10393B", fontSize: "3rem", lineHeight: "1.2" }}>
+            <h1 className="fw-bold mb-3" style={{ color: "#12345a", fontSize: "3rem", lineHeight: "1.2" }}>
               Tìm lại đồ thất lạc. <br />
               <span style={{ color: primaryColor }}>Kết nối lại với cộng đồng.</span>
             </h1>
@@ -117,7 +117,7 @@ const CreateProfile = () => {
                     <i className="bi bi-check2"></i>
                   </div>
                   <div>
-                    <h6 className="mb-1 fw-bold" style={{ fontSize: "0.9rem", color: "#10393B" }}>Tìm lại đồ, kết nối bạn bè</h6>
+                    <h6 className="mb-1 fw-bold" style={{ fontSize: "0.9rem", color: "#12345a" }}>Tìm lại đồ, kết nối bạn bè</h6>
                     <p className="mb-0 text-secondary" style={{ fontSize: "0.75rem" }}>Cùng giúp nhau trong campus FPT Cần Thơ.</p>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ const CreateProfile = () => {
                   <div className="bg-success bg-opacity-10 rounded d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "50px", height: "50px", color: primaryColor }}>
                     <i className="bi bi-person-vcard fs-4"></i>
                   </div>
-                  <h3 className="fw-bold mb-2" style={{ color: "#10393B" }}>Thông tin cá nhân</h3>
+                  <h3 className="fw-bold mb-2" style={{ color: "#12345a" }}>Thông tin cá nhân</h3>
                   <p className="text-secondary" style={{ fontSize: "0.95rem" }}>
                     Cập nhật thông tin cá nhân để hoàn tất đăng ký và bắt đầu kết nối với cộng đồng.
                   </p>

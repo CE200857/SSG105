@@ -11,10 +11,27 @@ import java.util.Map;
 public class ReviewDAO extends DBContext {
     
     public List<Map<String, Object>> getReviews(int starFilter, String sortBy) {
+        return getReviews(starFilter, sortBy, "", false, null);
+    }
+
+    // adminView = true: thấy cả đánh giá riêng tư (trang quản lý), có thể lọc theo visibility
+    public List<Map<String, Object>> getReviews(int starFilter, String sortBy, String viewerEmail, boolean adminView, String visibilityFilter) {
         List<Map<String, Object>> list = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         String query = "SELECT r.ReviewID, r.Rating, r.Content, CONVERT(VARCHAR, r.CreatedAt, 103) as Date, " +
-                       "u.FullName, u.Username, u.Email as AuthorEmail " +
+                       "r.Visibility, u.FullName, u.Username, u.Email as AuthorEmail " +
                        "FROM Reviews r JOIN Users u ON r.UserID = u.UserID WHERE 1=1 ";
+
+        if (adminView) {
+            if ("Public".equals(visibilityFilter) || "Private".equals(visibilityFilter)) {
+                query += "AND r.Visibility = ? ";
+                params.add(visibilityFilter);
+            }
+        } else {
+            // Người xem thường: chỉ thấy đánh giá công khai + đánh giá riêng tư của chính mình
+            query += "AND (r.Visibility = 'Public' OR u.Email = ?) ";
+            params.add(viewerEmail != null ? viewerEmail : "");
+        }
         
         if (starFilter > 0) {
             query += "AND r.Rating = " + starFilter + " ";
@@ -28,10 +45,14 @@ public class ReviewDAO extends DBContext {
 
         try {
             PreparedStatement ps = conn.prepareStatement(query);
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", rs.getInt("ReviewID"));
+                map.put("visibility", rs.getString("Visibility"));
                 map.put("rating", rs.getInt("Rating"));
                 map.put("comment", rs.getString("Content")); 
                 map.put("date", rs.getString("Date"));

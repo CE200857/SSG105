@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const ChangePasswordPage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -78,7 +78,7 @@ const ChangePasswordPage = ({ user }) => {
   };
 
   return (
-    <div style={{ backgroundColor: "#F4F7F6", minHeight: "100vh", padding: "60px 0" }}>
+    <div style={{ backgroundColor: "#f4f9ff", minHeight: "100vh", padding: "60px 0" }}>
       <Container>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -86,11 +86,11 @@ const ChangePasswordPage = ({ user }) => {
               <div className="text-center mb-4">
                 <div 
                   className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
-                  style={{ width: "60px", height: "60px", backgroundColor: "#EAF5F3", color: primaryColor }}
+                  style={{ width: "60px", height: "60px", backgroundColor: "#eaf3fc", color: primaryColor }}
                 >
                   <i className="bi bi-shield-lock-fill fs-3"></i>
                 </div>
-                <h3 className="fw-bold" style={{ color: "#10393B" }}>Đổi mật khẩu</h3>
+                <h3 className="fw-bold" style={{ color: "#12345a" }}>Đổi mật khẩu</h3>
                 <p className="text-secondary">Tạo mật khẩu mới đủ mạnh để bảo vệ tài khoản của bạn.</p>
               </div>
 
@@ -107,7 +107,7 @@ const ChangePasswordPage = ({ user }) => {
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
                     className="px-3 py-3 rounded-3 shadow-none border-0"
-                    style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "500" }}
+                    style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "500" }}
                   />
                 </Form.Group>
 
@@ -120,7 +120,7 @@ const ChangePasswordPage = ({ user }) => {
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     className="px-3 py-3 rounded-3 shadow-none border-0"
-                    style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "500" }}
+                    style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "500" }}
                   />
                 </Form.Group>
 
@@ -133,7 +133,7 @@ const ChangePasswordPage = ({ user }) => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     className="px-3 py-3 rounded-3 shadow-none border-0"
-                    style={{ backgroundColor: "#f8fafc", color: "#10393B", fontWeight: "500" }}
+                    style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "500" }}
                   />
                 </Form.Group>
 

@@ -15,6 +15,8 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { setPostVisibility } from "../utils/visibility";
+import { VisibilityBadge } from "../components/Visibility";
 import { postImgProps, getPostImage } from "../utils/postImage";
 
 // Nhãn phân biệt bài chờ duyệt thuộc trang nào
@@ -40,7 +42,7 @@ const PENDING_SOURCE = {
 };
 
 const ProfilePage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -66,6 +68,22 @@ const ProfilePage = ({ user }) => {
   const [editContent, setEditContent] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingItem, setDeletingItem] = useState(null);
+
+  // Đổi chế độ xem bài của mình: Công khai <-> Riêng tư
+  const handleToggleVisibility = async (item) => {
+    const type = String(item.postSource || "").toLowerCase(); // lost | found | forum
+    const next = item.visibility === "Private" ? "Public" : "Private";
+    const ok = await setPostVisibility(type, item.id, user?.email, next);
+    if (ok) {
+      setUserPosts((prev) =>
+        prev.map((p) =>
+          p.id === item.id && p.postSource === item.postSource
+            ? { ...p, visibility: next }
+            : p,
+        ),
+      );
+    }
+  };
 
   const isOwnProfile = Boolean(
     user &&
@@ -100,9 +118,9 @@ const ProfilePage = ({ user }) => {
         }
 
         const [lostRes, foundRes, forumRes] = await Promise.all([
-          axios.get("/api/lost-posts").catch(() => ({ data: [] })),
-          axios.get("/api/found-posts").catch(() => ({ data: [] })),
-          axios.get("/api/forum").catch(() => ({ data: [] })),
+          axios.get("/api/lost-posts", { params: { email: user?.email || "" } }).catch(() => ({ data: [] })),
+          axios.get("/api/found-posts", { params: { email: user?.email || "" } }).catch(() => ({ data: [] })),
+          axios.get("/api/forum", { params: { email: user?.email || "" } }).catch(() => ({ data: [] })),
         ]);
 
         const allLost = Array.isArray(lostRes.data) ? lostRes.data : [];
@@ -527,7 +545,7 @@ const ProfilePage = ({ user }) => {
                   <div className="d-flex align-items-baseline justify-content-center justify-content-md-start gap-2 flex-wrap">
                     <h2
                       className="fw-bold mb-0"
-                      style={{ color: "#10393B", fontSize: "2rem" }}
+                      style={{ color: "#12345a", fontSize: "2rem" }}
                     >
                       {profileData.fullName}
                     </h2>
@@ -656,7 +674,7 @@ const ProfilePage = ({ user }) => {
               className="border-0 shadow-sm rounded-4 p-4 text-start sticky-top"
               style={{ top: "85px", zIndex: 1000 }}
             >
-              <h5 className="fw-bold mb-3" style={{ color: "#10393B" }}>
+              <h5 className="fw-bold mb-3" style={{ color: "#12345a" }}>
                 Thông tin cá nhân
               </h5>
 
@@ -738,7 +756,7 @@ const ProfilePage = ({ user }) => {
           <Col lg={8} className="text-start">
             <Card className="border-0 shadow-sm rounded-4 p-3 mb-3 bg-white">
               <div className="d-flex justify-content-between align-items-center">
-                <h5 className="fw-bold mb-0" style={{ color: "#10393B" }}>
+                <h5 className="fw-bold mb-0" style={{ color: "#12345a" }}>
                   Bài viết của {profileData.fullName}
                 </h5>
                 <span className="text-muted" style={{ fontSize: "0.85rem" }}>
@@ -867,7 +885,7 @@ const ProfilePage = ({ user }) => {
                         </span>
                       </div>
 
-                      <h6 className="fw-bold mb-1" style={{ color: "#10393B" }}>
+                      <h6 className="fw-bold mb-1" style={{ color: "#12345a" }}>
                         {share.originalPost.title}
                       </h6>
                       <p
@@ -893,7 +911,7 @@ const ProfilePage = ({ user }) => {
                     </div>
 
                     <div
-                      className="mt-3 pt-2 border-top d-flex justify-content-between text-secondary"
+                      className="mt-3 pt-2 post-actions border-top d-flex justify-content-between text-secondary"
                       style={{ fontSize: "0.85rem" }}
                     >
                       <span
@@ -1034,6 +1052,7 @@ const ProfilePage = ({ user }) => {
                           <i className={`bi ${badgeInfo.icon} me-1`}></i>
                           {badgeInfo.text}
                         </Badge>
+                        <VisibilityBadge visibility={post.visibility} />
                         {post.category && (
                           <Badge
                             bg="light"
@@ -1060,6 +1079,21 @@ const ProfilePage = ({ user }) => {
                                 <i className="bi bi-pencil-square me-2 text-primary"></i>
                                 Chỉnh sửa bài viết
                               </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(post);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {post.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setDeletingItem({ ...post, isShare: false });
@@ -1076,7 +1110,7 @@ const ProfilePage = ({ user }) => {
                       </div>
                     </div>
 
-                    <h5 className="fw-bold mb-2" style={{ color: "#10393B" }}>
+                    <h5 className="fw-bold mb-2" style={{ color: "#12345a" }}>
                       {post.displayTitle}
                     </h5>
                     <p
@@ -1101,7 +1135,7 @@ const ProfilePage = ({ user }) => {
                     )}
 
                     <div
-                      className="pt-3 border-top d-flex justify-content-between text-secondary"
+                      className="pt-3 post-actions border-top d-flex justify-content-between text-secondary"
                       style={{ fontSize: "0.85rem" }}
                     >
                       <span>
@@ -1142,7 +1176,7 @@ const ProfilePage = ({ user }) => {
         contentClassName="border-0 shadow-lg"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             Chỉnh sửa nội dung
           </Modal.Title>
         </Modal.Header>
@@ -1201,7 +1235,7 @@ const ProfilePage = ({ user }) => {
         contentClassName="border-0 shadow-lg"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             <i
               className="bi bi-hourglass-split me-2"
               style={{ color: "#B45309" }}

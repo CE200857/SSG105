@@ -21,14 +21,14 @@ public class PostDAO extends DBContext {
             "   CONVERT(VARCHAR, LostPosts.TimeLost, 120) as Time, " +
             "   (SELECT TOP 1 ImageURL FROM LostImages WHERE LostImages.LostPostID = LostPosts.LostPostID) as ImgUrl, " +
             "   LostPosts.CreatedAt " +
-           "   FROM LostPosts JOIN Users ON LostPosts.UserID = Users.UserID WHERE LostPosts.ApprovalStatus = 'Approved' " +
+           "   FROM LostPosts JOIN Users ON LostPosts.UserID = Users.UserID WHERE LostPosts.ApprovalStatus = 'Approved' AND LostPosts.Visibility = 'Public' " +
             "   UNION ALL " +
             "   SELECT FoundPosts.FoundPostID as ID, 'found' as Type, N'Nhặt được' as Tag, '#0C8B72' as TagColor, " +
             "   N'Tin nhặt đồ' as Category, FoundPosts.ItemName as Title, FoundPosts.LocationFound as Location, Users.FullName as UserName, " +
             "   CONVERT(VARCHAR, FoundPosts.TimeFound, 120) as Time, " +
             "   (SELECT TOP 1 ImageURL FROM FoundImages WHERE FoundImages.FoundPostID = FoundPosts.FoundPostID) as ImgUrl, " +
             "   FoundPosts.CreatedAt " +
-            "   FROM FoundPosts JOIN Users ON FoundPosts.UserID = Users.UserID WHERE FoundPosts.ApprovalStatus = 'Approved' " +
+            "   FROM FoundPosts JOIN Users ON FoundPosts.UserID = Users.UserID WHERE FoundPosts.ApprovalStatus = 'Approved' AND FoundPosts.Visibility = 'Public' " +
             ") as CombinedTable ORDER BY CreatedAt DESC";
 
         try {

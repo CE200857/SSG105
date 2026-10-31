@@ -17,10 +17,13 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { setPostVisibility } from "../utils/visibility";
+import { VisibilityBadge } from "../components/Visibility";
+import { compressImage } from "../utils/compressImage";
 import { postImgProps, getPostImage } from "../utils/postImage";
 
 const LostFoundPage = ({ user }) => {
-  const primaryColor = "#0C8B72";
+  const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +83,20 @@ const LostFoundPage = ({ user }) => {
   const [shareSuccessMsg, setShareSuccessMsg] = useState("");
 
   // Kiểm tra quyền tác giả bài viết
+  // Đổi chế độ xem bài của mình: Công khai <-> Riêng tư
+  const handleToggleVisibility = async (item) => {
+    const next = item.visibility === "Private" ? "Public" : "Private";
+    const ok = await setPostVisibility("lost", item.id, user?.email, next);
+    if (ok) {
+      setPosts((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, visibility: next } : p)),
+      );
+      setSelectedPostDetail((prev) =>
+        prev && prev.id === item.id ? { ...prev, visibility: next } : prev,
+      );
+    }
+  };
+
   const isOwner = (post) => {
     if (!user || !post) return false;
     return (
@@ -255,22 +272,14 @@ const LostFoundPage = ({ user }) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      compressImage(file).then(setImagePreview);
     }
   };
 
   const handleEditImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      compressImage(file).then(setEditImagePreview);
     }
   };
 
@@ -352,6 +361,9 @@ const LostFoundPage = ({ user }) => {
       params.append("category", updatedFields.category);
       params.append("location", updatedFields.location);
       params.append("content", updatedFields.content);
+      if (updatedFields.image) {
+        params.append("imageUrl", updatedFields.image);
+      }
       await axios.post("/api/lost-posts", params);
     } catch {
       // Đồng bộ tiếp ở state & localStorage bên dưới
@@ -658,7 +670,7 @@ const LostFoundPage = ({ user }) => {
     <div
       className="text-start"
       style={{
-        backgroundColor: "#F4F7F6",
+        backgroundColor: "#f4f9ff",
         minHeight: "100vh",
         paddingBottom: "40px",
       }}
@@ -683,7 +695,7 @@ const LostFoundPage = ({ user }) => {
               </p>
               <h2
                 className="fw-bold mb-2"
-                style={{ color: "#10393B", fontSize: "2rem" }}
+                style={{ color: "#12345a", fontSize: "2rem" }}
               >
                 Bạn đang tìm đồ? Cùng lên tiếng.
               </h2>
@@ -710,7 +722,7 @@ const LostFoundPage = ({ user }) => {
               className="border-0 shadow-sm rounded-4 p-4 sticky-top text-start"
               style={{ top: "85px", zIndex: 1000 }}
             >
-              <h5 className="fw-bold mb-4" style={{ color: "#10393B" }}>
+              <h5 className="fw-bold mb-4" style={{ color: "#12345a" }}>
                 Tìm món đồ của bạn
               </h5>
               <Form onSubmit={handleSearch}>
@@ -886,6 +898,7 @@ const LostFoundPage = ({ user }) => {
                         className="d-flex align-items-center gap-2 flex-wrap justify-content-end"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <VisibilityBadge visibility={post.visibility} />
                         <Badge
                           bg="light"
                           className="text-dark border px-3 py-2 rounded-pill fw-semibold"
@@ -919,7 +932,7 @@ const LostFoundPage = ({ user }) => {
                             backgroundColor:
                               post.status === "Đang tìm đồ"
                                 ? "#fff9e6"
-                                : "#0C8B72",
+                                : "#198754",
                             cursor: isOwner(post) ? "pointer" : "default",
                             transition: "all 0.2s",
                           }}
@@ -955,6 +968,21 @@ const LostFoundPage = ({ user }) => {
                                 ></i>
                                 Chỉnh sửa bài đăng
                               </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(post);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {post.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setSelectedPostId(post.id);
@@ -975,7 +1003,7 @@ const LostFoundPage = ({ user }) => {
                       <Col md={8}>
                         <h5
                           className="fw-bold mb-2"
-                          style={{ color: "#10393B" }}
+                          style={{ color: "#12345a" }}
                         >
                           {post.title}
                         </h5>
@@ -1014,7 +1042,7 @@ const LostFoundPage = ({ user }) => {
                     </Row>
 
                     <div
-                      className="mt-3 pt-3 border-top d-flex justify-content-between text-secondary"
+                      className="mt-3 pt-3 post-actions border-top d-flex justify-content-between text-secondary"
                       style={{ fontSize: "0.85rem" }}
                     >
                       <span
@@ -1297,7 +1325,7 @@ const LostFoundPage = ({ user }) => {
         contentClassName="border-0 shadow-lg rounded-4"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-2 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             <i
               className="bi bi-pencil-square me-2"
               style={{ color: primaryColor }}
@@ -1502,7 +1530,7 @@ const LostFoundPage = ({ user }) => {
           <Button
             className="fw-semibold text-white border-0"
             style={{
-              backgroundColor: "#0C8B72",
+              backgroundColor: "#1f6dba",
               borderRadius: "12px",
               padding: "10px 20px",
             }}
@@ -1521,7 +1549,7 @@ const LostFoundPage = ({ user }) => {
         contentClassName="border-0 shadow-lg rounded-4"
       >
         <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
-          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+          <Modal.Title className="fw-bold" style={{ color: "#12345a" }}>
             <i
               className="bi bi-share-fill me-2"
               style={{ color: primaryColor }}
@@ -1655,6 +1683,21 @@ const LostFoundPage = ({ user }) => {
                       Chỉnh sửa bài đăng
                     </Dropdown.Item>
                     <Dropdown.Item
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleVisibility(selectedPostDetail);
+                      }}
+                      className="py-2"
+                    >
+                      <i
+                        className={`bi ${selectedPostDetail.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                        style={{ color: primaryColor }}
+                      ></i>
+                      {selectedPostDetail.visibility === "Private"
+                        ? "Chuyển sang Công khai"
+                        : "Chuyển sang Riêng tư"}
+                    </Dropdown.Item>
+                    <Dropdown.Item
                       onClick={() => {
                         setSelectedPostId(selectedPostDetail.id);
                         setShowDeleteModal(true);
@@ -1699,7 +1742,7 @@ const LostFoundPage = ({ user }) => {
               </Badge>
             </div>
 
-            <h4 className="fw-bold mb-3" style={{ color: "#10393B" }}>
+            <h4 className="fw-bold mb-3" style={{ color: "#12345a" }}>
               {selectedPostDetail.title}
             </h4>
             <p

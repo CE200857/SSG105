@@ -12,12 +12,17 @@ import java.util.Map;
 public class FoundPostDAO extends DBContext {
 
     public List<Map<String, Object>> getFoundPosts(String keyword, String category, String location, String sort, String currentUserEmail) {
+        return getFoundPosts(keyword, category, location, sort, currentUserEmail, false, null);
+    }
+
+    // adminView = true: thấy cả bài riêng tư (trang quản lý), có thể lọc theo visibility (Public/Private)
+    public List<Map<String, Object>> getFoundPosts(String keyword, String category, String location, String sort, String currentUserEmail, boolean adminView, String visibilityFilter) {
         List<Map<String, Object>> list = new ArrayList<>();
 
         StringBuilder query = new StringBuilder(
                 "SELECT f.FoundPostID, f.Category, f.ItemName, f.Description, f.LocationFound, "
                 + "CONVERT(VARCHAR, f.TimeFound, 103) + ' - ' + CONVERT(VARCHAR, f.TimeFound, 108) as TimeFound, "
-                + "f.Status, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
+                + "f.Status, f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
                 + "(SELECT COUNT(*) FROM FoundLikes fl WHERE fl.FoundPostID = f.FoundPostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM FoundLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.FoundPostID = f.FoundPostID AND u2.Email = ?) as UserLiked "
                 + "FROM FoundPosts f "
@@ -27,6 +32,17 @@ public class FoundPostDAO extends DBContext {
 
         List<Object> params = new ArrayList<>();
         params.add(currentUserEmail != null ? currentUserEmail : "");
+
+        if (adminView) {
+            if ("Public".equals(visibilityFilter) || "Private".equals(visibilityFilter)) {
+                query.append("AND f.Visibility = ? ");
+                params.add(visibilityFilter);
+            }
+        } else {
+            // Người xem thường: chỉ thấy bài công khai + bài riêng tư của chính mình
+            query.append("AND (f.Visibility = 'Public' OR u.Email = ?) ");
+            params.add(currentUserEmail != null ? currentUserEmail : "");
+        }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.append("AND (f.ItemName LIKE ? OR f.Description LIKE ?) ");
@@ -68,7 +84,9 @@ public class FoundPostDAO extends DBContext {
                 map.put("username", rs.getString("Username"));
                 map.put("authorEmail", rs.getString("AuthorEmail"));
                 map.put("category", rs.getString("Category") != null ? rs.getString("Category") : "Đồ dùng cá nhân");
-                map.put("image", rs.getString("ImageURL") != null ? rs.getString("ImageURL") : "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80");
+                map.put("visibility", rs.getString("Visibility"));
+                // Bài chưa có ảnh -> để null, frontend tự hiện ảnh minh họa
+                map.put("image", rs.getString("ImageURL"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
 

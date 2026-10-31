@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AppRoutes from "./routes/AppRoutes";
 import axios from "axios";
 import "./App.css";
+import "./theme.css";
 
 function App() {
   const [user, setUser] = useState(() => {

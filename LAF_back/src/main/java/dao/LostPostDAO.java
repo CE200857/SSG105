@@ -12,13 +12,18 @@ import java.util.Map;
 public class LostPostDAO extends DBContext {
 
     public List<Map<String, Object>> getAllLostPosts(String keyword, String category, String location, String currentUserEmail) {
+        return getAllLostPosts(keyword, category, location, currentUserEmail, false, null);
+    }
+
+    // adminView = true: thấy cả bài riêng tư (trang quản lý), có thể lọc theo visibility (Public/Private)
+    public List<Map<String, Object>> getAllLostPosts(String keyword, String category, String location, String currentUserEmail, boolean adminView, String visibilityFilter) {
         List<Map<String, Object>> list = new ArrayList<>();
 
         StringBuilder query = new StringBuilder(
                 "SELECT l.LostPostID, l.Category, l.Title, l.Content, l.LocationLost, "
                 + "CONVERT(VARCHAR, l.TimeLost, 103) as DateLost, "
                 + "CONVERT(VARCHAR, l.CreatedAt, 103) as CreatedDate, "
-                + "l.Status, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
+                + "l.Status, l.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
                 + "(SELECT COUNT(*) FROM LostLikes ll WHERE ll.LostPostID = l.LostPostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM LostLikes ll JOIN Users u2 ON ll.UserID = u2.UserID WHERE ll.LostPostID = l.LostPostID AND u2.Email = ?) as UserLiked "
                 + "FROM LostPosts l "
@@ -28,6 +33,17 @@ public class LostPostDAO extends DBContext {
 
         List<Object> params = new ArrayList<>();
         params.add(currentUserEmail != null ? currentUserEmail : "");
+
+        if (adminView) {
+            if ("Public".equals(visibilityFilter) || "Private".equals(visibilityFilter)) {
+                query.append("AND l.Visibility = ? ");
+                params.add(visibilityFilter);
+            }
+        } else {
+            // Người xem thường: chỉ thấy bài công khai + bài riêng tư của chính mình
+            query.append("AND (l.Visibility = 'Public' OR u.Email = ?) ");
+            params.add(currentUserEmail != null ? currentUserEmail : "");
+        }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.append("AND (l.Title LIKE ? OR l.Content LIKE ?) ");
@@ -69,6 +85,7 @@ public class LostPostDAO extends DBContext {
                 map.put("author", rs.getString("FullName"));
                 map.put("username", rs.getString("Username"));
                 map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("visibility", rs.getString("Visibility"));
                 map.put("image", rs.getString("ImageURL"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
