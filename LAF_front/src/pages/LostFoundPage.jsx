@@ -17,7 +17,7 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { postImgProps, getPostImage } from "../utils/postImage";
 
 const LostFoundPage = ({ user }) => {
   const primaryColor = "#0C8B72";
@@ -32,7 +32,7 @@ const LostFoundPage = ({ user }) => {
   const [keyword, setKeyword] = useState(navState.keyword || "");
   const [categoryFilter, setCategoryFilter] = useState("Tất cả danh mục");
   const [locationFilter, setLocationFilter] = useState(
-    navState.location || "Toàn campus"
+    navState.location || "Toàn campus",
   );
   const [activeTab, setActiveTab] = useState("Tất cả");
 
@@ -133,7 +133,7 @@ const LostFoundPage = ({ user }) => {
       JSON.parse(localStorage.getItem("laf_notifications")) || [];
     localStorage.setItem(
       "laf_notifications",
-      JSON.stringify([newNotif, ...existing])
+      JSON.stringify([newNotif, ...existing]),
     );
     window.dispatchEvent(new Event("laf-notifications-updated"));
 
@@ -197,7 +197,7 @@ const LostFoundPage = ({ user }) => {
 
       if (navState.openPostId) {
         const target = merged.find(
-          (item) => Number(item.id) === Number(navState.openPostId)
+          (item) => Number(item.id) === Number(navState.openPostId),
         );
         if (target) {
           setSelectedPostDetail(target);
@@ -364,8 +364,8 @@ const LostFoundPage = ({ user }) => {
 
     setPosts(
       posts.map((p) =>
-        p.id === editingPost.id ? { ...p, ...updatedFields } : p
-      )
+        p.id === editingPost.id ? { ...p, ...updatedFields } : p,
+      ),
     );
     if (selectedPostDetail && selectedPostDetail.id === editingPost.id) {
       setSelectedPostDetail((prev) => ({ ...prev, ...updatedFields }));
@@ -387,7 +387,7 @@ const LostFoundPage = ({ user }) => {
         JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
       localStorage.setItem(
         "laf_deleted_lost_ids",
-        JSON.stringify([...deletedIds, selectedPostId])
+        JSON.stringify([...deletedIds, selectedPostId]),
       );
       setPosts(posts.filter((post) => post.id !== selectedPostId));
       if (selectedPostDetail && selectedPostDetail.id === selectedPostId) {
@@ -415,8 +415,8 @@ const LostFoundPage = ({ user }) => {
     } finally {
       setPosts(
         posts.map((post) =>
-          post.id === selectedPostId ? { ...post, status: nextStatus } : post
-        )
+          post.id === selectedPostId ? { ...post, status: nextStatus } : post,
+        ),
       );
       if (selectedPostDetail && selectedPostDetail.id === selectedPostId) {
         setSelectedPostDetail((prev) => ({ ...prev, status: nextStatus }));
@@ -455,8 +455,8 @@ const LostFoundPage = ({ user }) => {
                   likes: response.data.likes,
                   hasLiked: response.data.hasLiked,
                 }
-              : p
-          )
+              : p,
+          ),
         );
         if (selectedPostDetail && selectedPostDetail.id === post.id) {
           setSelectedPostDetail((prev) => ({
@@ -507,7 +507,7 @@ const LostFoundPage = ({ user }) => {
         };
         setSelectedPostDetail(updatedPost);
         setPosts(
-          posts.map((p) => (p.id === selectedPostDetail.id ? updatedPost : p))
+          posts.map((p) => (p.id === selectedPostDetail.id ? updatedPost : p)),
         );
         setNewCommentText("");
       }
@@ -619,7 +619,7 @@ const LostFoundPage = ({ user }) => {
         author: postToShare.author,
         authorEmail: postToShare.authorEmail,
         date: postToShare.date || postToShare.time,
-        image: postToShare.image,
+        image: getPostImage(postToShare),
         status: postToShare.status,
       },
       likes: 0,
@@ -631,7 +631,7 @@ const LostFoundPage = ({ user }) => {
       JSON.parse(localStorage.getItem("laf_shared_posts")) || [];
     localStorage.setItem(
       "laf_shared_posts",
-      JSON.stringify([sharedItem, ...existingShares])
+      JSON.stringify([sharedItem, ...existingShares]),
     );
 
     pushNotification({
@@ -824,7 +824,7 @@ const LostFoundPage = ({ user }) => {
                     >
                       {tab}
                     </Button>
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -853,7 +853,7 @@ const LostFoundPage = ({ user }) => {
                           handleViewUserProfile(
                             post.author,
                             post.authorEmail,
-                            e
+                            e,
                           )
                         }
                         title={`Xem trang cá nhân của ${post.author}`}
@@ -924,9 +924,7 @@ const LostFoundPage = ({ user }) => {
                             transition: "all 0.2s",
                           }}
                           title={
-                            isOwner(post)
-                              ? "Bấm để đổi trạng thái tìm đồ"
-                              : ""
+                            isOwner(post) ? "Bấm để đổi trạng thái tìm đồ" : ""
                           }
                         >
                           {post.status}
@@ -974,7 +972,7 @@ const LostFoundPage = ({ user }) => {
                     </div>
 
                     <Row className="g-3 my-1">
-                      <Col md={post.image ? 8 : 12}>
+                      <Col md={8}>
                         <h5
                           className="fw-bold mb-2"
                           style={{ color: "#10393B" }}
@@ -1002,19 +1000,17 @@ const LostFoundPage = ({ user }) => {
                           </span>
                         </div>
                       </Col>
-                      {post.image && (
-                        <Col
-                          md={4}
-                          className="d-flex align-items-center justify-content-end"
-                        >
-                          <Image
-                            src={post.image}
-                            rounded
-                            className="object-fit-cover shadow-sm"
-                            style={{ width: "100%", maxHeight: "150px" }}
-                          />
-                        </Col>
-                      )}
+                      <Col
+                        md={4}
+                        className="d-flex align-items-center justify-content-end"
+                      >
+                        <Image
+                          {...postImgProps(post)}
+                          rounded
+                          className="object-fit-cover shadow-sm"
+                          style={{ width: "100%", maxHeight: "150px" }}
+                        />
+                      </Col>
                     </Row>
 
                     <div
@@ -1387,7 +1383,11 @@ const LostFoundPage = ({ user }) => {
                   <Image
                     src={editImagePreview}
                     rounded
-                    style={{ width: "150px", height: "100px", objectFit: "cover" }}
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
                   />
                 )}
               </Col>
@@ -1605,7 +1605,7 @@ const LostFoundPage = ({ user }) => {
                   setShowDetailModal(false);
                   handleViewUserProfile(
                     selectedPostDetail.author,
-                    selectedPostDetail.authorEmail
+                    selectedPostDetail.authorEmail,
                   );
                 }}
               >
@@ -1712,7 +1712,10 @@ const LostFoundPage = ({ user }) => {
             <Row className="g-3 mb-4">
               <Col md={6}>
                 <div className="p-3 bg-light rounded-3 h-100 border">
-                  <p className="text-muted mb-1" style={{ fontSize: "0.85rem" }}>
+                  <p
+                    className="text-muted mb-1"
+                    style={{ fontSize: "0.85rem" }}
+                  >
                     <i className="bi bi-geo-alt-fill me-2"></i> Địa điểm mất
                   </p>
                   <h6 className="fw-bold mb-0 text-dark">
@@ -1722,7 +1725,10 @@ const LostFoundPage = ({ user }) => {
               </Col>
               <Col md={6}>
                 <div className="p-3 bg-light rounded-3 h-100 border">
-                  <p className="text-muted mb-1" style={{ fontSize: "0.85rem" }}>
+                  <p
+                    className="text-muted mb-1"
+                    style={{ fontSize: "0.85rem" }}
+                  >
                     <i className="bi bi-clock-fill me-2"></i> Thời gian mất
                   </p>
                   <h6 className="fw-bold mb-0 text-dark">
@@ -1732,10 +1738,10 @@ const LostFoundPage = ({ user }) => {
               </Col>
             </Row>
 
-            {selectedPostDetail.image && (
+            {selectedPostDetail && (
               <div className="mb-4 text-center">
                 <Image
-                  src={selectedPostDetail.image}
+                  {...postImgProps(selectedPostDetail)}
                   rounded
                   className="shadow-sm w-100"
                   style={{
@@ -1897,7 +1903,7 @@ const LostFoundPage = ({ user }) => {
                                   setShowDetailModal(false);
                                   handleViewUserProfile(
                                     c.author,
-                                    c.authorEmail
+                                    c.authorEmail,
                                   );
                                 }}
                               >
@@ -1941,7 +1947,7 @@ const LostFoundPage = ({ user }) => {
                               onClick={() => {
                                 if (!requireLogin("phản hồi bình luận")) return;
                                 setReplyingToId(
-                                  replyingToId === c.id ? null : c.id
+                                  replyingToId === c.id ? null : c.id,
                                 );
                               }}
                             >
@@ -1969,7 +1975,7 @@ const LostFoundPage = ({ user }) => {
                                       setShowDetailModal(false);
                                       handleViewUserProfile(
                                         rep.author,
-                                        rep.authorEmail
+                                        rep.authorEmail,
                                       );
                                     }}
                                   >
@@ -1987,7 +1993,7 @@ const LostFoundPage = ({ user }) => {
                                           setShowDetailModal(false);
                                           handleViewUserProfile(
                                             rep.author,
-                                            rep.authorEmail
+                                            rep.authorEmail,
                                           );
                                         }}
                                       >

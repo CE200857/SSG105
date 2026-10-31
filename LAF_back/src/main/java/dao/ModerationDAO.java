@@ -10,28 +10,46 @@ import java.util.Map;
 
 public class ModerationDAO extends DBContext {
 
-    // ===== Danh sách bài đang chờ duyệt (cả 3 trang), cũ nhất lên trước =====
+        // ===== Danh sách bài đang chờ duyệt (cả 3 trang), cũ nhất lên trước =====
     public List<Map<String, Object>> getPendingPosts() {
+        return queryPending(null);
+    }
+
+    // ===== Bài đang chờ duyệt của 1 student (dùng cho trang Profile) =====
+    public List<Map<String, Object>> getPendingPostsByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return queryPending(email.trim());
+    }
+
+    private List<Map<String, Object>> queryPending(String email) {
         List<Map<String, Object>> list = new ArrayList<>();
+        String f = (email == null) ? "" : " AND u.Email = ? ";
         String query =
             "SELECT * FROM (" +
             " SELECT l.LostPostID AS PostId, 'lost' AS PostType, l.Title AS Title, l.Content AS Content, " +
             "  l.Category AS Category, l.LocationLost AS Location, " +
             "  (SELECT TOP 1 ImageURL FROM LostImages WHERE LostPostID = l.LostPostID) AS Image, " +
             "  u.FullName, u.Username, u.Email, l.CreatedAt " +
-            " FROM LostPosts l JOIN Users u ON l.UserID = u.UserID WHERE l.ApprovalStatus = 'Pending' " +
+            " FROM LostPosts l JOIN Users u ON l.UserID = u.UserID WHERE l.ApprovalStatus = 'Pending' " + f +
             " UNION ALL " +
-            " SELECT f.FoundPostID, 'found', f.ItemName, f.Description, f.Category, f.LocationFound, " +
-            "  (SELECT TOP 1 ImageURL FROM FoundImages WHERE FoundPostID = f.FoundPostID), " +
-            "  u.FullName, u.Username, u.Email, f.CreatedAt " +
-            " FROM FoundPosts f JOIN Users u ON f.UserID = u.UserID WHERE f.ApprovalStatus = 'Pending' " +
+            " SELECT fp.FoundPostID, 'found', fp.ItemName, fp.Description, fp.Category, fp.LocationFound, " +
+            "  (SELECT TOP 1 ImageURL FROM FoundImages WHERE FoundPostID = fp.FoundPostID), " +
+            "  u.FullName, u.Username, u.Email, fp.CreatedAt " +
+            " FROM FoundPosts fp JOIN Users u ON fp.UserID = u.UserID WHERE fp.ApprovalStatus = 'Pending' " + f +
             " UNION ALL " +
             " SELECT p.PostID, 'forum', p.Title, p.Content, p.Category, NULL, NULL, " +
             "  u.FullName, u.Username, u.Email, p.CreatedAt " +
-            " FROM ForumPosts p JOIN Users u ON p.UserID = u.UserID WHERE p.ApprovalStatus = 'Pending' " +
+            " FROM ForumPosts p JOIN Users u ON p.UserID = u.UserID WHERE p.ApprovalStatus = 'Pending' " + f +
             ") AS T ORDER BY CreatedAt ASC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
+            if (email != null) {
+                ps.setString(1, email);
+                ps.setString(2, email);
+                ps.setString(3, email);
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Map<String, Object> m = new HashMap<>();
@@ -51,7 +69,7 @@ public class ModerationDAO extends DBContext {
                 list.add(m);
             }
         } catch (Exception e) {
-            System.out.println("Lỗi getPendingPosts: " + e.getMessage());
+            System.out.println("Lỗi queryPending: " + e.getMessage());
         }
         return list;
     }

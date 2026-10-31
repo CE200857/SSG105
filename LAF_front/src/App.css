@@ -1,3 +1,18 @@
+:root {
+  --seoul-50: #f4f7f6;
+  --seoul-100: #e3f1ee;
+  --seoul-200: #cde7e1;
+  --seoul-300: #9fd3c7;
+  --seoul-500: #11a084;
+  --seoul-600: #0c8b72;
+  --seoul-700: #0a735f;
+  --seoul-800: #10393b;
+  --seoul-900: #0b2a2c;
+  --seoul-border: #dce8e5;
+  --seoul-ink: #1f2d2b;
+  --seoul-muted: #6b7c79;
+  --seoul-shadow: 0 6px 20px rgba(16, 57, 59, 0.08);
+}
 #root {
   width: 100%;
   min-height: 100vh;
@@ -654,4 +669,33 @@
 /* Ẩn mũi tên mặc định của nút 3 chấm (...) */
 .dots-dropdown .dropdown-toggle::after {
   display: none !important;
+}
+/* ===== Giữ đúng ý nghĩa màu cho nhóm danger / warning / secondary ===== */
+.badge.bg-danger,
+.bg-danger {
+  background-color: #dc3545 !important;
+  color: #fff !important;
+}
+.text-danger {
+  color: #dc3545 !important;
+}
+.badge.bg-warning,
+.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+.badge.bg-secondary,
+.bg-secondary {
+  background-color: #6c757d !important;
+  color: #fff !important;
+}
+.btn-danger {
+  --bs-btn-bg: #dc3545;
+  --bs-btn-border-color: #dc3545;
+  --bs-btn-hover-bg: #bb2d3b;
+  --bs-btn-hover-border-color: #b02a37;
+  --bs-btn-active-bg: #b02a37;
+  --bs-btn-active-border-color: #a52834;
+  --bs-btn-disabled-bg: #dc3545;
+  --bs-btn-disabled-border-color: #dc3545;
 }

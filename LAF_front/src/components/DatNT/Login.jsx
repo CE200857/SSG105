@@ -1,6 +1,15 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -21,8 +30,12 @@ const Login = ({ setUser }) => {
       try {
         const parsed = JSON.parse(saved);
         setIdentifier(parsed.identifier || "");
-        setPassword(parsed.password || "");
         setRememberMe(true);
+        // Xóa mật khẩu cũ (nếu trước đây từng bị lưu dạng văn bản thô)
+        localStorage.setItem(
+          "laf_remembered_login",
+          JSON.stringify({ identifier: parsed.identifier || "" }),
+        );
       } catch {
         // Bỏ qua nếu dữ liệu lỗi
       }
@@ -38,6 +51,7 @@ const Login = ({ setUser }) => {
       const params = new URLSearchParams();
       params.append("identifier", identifier.trim());
       params.append("password", password);
+      params.append("remember", rememberMe ? "true" : "false");
 
       const response = await axios.post("/api/login", params);
       const data = response.data || {};
@@ -48,18 +62,22 @@ const Login = ({ setUser }) => {
         data.status === "success" ||
         Boolean(data.user) ||
         Boolean(data.email || data.Email || data.username || data.Username) ||
-        (data.message &&
-          data.message.toLowerCase().includes("thành công"));
+        (data.message && data.message.toLowerCase().includes("thành công"));
 
       if (isLoginSuccess) {
         const rawUser = data.user || data.data || data;
-        const normalizedRoleId = Number(
-          rawUser.roleId || rawUser.RoleID || 2
-        );
+        const normalizedRoleId = Number(rawUser.roleId || rawUser.RoleID || 2);
         const finalUser = {
           ...rawUser,
-          username: rawUser.username || rawUser.Username || identifier.trim().split("@")[0],
-          fullName: rawUser.fullName || rawUser.FullName || rawUser.username || "Sinh viên FPT",
+          username:
+            rawUser.username ||
+            rawUser.Username ||
+            identifier.trim().split("@")[0],
+          fullName:
+            rawUser.fullName ||
+            rawUser.FullName ||
+            rawUser.username ||
+            "Sinh viên FPT",
           email: rawUser.email || rawUser.Email || identifier.trim(),
           roleId: normalizedRoleId,
         };
@@ -70,7 +88,7 @@ const Login = ({ setUser }) => {
           localStorage.setItem("user", JSON.stringify(finalUser));
           localStorage.setItem(
             "laf_remembered_login",
-            JSON.stringify({ identifier: identifier.trim(), password })
+            JSON.stringify({ identifier: identifier.trim() }),
           );
         } else {
           localStorage.removeItem("user");
@@ -85,14 +103,12 @@ const Login = ({ setUser }) => {
           navigate("/");
         }
       } else {
-        setErrorMsg(
-          data.message || "Tài khoản hoặc mật khẩu không chính xác!"
-        );
+        setErrorMsg(data.message || "Tài khoản hoặc mật khẩu không chính xác!");
       }
     } catch (error) {
       setErrorMsg(
         error.response?.data?.message ||
-          "Tài khoản hoặc mật khẩu không chính xác!"
+          "Tài khoản hoặc mật khẩu không chính xác!",
       );
     } finally {
       setLoading(false);
@@ -112,9 +128,16 @@ const Login = ({ setUser }) => {
           <Col lg={6} className="text-start d-none d-lg-block">
             <p
               className="fw-bold mb-3"
-              style={{ color: primaryColor, fontSize: "0.9rem", letterSpacing: "1px" }}
+              style={{
+                color: primaryColor,
+                fontSize: "0.9rem",
+                letterSpacing: "1px",
+              }}
             >
-              <i className="bi bi-circle-fill me-2" style={{ fontSize: "8px" }}></i>
+              <i
+                className="bi bi-circle-fill me-2"
+                style={{ fontSize: "8px" }}
+              ></i>
               CAMPUS FPT CẦN THƠ
             </p>
             <h1
@@ -122,11 +145,13 @@ const Login = ({ setUser }) => {
               style={{ color: "#10393B", fontSize: "3rem", lineHeight: "1.2" }}
             >
               Tìm lại đồ thất lạc. <br />
-              <span style={{ color: primaryColor }}>Kết nối lại với cộng đồng.</span>
+              <span style={{ color: primaryColor }}>
+                Kết nối lại với cộng đồng.
+              </span>
             </h1>
             <p className="text-secondary mb-4" style={{ fontSize: "1.05rem" }}>
-              Đăng nhập để đăng tin, trao đổi và cùng sinh viên trong campus tìm lại
-              những món đồ quan trọng.
+              Đăng nhập để đăng tin, trao đổi và cùng sinh viên trong campus tìm
+              lại những món đồ quan trọng.
             </p>
 
             <div className="position-relative d-inline-block w-100">
@@ -134,7 +159,11 @@ const Login = ({ setUser }) => {
                 src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=900&q=80"
                 alt="FPT Campus"
                 className="img-fluid rounded-4 shadow"
-                style={{ maxHeight: "340px", width: "100%", objectFit: "cover" }}
+                style={{
+                  maxHeight: "340px",
+                  width: "100%",
+                  objectFit: "cover",
+                }}
               />
             </div>
           </Col>
@@ -156,8 +185,12 @@ const Login = ({ setUser }) => {
                 <h3 className="fw-bold mb-1" style={{ color: "#10393B" }}>
                   Đăng nhập
                 </h3>
-                <p className="text-secondary mb-0" style={{ fontSize: "0.95rem" }}>
-                  Chào mừng bạn trở lại! Cùng tiếp tục kết nối với cộng đồng Lost & Found.
+                <p
+                  className="text-secondary mb-0"
+                  style={{ fontSize: "0.95rem" }}
+                >
+                  Chào mừng bạn trở lại! Cùng tiếp tục kết nối với cộng đồng
+                  Lost & Found.
                 </p>
               </div>
 
@@ -169,7 +202,10 @@ const Login = ({ setUser }) => {
 
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold text-dark" style={{ fontSize: "0.9rem" }}>
+                  <Form.Label
+                    className="fw-bold text-dark"
+                    style={{ fontSize: "0.9rem" }}
+                  >
                     Email hoặc số điện thoại
                   </Form.Label>
                   <div className="position-relative">
@@ -187,13 +223,19 @@ const Login = ({ setUser }) => {
                       style={{ paddingLeft: "40px", borderRadius: "10px" }}
                     />
                   </div>
-                  <Form.Text className="text-muted" style={{ fontSize: "0.8rem" }}>
+                  <Form.Text
+                    className="text-muted"
+                    style={{ fontSize: "0.8rem" }}
+                  >
                     Dùng email hoặc số điện thoại bạn đã đăng ký.
                   </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold text-dark" style={{ fontSize: "0.9rem" }}>
+                  <Form.Label
+                    className="fw-bold text-dark"
+                    style={{ fontSize: "0.9rem" }}
+                  >
                     Mật khẩu
                   </Form.Label>
                   <div className="position-relative">
@@ -246,7 +288,10 @@ const Login = ({ setUser }) => {
                 <Button
                   type="submit"
                   className="w-100 py-2 fw-bold border-0 text-white shadow-sm mb-3"
-                  style={{ backgroundColor: primaryColor, borderRadius: "10px" }}
+                  style={{
+                    backgroundColor: primaryColor,
+                    borderRadius: "10px",
+                  }}
                   disabled={loading}
                 >
                   {loading ? (
@@ -259,7 +304,10 @@ const Login = ({ setUser }) => {
                 </Button>
 
                 <div className="text-center border-top pt-3">
-                  <span className="text-muted d-block mb-2" style={{ fontSize: "0.85rem" }}>
+                  <span
+                    className="text-muted d-block mb-2"
+                    style={{ fontSize: "0.85rem" }}
+                  >
                     Bạn chưa có tài khoản?
                   </span>
                   <Link

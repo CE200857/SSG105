@@ -15,6 +15,29 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { postImgProps, getPostImage } from "../utils/postImage";
+
+// Nhãn phân biệt bài chờ duyệt thuộc trang nào
+const PENDING_SOURCE = {
+  lost: {
+    label: "Lost – Đồ thất lạc",
+    color: "#B42318",
+    bg: "#FEE4E2",
+    icon: "bi-search",
+  },
+  found: {
+    label: "Found – Đồ nhặt được",
+    color: "#067647",
+    bg: "#D1FADF",
+    icon: "bi-bag-check-fill",
+  },
+  forum: {
+    label: "Forum – Diễn đàn",
+    color: "#1849A9",
+    bg: "#D1E9FF",
+    icon: "bi-chat-quote-fill",
+  },
+};
 
 const ProfilePage = ({ user }) => {
   const primaryColor = "#0C8B72";
@@ -28,6 +51,8 @@ const ProfilePage = ({ user }) => {
   const [profileData, setProfileData] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [sharedPosts, setSharedPosts] = useState([]);
+  const [pendingPosts, setPendingPosts] = useState([]);
+  const [showPendingModal, setShowPendingModal] = useState(false);
   const [activePostFilter, setActivePostFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
 
@@ -44,11 +69,9 @@ const ProfilePage = ({ user }) => {
 
   const isOwnProfile = Boolean(
     user &&
-      ((!queryEmail && !queryName && !queryUsername) ||
-        (queryEmail &&
-          queryEmail.toLowerCase() === user.email?.toLowerCase()) ||
-        (queryName &&
-          queryName.toLowerCase() === user.fullName?.toLowerCase()))
+    ((!queryEmail && !queryName && !queryUsername) ||
+      (queryEmail && queryEmail.toLowerCase() === user.email?.toLowerCase()) ||
+      (queryName && queryName.toLowerCase() === user.fullName?.toLowerCase())),
   );
 
   useEffect(() => {
@@ -90,12 +113,12 @@ const ProfilePage = ({ user }) => {
           const matchedForum = allForum.find(
             (p) =>
               (queryUsername && p.username === queryUsername) ||
-              (queryName && p.fullName === queryName)
+              (queryName && p.fullName === queryName),
           );
           const matchedLost = allLost.find(
             (p) =>
               (queryName && p.author === queryName) ||
-              (queryEmail && p.authorEmail === queryEmail)
+              (queryEmail && p.authorEmail === queryEmail),
           );
 
           if (!loadedProfile) {
@@ -126,16 +149,19 @@ const ProfilePage = ({ user }) => {
         setProfileData(loadedProfile);
 
         const targetFullName = loadedProfile.fullName;
-        const deletedLostIds = JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
-        const deletedFoundIds = JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
-        const deletedForumIds = JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
+        const deletedLostIds =
+          JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
+        const deletedFoundIds =
+          JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
+        const deletedForumIds =
+          JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
 
         const myLost = allLost
           .filter(
             (p) =>
               !deletedLostIds.includes(p.id) &&
               (p.author === targetFullName ||
-                (loadedProfile.email && p.authorEmail === loadedProfile.email))
+                (loadedProfile.email && p.authorEmail === loadedProfile.email)),
           )
           .map((p) => ({
             ...p,
@@ -150,7 +176,7 @@ const ProfilePage = ({ user }) => {
             (p) =>
               !deletedFoundIds.includes(p.id) &&
               (p.author === targetFullName ||
-                (loadedProfile.email && p.authorEmail === loadedProfile.email))
+                (loadedProfile.email && p.authorEmail === loadedProfile.email)),
           )
           .map((p) => ({
             ...p,
@@ -165,7 +191,8 @@ const ProfilePage = ({ user }) => {
             (p) =>
               !deletedForumIds.includes(p.id) &&
               (p.fullName === targetFullName ||
-                (loadedProfile.username && p.username === loadedProfile.username))
+                (loadedProfile.username &&
+                  p.username === loadedProfile.username)),
           )
           .map((p) => ({
             ...p,
@@ -177,12 +204,26 @@ const ProfilePage = ({ user }) => {
 
         setUserPosts([...myLost, ...myFound, ...myForum]);
 
+        // Bài đang chờ admin duyệt (chỉ hiện ở trang cá nhân của chính mình)
+        if (isOwnProfile && user?.email) {
+          try {
+            const pendRes = await axios.get("/api/profile", {
+              params: { pending: "true", email: user.email },
+            });
+            setPendingPosts(Array.isArray(pendRes.data) ? pendRes.data : []);
+          } catch {
+            setPendingPosts([]);
+          }
+        } else {
+          setPendingPosts([]);
+        }
+
         const allShares =
           JSON.parse(localStorage.getItem("laf_shared_posts")) || [];
         const userShares = allShares.filter(
           (s) =>
             s.sharerName === targetFullName ||
-            (loadedProfile.email && s.sharerEmail === loadedProfile.email)
+            (loadedProfile.email && s.sharerEmail === loadedProfile.email),
         );
         setSharedPosts(userShares);
       } catch (error) {
@@ -217,13 +258,15 @@ const ProfilePage = ({ user }) => {
       const allShares =
         JSON.parse(localStorage.getItem("laf_shared_posts")) || [];
       const updated = allShares.map((s) =>
-        s.shareId === editingItem.shareId ? { ...s, caption: editContent } : s
+        s.shareId === editingItem.shareId ? { ...s, caption: editContent } : s,
       );
       localStorage.setItem("laf_shared_posts", JSON.stringify(updated));
       setSharedPosts(
         sharedPosts.map((s) =>
-          s.shareId === editingItem.shareId ? { ...s, caption: editContent } : s
-        )
+          s.shareId === editingItem.shareId
+            ? { ...s, caption: editContent }
+            : s,
+        ),
       );
     } else {
       try {
@@ -258,8 +301,8 @@ const ProfilePage = ({ user }) => {
                 displayTitle: editTitle,
                 displayContent: editContent,
               }
-            : p
-        )
+            : p,
+        ),
       );
     }
     setShowEditModal(false);
@@ -273,11 +316,11 @@ const ProfilePage = ({ user }) => {
       const allShares =
         JSON.parse(localStorage.getItem("laf_shared_posts")) || [];
       const updated = allShares.filter(
-        (s) => s.shareId !== deletingItem.shareId
+        (s) => s.shareId !== deletingItem.shareId,
       );
       localStorage.setItem("laf_shared_posts", JSON.stringify(updated));
       setSharedPosts(
-        sharedPosts.filter((s) => s.shareId !== deletingItem.shareId)
+        sharedPosts.filter((s) => s.shareId !== deletingItem.shareId),
       );
     } else {
       try {
@@ -287,16 +330,28 @@ const ProfilePage = ({ user }) => {
 
         if (deletingItem.postSource === "LOST") {
           await axios.post("/api/lost-posts", params);
-          const del = JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
-          localStorage.setItem("laf_deleted_lost_ids", JSON.stringify([...del, deletingItem.id]));
+          const del =
+            JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
+          localStorage.setItem(
+            "laf_deleted_lost_ids",
+            JSON.stringify([...del, deletingItem.id]),
+          );
         } else if (deletingItem.postSource === "FOUND") {
           await axios.post("/api/found-posts", params);
-          const del = JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
-          localStorage.setItem("laf_deleted_found_ids", JSON.stringify([...del, deletingItem.id]));
+          const del =
+            JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
+          localStorage.setItem(
+            "laf_deleted_found_ids",
+            JSON.stringify([...del, deletingItem.id]),
+          );
         } else if (deletingItem.postSource === "FORUM") {
           await axios.post("/api/forum", params);
-          const del = JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
-          localStorage.setItem("laf_deleted_forum_posts", JSON.stringify([...del, deletingItem.id]));
+          const del =
+            JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
+          localStorage.setItem(
+            "laf_deleted_forum_posts",
+            JSON.stringify([...del, deletingItem.id]),
+          );
         }
       } catch (err) {
         console.error("Lỗi xóa bài viết:", err);
@@ -308,8 +363,8 @@ const ProfilePage = ({ user }) => {
             !(
               p.id === deletingItem.id &&
               p.postSource === deletingItem.postSource
-            )
-        )
+            ),
+        ),
       );
     }
     setShowDeleteModal(false);
@@ -343,8 +398,8 @@ const ProfilePage = ({ user }) => {
       updatedAll.filter(
         (s) =>
           s.sharerName === profileData.fullName ||
-          s.sharerEmail === profileData.email
-      )
+          s.sharerEmail === profileData.email,
+      ),
     );
   };
 
@@ -379,8 +434,8 @@ const ProfilePage = ({ user }) => {
       updatedAll.filter(
         (s) =>
           s.sharerName === profileData.fullName ||
-          s.sharerEmail === profileData.email
-      )
+          s.sharerEmail === profileData.email,
+      ),
     );
     setShareCommentText("");
   };
@@ -408,12 +463,14 @@ const ProfilePage = ({ user }) => {
 
   if (!profileData) {
     return (
-      <div className="text-center py-5">Không tìm thấy thông tin tài khoản.</div>
+      <div className="text-center py-5">
+        Không tìm thấy thông tin tài khoản.
+      </div>
     );
   }
 
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    profileData.fullName
+    profileData.fullName,
   )}&background=0C8B72&color=fff&size=200`;
 
   const getSourceBadge = (source) => {
@@ -504,7 +561,32 @@ const ProfilePage = ({ user }) => {
               </div>
 
               {isOwnProfile && (
-                <div className="d-flex gap-2 mt-3 mt-md-0 mb-2">
+                <div className="d-flex flex-wrap gap-2 mt-3 mt-md-0 mb-2">
+                  <Button
+                    variant="light"
+                    onClick={() => setShowPendingModal(true)}
+                    className="fw-semibold px-3 py-2 shadow-sm d-flex align-items-center"
+                    style={{
+                      border: "1px solid #F8DC9B",
+                      backgroundColor: "#FFF3D6",
+                      color: "#B45309",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <i className="bi bi-hourglass-split me-2"></i> Bài chờ duyệt
+                    {pendingPosts.length > 0 && (
+                      <span
+                        className="ms-2 px-2 rounded-pill text-white"
+                        style={{
+                          backgroundColor: "#D97706",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        {pendingPosts.length}
+                      </span>
+                    )}
+                  </Button>
+
                   <Button
                     variant="light"
                     onClick={() => navigate("/change-password")}
@@ -527,8 +609,8 @@ const ProfilePage = ({ user }) => {
                       borderRadius: "8px",
                     }}
                   >
-                    <i className="bi bi-pencil-fill me-2"></i> Chỉnh sửa trang cá
-                    nhân
+                    <i className="bi bi-pencil-fill me-2"></i> Chỉnh sửa trang
+                    cá nhân
                   </Button>
                 </div>
               )}
@@ -668,9 +750,7 @@ const ProfilePage = ({ user }) => {
             {/* CÁC BÀI ĐÃ CHIA SẺ */}
             {(activePostFilter === "ALL" || activePostFilter === "SHARED") &&
               sharedPosts.map((share) => {
-                const badgeInfo = getSourceBadge(
-                  share.postType.toUpperCase()
-                );
+                const badgeInfo = getSourceBadge(share.postType.toUpperCase());
                 const isLiked =
                   user && (share.likedBy || []).includes(user.email);
 
@@ -758,7 +838,7 @@ const ProfilePage = ({ user }) => {
                       onClick={() =>
                         handleGoToOriginalPost(
                           share.postType,
-                          share.originalPost.id
+                          share.originalPost.id,
                         )
                       }
                     >
@@ -840,7 +920,7 @@ const ProfilePage = ({ user }) => {
                           setOpenShareCommentId(
                             openShareCommentId === share.shareId
                               ? null
-                              : share.shareId
+                              : share.shareId,
                           )
                         }
                       >
@@ -853,7 +933,7 @@ const ProfilePage = ({ user }) => {
                         onClick={() =>
                           handleGoToOriginalPost(
                             share.postType,
-                            share.originalPost.id
+                            share.originalPost.id,
                           )
                         }
                       >
@@ -1006,10 +1086,13 @@ const ProfilePage = ({ user }) => {
                       {post.displayContent}
                     </p>
 
-                    {post.image && (
+                    {post.postSource !== "FORUM" && (
                       <div className="mb-3">
                         <Image
-                          src={post.image}
+                          {...postImgProps({
+                            ...post,
+                            title: post.displayTitle,
+                          })}
                           rounded
                           className="w-100"
                           style={{ maxHeight: "260px", objectFit: "cover" }}
@@ -1029,10 +1112,7 @@ const ProfilePage = ({ user }) => {
                         <i className="bi bi-chat-text me-1"></i> Bình luận (
                         {(post.comments || []).length})
                       </span>
-                      <span
-                        className="fw-bold"
-                        style={{ color: primaryColor }}
-                      >
+                      <span className="fw-bold" style={{ color: primaryColor }}>
                         Mở bài viết <i className="bi bi-arrow-right ms-1"></i>
                       </span>
                     </div>
@@ -1109,6 +1189,132 @@ const ProfilePage = ({ user }) => {
             </div>
           </Form>
         </Modal.Body>
+      </Modal>
+
+      {/* MODAL BÀI ĐANG CHỜ DUYỆT CỦA TÔI */}
+      <Modal
+        show={showPendingModal}
+        onHide={() => setShowPendingModal(false)}
+        centered
+        size="lg"
+        scrollable
+        contentClassName="border-0 shadow-lg"
+      >
+        <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
+          <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
+            <i
+              className="bi bi-hourglass-split me-2"
+              style={{ color: "#B45309" }}
+            ></i>
+            Bài đăng đang chờ duyệt
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="mx-3 py-3 text-start">
+          {pendingPosts.length === 0 ? (
+            <div className="text-center text-muted py-5">
+              <i
+                className="bi bi-check2-circle fs-1 d-block mb-2"
+                style={{ color: primaryColor }}
+              ></i>
+              Bạn không có bài đăng nào đang chờ duyệt.
+            </div>
+          ) : (
+            <div className="d-flex flex-column gap-3">
+              <div className="small text-muted">
+                Các bài dưới đây sẽ hiển thị công khai sau khi admin duyệt. Bạn
+                sẽ nhận được thông báo khi có kết quả.
+              </div>
+              {pendingPosts.map((item) => {
+                const meta =
+                  PENDING_SOURCE[item.postType] || PENDING_SOURCE.forum;
+                return (
+                  <div
+                    key={`${item.postType}-${item.id}`}
+                    className="d-flex gap-3 p-3 rounded-4 border bg-white"
+                  >
+                    {item.postType !== "forum" && (
+                      <img
+                        {...postImgProps(item)}
+                        alt=""
+                        style={{
+                          width: "90px",
+                          height: "90px",
+                          objectFit: "cover",
+                          borderRadius: "12px",
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                      <div className="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <span
+                          className="d-inline-flex align-items-center fw-semibold px-3 py-1 rounded-pill"
+                          style={{
+                            backgroundColor: meta.bg,
+                            color: meta.color,
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          <i className={`bi ${meta.icon} me-1`}></i>
+                          {meta.label}
+                        </span>
+                        <span
+                          className="px-3 py-1 rounded-pill fw-semibold"
+                          style={{
+                            backgroundColor: "#FFF3D6",
+                            color: "#B45309",
+                            border: "1px solid #F8DC9B",
+                            fontSize: "0.78rem",
+                          }}
+                        >
+                          Đang chờ duyệt
+                        </span>
+                      </div>
+                      <div className="fw-bold text-dark">{item.title}</div>
+                      <div
+                        className="text-secondary small"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item.content}
+                      </div>
+                      <div
+                        className="text-muted mt-1"
+                        style={{ fontSize: "0.8rem" }}
+                      >
+                        {item.category && (
+                          <span className="me-3">
+                            <i className="bi bi-tag-fill me-1"></i>
+                            {item.category}
+                          </span>
+                        )}
+                        {item.location && (
+                          <span className="me-3">
+                            <i className="bi bi-geo-alt-fill me-1"></i>
+                            {item.location}
+                          </span>
+                        )}
+                        <span>
+                          <i className="bi bi-clock me-1"></i>
+                          Gửi lúc {item.createdAt}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0 mb-3 mx-3">
+          <Button variant="light" onClick={() => setShowPendingModal(false)}>
+            Đóng
+          </Button>
+        </Modal.Footer>
       </Modal>
 
       {/* MODAL XÓA BÀI VIẾT TRÊN PROFILE */}

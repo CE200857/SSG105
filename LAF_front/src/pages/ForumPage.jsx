@@ -18,6 +18,61 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+// Mác phân loại chủ đề của bài viết Forum
+const CATEGORY_META = {
+  "Mẹo campus": {
+    icon: "bi-lightbulb-fill",
+    color: "#0A7360",
+    bg: "#E3F5EF",
+    border: "#B7E3D6",
+  },
+  "Kinh nghiệm campus": {
+    icon: "bi-mortarboard-fill",
+    color: "#1D4ED8",
+    bg: "#E6EEFF",
+    border: "#BFD2FF",
+  },
+  "Hỏi đáp": {
+    icon: "bi-patch-question-fill",
+    color: "#B45309",
+    bg: "#FFF3D6",
+    border: "#F8DC9B",
+  },
+  Khác: {
+    icon: "bi-tag-fill",
+    color: "#4B5563",
+    bg: "#EEF1F4",
+    border: "#D5DAE0",
+  },
+};
+
+// Chủ đề lạ hoặc để trống sẽ tự quy về "Khác"
+const CategoryBadge = ({ category, large = false }) => {
+  const key = CATEGORY_META[category] ? category : "Khác";
+  const m = CATEGORY_META[key];
+  return (
+    <span
+      className="d-inline-flex align-items-center fw-semibold"
+      style={{
+        backgroundColor: m.bg,
+        color: m.color,
+        border: `1px solid ${m.border}`,
+        borderRadius: "999px",
+        padding: large ? "7px 18px" : "4px 12px",
+        fontSize: large ? "0.92rem" : "0.8rem",
+        lineHeight: 1.2,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <i
+        className={`bi ${m.icon} me-2`}
+        style={{ fontSize: large ? "1.05rem" : "0.9rem" }}
+      ></i>
+      {key}
+    </span>
+  );
+};
+
 const ForumPage = ({ user }) => {
   const primaryColor = "#0C8B72";
   const navigate = useNavigate();
@@ -121,7 +176,7 @@ const ForumPage = ({ user }) => {
       JSON.parse(localStorage.getItem("laf_notifications")) || [];
     localStorage.setItem(
       "laf_notifications",
-      JSON.stringify([newNotif, ...existing])
+      JSON.stringify([newNotif, ...existing]),
     );
     window.dispatchEvent(new Event("laf-notifications-updated"));
 
@@ -171,7 +226,7 @@ const ForumPage = ({ user }) => {
 
       if (navState.openPostId) {
         const target = finalPosts.find(
-          (item) => Number(item.id) === Number(navState.openPostId)
+          (item) => Number(item.id) === Number(navState.openPostId),
         );
         if (target) {
           setSelectedPostDetail(target);
@@ -268,8 +323,8 @@ const ForumPage = ({ user }) => {
 
     setPosts(
       posts.map((p) =>
-        p.id === editingPost.id ? { ...p, ...updatedFields } : p
-      )
+        p.id === editingPost.id ? { ...p, ...updatedFields } : p,
+      ),
     );
     if (selectedPostDetail && selectedPostDetail.id === editingPost.id) {
       setSelectedPostDetail({ ...selectedPostDetail, ...updatedFields });
@@ -294,7 +349,7 @@ const ForumPage = ({ user }) => {
       deletedIds.push(selectedPostId);
       localStorage.setItem(
         "laf_deleted_forum_posts",
-        JSON.stringify(deletedIds)
+        JSON.stringify(deletedIds),
       );
     }
 
@@ -334,8 +389,8 @@ const ForumPage = ({ user }) => {
                   likes: response.data.likes,
                   hasLiked: response.data.hasLiked,
                 }
-              : p
-          )
+              : p,
+          ),
         );
         if (selectedPostDetail && selectedPostDetail.id === post.id) {
           setSelectedPostDetail((prev) => ({
@@ -385,7 +440,7 @@ const ForumPage = ({ user }) => {
         };
         setSelectedPostDetail(updatedPost);
         setPosts(
-          posts.map((p) => (p.id === selectedPostDetail.id ? updatedPost : p))
+          posts.map((p) => (p.id === selectedPostDetail.id ? updatedPost : p)),
         );
         setNewCommentText("");
       }
@@ -508,7 +563,7 @@ const ForumPage = ({ user }) => {
       JSON.parse(localStorage.getItem("laf_shared_posts")) || [];
     localStorage.setItem(
       "laf_shared_posts",
-      JSON.stringify([sharedItem, ...existingShares])
+      JSON.stringify([sharedItem, ...existingShares]),
     );
 
     pushNotification({
@@ -522,14 +577,6 @@ const ForumPage = ({ user }) => {
     setTimeout(() => {
       setShowShareModal(false);
     }, 1200);
-  };
-
-  const getBadgeVariant = (category) => {
-    if (!category) return "secondary";
-    if (category.includes("Kinh nghiệm")) return "primary";
-    if (category.includes("Mẹo")) return "success";
-    if (category.includes("Hỏi đáp")) return "warning";
-    return "secondary";
   };
 
   return (
@@ -668,13 +715,7 @@ const ForumPage = ({ user }) => {
                         className="ms-auto d-flex align-items-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Badge
-                          bg={getBadgeVariant(post.category)}
-                          className="rounded-pill px-3 py-2 fw-semibold"
-                        >
-                          <i className="bi bi-bookmark-star-fill me-1"></i>
-                          {post.category}
-                        </Badge>
+                        <CategoryBadge category={post.category} />
 
                         {/* MENU BA CHẤM (...) CHO BÀI VIẾT CỦA CHÍNH MÌNH */}
                         {isOwner(post) && (
@@ -788,7 +829,10 @@ const ForumPage = ({ user }) => {
             </Modal.Title>
           </Modal.Header>
 
-          <Modal.Body className="mx-3 py-3" style={{ maxHeight: "75vh", overflowY: "auto" }}>
+          <Modal.Body
+            className="mx-3 py-3"
+            style={{ maxHeight: "75vh", overflowY: "auto" }}
+          >
             {submitMsg.text && (
               <Alert variant={submitMsg.type} className="border-0 shadow-sm">
                 {submitMsg.text}
@@ -884,14 +928,19 @@ const ForumPage = ({ user }) => {
         >
           <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
             <Modal.Title className="fw-bold" style={{ color: "#10393B" }}>
-              <i className="bi bi-pencil-square me-2" style={{ color: primaryColor }}></i>
+              <i
+                className="bi bi-pencil-square me-2"
+                style={{ color: primaryColor }}
+              ></i>
               Chỉnh sửa bài viết diễn đàn
             </Modal.Title>
           </Modal.Header>
           <Modal.Body className="mx-3 py-3 text-start">
             <Form id="editForumForm" onSubmit={handleSaveEdit}>
               <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold text-secondary">Tiêu đề</Form.Label>
+                <Form.Label className="fw-semibold text-secondary">
+                  Tiêu đề
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={editTitle}
@@ -901,7 +950,9 @@ const ForumPage = ({ user }) => {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold text-secondary">Danh mục</Form.Label>
+                <Form.Label className="fw-semibold text-secondary">
+                  Danh mục
+                </Form.Label>
                 <Form.Select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value)}
@@ -914,7 +965,9 @@ const ForumPage = ({ user }) => {
                 </Form.Select>
               </Form.Group>
               <Form.Group className="mb-2">
-                <Form.Label className="fw-semibold text-secondary">Nội dung</Form.Label>
+                <Form.Label className="fw-semibold text-secondary">
+                  Nội dung
+                </Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={5}
@@ -962,16 +1015,16 @@ const ForumPage = ({ user }) => {
               Hủy
             </Button>
             <Button
-            className="fw-semibold text-white border-0"
-            style={{
-              backgroundColor: "#ae1111",
-              borderRadius: "12px",
-              padding: "10px 20px",
-            }}
-            onClick={handleDeleteConfirm}
-          >
-            Xác nhận xóa
-          </Button>
+              className="fw-semibold text-white border-0"
+              style={{
+                backgroundColor: "#ae1111",
+                borderRadius: "12px",
+                padding: "10px 20px",
+              }}
+              onClick={handleDeleteConfirm}
+            >
+              Xác nhận xóa
+            </Button>
           </Modal.Footer>
         </Modal>
 
@@ -1016,9 +1069,7 @@ const ForumPage = ({ user }) => {
                     <span className="fw-bold text-dark">
                       {postToShare.fullName}
                     </span>
-                    <Badge bg={getBadgeVariant(postToShare.category)}>
-                      {postToShare.category}
-                    </Badge>
+                    <CategoryBadge category={postToShare.category} />
                   </div>
                   <h6 className="fw-bold mb-1" style={{ color: primaryColor }}>
                     {postToShare.title}
@@ -1071,7 +1122,7 @@ const ForumPage = ({ user }) => {
                     setShowDetailModal(false);
                     handleViewUserProfile(
                       selectedPostDetail.fullName,
-                      selectedPostDetail.username
+                      selectedPostDetail.username,
                     );
                   }}
                 >
@@ -1091,20 +1142,16 @@ const ForumPage = ({ user }) => {
                     <h5 className="fw-bold mb-0 text-dark hover-primary">
                       {selectedPostDetail.fullName}
                     </h5>
-                    <span className="text-muted" style={{ fontSize: "0.85rem" }}>
+                    <span
+                      className="text-muted"
+                      style={{ fontSize: "0.85rem" }}
+                    >
                       @{selectedPostDetail.username} • {selectedPostDetail.date}
                     </span>
                   </div>
                 </div>
 
                 <div className="d-flex align-items-center gap-2">
-                  <Badge
-                    bg={getBadgeVariant(selectedPostDetail.category)}
-                    className="rounded-pill px-3 py-2 fw-semibold"
-                  >
-                    {selectedPostDetail.category}
-                  </Badge>
-
                   {isOwner(selectedPostDetail) && (
                     <Dropdown align="end">
                       <Dropdown.Toggle
@@ -1146,6 +1193,12 @@ const ForumPage = ({ user }) => {
               className="mx-3 py-3 text-start"
               style={{ maxHeight: "75vh", overflowY: "auto" }}
             >
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <CategoryBadge category={selectedPostDetail.category} large />
+                <span className="text-muted" style={{ fontSize: "0.85rem" }}>
+                  Chủ đề bài viết
+                </span>
+              </div>
               <h4 className="fw-bold mb-3" style={{ color: "#10393B" }}>
                 {selectedPostDetail.title}
               </h4>
@@ -1356,7 +1409,7 @@ const ForumPage = ({ user }) => {
                                   if (!requireLogin("phản hồi bình luận"))
                                     return;
                                   setReplyingToId(
-                                    replyingToId === c.id ? null : c.id
+                                    replyingToId === c.id ? null : c.id,
                                   );
                                 }}
                               >
@@ -1399,7 +1452,7 @@ const ForumPage = ({ user }) => {
                                             setShowDetailModal(false);
                                             handleViewUserProfile(
                                               rep.author,
-                                              ""
+                                              "",
                                             );
                                           }}
                                         >

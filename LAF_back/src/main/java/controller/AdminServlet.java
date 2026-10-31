@@ -141,6 +141,13 @@ public class AdminServlet extends HttpServlet {
                     boolean ok = adminDao.deleteUserByAdmin(Integer.parseInt(request.getParameter("userId")));
                     result.put("success", ok);
                     result.put("message", ok ? "Đã xóa tài khoản!" : "Lỗi khi xóa tài khoản!");
+                } else if ("ban".equals(action) || "unban".equals(action)) {
+                    boolean ban = "ban".equals(action);
+                    boolean ok = adminDao.setUserActive(Integer.parseInt(request.getParameter("userId")), !ban);
+                    result.put("success", ok);
+                    result.put("message", ok
+                            ? (ban ? "Đã khóa tài khoản!" : "Đã mở khóa tài khoản!")
+                            : "Không thể thực hiện (không thể khóa tài khoản Admin).");
                 }
             } else if ("lost".equals(entity)) {
                 if ("create".equals(action)) {

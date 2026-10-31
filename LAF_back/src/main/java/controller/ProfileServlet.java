@@ -24,6 +24,13 @@ public class ProfileServlet extends HttpServlet {
         String username = request.getParameter("username");
         String viewerEmail = request.getParameter("viewerEmail");
         
+        // Danh sách bài đang chờ duyệt của chính student (Lost / Found / Forum)
+        if ("true".equals(request.getParameter("pending"))) {
+            out.print(new Gson().toJson(new dao.ModerationDAO().getPendingPostsByEmail(email)));
+            out.flush();
+            return;
+        }
+        
         ProfileDAO dao = new ProfileDAO();
         Map<String, Object> userProfile = dao.getFullProfile(email, username, viewerEmail);
         

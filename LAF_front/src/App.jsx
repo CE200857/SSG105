@@ -23,9 +23,11 @@ function App() {
         try {
           await axios.get("/api/protected/check-session");
         } catch (error) {
-          // Chỉ đăng xuất khi Backend thực sự báo 401 (Hết phiên), tránh lỗi 404 làm mất đăng nhập
-          if (error.response && error.response.status === 401) {
+          // Đăng xuất khi hết phiên (401) hoặc tài khoản bị ban (403); tránh lỗi 404 làm mất đăng nhập
+          const status = error.response && error.response.status;
+          if (status === 401 || status === 403) {
             sessionStorage.removeItem("user");
+            localStorage.removeItem("user");
             setUser(null);
           }
         }

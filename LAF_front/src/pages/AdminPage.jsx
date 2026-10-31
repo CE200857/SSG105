@@ -17,7 +17,9 @@ import {
   Image,
 } from "react-bootstrap";
 import axios from "axios";
+import { postImgProps, getPostImage } from "../utils/postImage";
 import { useSearchParams } from "react-router-dom";
+
 const AdminPage = ({ user }) => {
   const primaryColor = "#0C8B72";
 
@@ -362,6 +364,33 @@ const AdminPage = ({ user }) => {
       showToast("danger", "Lỗi kết nối máy chủ khi lưu dữ liệu!");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Ban / Mở khóa tài khoản student
+  const handleToggleBan = async (u) => {
+    const willBan = u.isActive !== false;
+    const msg = willBan
+      ? `Khóa tài khoản "${u.fullName}"?\nNgười này sẽ không thể đăng nhập cho đến khi được mở khóa. Dữ liệu tài khoản vẫn được giữ lại.`
+      : `Mở khóa tài khoản "${u.fullName}"?`;
+    if (!window.confirm(msg)) return;
+    try {
+      const params = new URLSearchParams();
+      params.append("entity", "user");
+      params.append("action", willBan ? "ban" : "unban");
+      params.append("userId", u.userId);
+      const res = await axios.post("/api/admin", params);
+      if (res.data && res.data.success) {
+        showToast(
+          "success",
+          willBan ? "Đã khóa tài khoản!" : "Đã mở khóa tài khoản!",
+        );
+        fetchSectionData();
+      } else {
+        showToast("danger", res.data?.message || "Thao tác thất bại!");
+      }
+    } catch (err) {
+      showToast("danger", "Lỗi kết nối máy chủ!");
     }
   };
 
@@ -1657,17 +1686,15 @@ const AdminPage = ({ user }) => {
                                 </td>
                                 <td style={{ maxWidth: "260px" }}>
                                   <div className="d-flex align-items-center gap-2">
-                                    {item.image && (
-                                      <Image
-                                        src={item.image}
-                                        rounded
-                                        style={{
-                                          width: "42px",
-                                          height: "42px",
-                                          objectFit: "cover",
-                                        }}
-                                      />
-                                    )}
+                                    <Image
+                                      {...postImgProps(item)}
+                                      rounded
+                                      style={{
+                                        width: "42px",
+                                        height: "42px",
+                                        objectFit: "cover",
+                                      }}
+                                    />
                                     <div className="text-truncate">
                                       <div className="fw-bold text-dark text-truncate">
                                         {item.itemName}
@@ -2268,12 +2295,23 @@ const AdminPage = ({ user }) => {
                                     className="px-2 py-1 rounded-pill fw-semibold"
                                     style={{
                                       fontSize: "0.75rem",
-                                      backgroundColor: "#D1FAE5",
-                                      color: "#065F46",
-                                      border: "1px solid #10B981",
+                                      backgroundColor:
+                                        u.isActive === false
+                                          ? "#FEE2E2"
+                                          : "#D1FAE5",
+                                      color:
+                                        u.isActive === false
+                                          ? "#991B1B"
+                                          : "#065F46",
+                                      border:
+                                        u.isActive === false
+                                          ? "1px solid #F87171"
+                                          : "1px solid #10B981",
                                     }}
                                   >
-                                    Đang hoạt động
+                                    {u.isActive === false
+                                      ? "Đã bị khóa"
+                                      : "Đang hoạt động"}
                                   </span>
                                 </div>
                               </td>
@@ -2299,6 +2337,27 @@ const AdminPage = ({ user }) => {
                                       style={{ color: primaryColor }}
                                     ></i>
                                   </Button>
+                                  {u.roleId !== 1 && (
+                                    <Button
+                                      size="sm"
+                                      variant={
+                                        u.isActive === false
+                                          ? "success"
+                                          : "outline-danger"
+                                      }
+                                      className="fw-semibold"
+                                      onClick={() => handleToggleBan(u)}
+                                    >
+                                      <i
+                                        className={`bi ${
+                                          u.isActive === false
+                                            ? "bi-unlock-fill"
+                                            : "bi-slash-circle"
+                                        } me-1`}
+                                      ></i>
+                                      {u.isActive === false ? "Mở khóa" : "Ban"}
+                                    </Button>
+                                  )}
                                   <Button
                                     size="sm"
                                     variant="light"
@@ -2898,9 +2957,9 @@ const AdminPage = ({ user }) => {
                 <p className="text-dark" style={{ whiteSpace: "pre-wrap" }}>
                   {viewItem.content || viewItem.description || viewItem.comment}
                 </p>
-                {viewItem.image && (
+                {["lost", "found"].includes(activeSection) && (
                   <Image
-                    src={viewItem.image}
+                    {...postImgProps(viewItem)}
                     rounded
                     className="w-100 mt-2 border"
                     style={{ maxHeight: "260px", objectFit: "contain" }}
@@ -2965,9 +3024,9 @@ const AdminPage = ({ user }) => {
                 </>
               )}
             </p>
-            {pendingViewItem.image && (
+            {pendingViewItem.postType !== "forum" && (
               <Image
-                src={pendingViewItem.image}
+                {...postImgProps(pendingViewItem)}
                 fluid
                 rounded
                 className="mb-3"

@@ -18,6 +18,7 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { postImgProps, getPostImage } from "../utils/postImage";
 
 const FoundItemsPage = ({ user }) => {
   const primaryColor = "#0C8B72";
@@ -612,7 +613,7 @@ const FoundItemsPage = ({ user }) => {
         author: postToShare.author,
         authorEmail: postToShare.authorEmail,
         date: postToShare.time,
-        image: postToShare.image,
+        image: getPostImage(postToShare),
         status:
           postToShare.status === "Unclaimed" ? "Đang tìm chủ" : "Đã trao trả",
       },
@@ -892,7 +893,7 @@ const FoundItemsPage = ({ user }) => {
                       <div className="position-relative">
                         <Card.Img
                           variant="top"
-                          src={post.image}
+                          {...postImgProps(post)}
                           style={{ height: "180px", objectFit: "cover" }}
                         />
                         {/* GÓC TRÊN BÊN TRÁI: BADGE CATEGORY */}
@@ -1706,7 +1707,7 @@ const FoundItemsPage = ({ user }) => {
 
             <div className="mb-4 text-center">
               <Image
-                src={selectedPost.image}
+                {...postImgProps(selectedPost)}
                 rounded
                 className="shadow-sm w-100"
                 style={{
