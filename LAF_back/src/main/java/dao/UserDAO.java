@@ -35,6 +35,22 @@ public class UserDAO extends DBContext {
         return null;
     }
     
+        // Kiểm tra tài khoản còn hoạt động hay đã bị ban (IsActive = 0)
+    public boolean isUserActive(int userId) {
+        String query = "SELECT IsActive FROM Users WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("IsActive");
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi isUserActive: " + e.getMessage());
+        }
+        return true;
+    }
+    
     // Kiểm tra xem Username hoặc Email đã tồn tại chưa
     public boolean checkUserExist(String username, String email) {
         String query = "SELECT 1 FROM Users WHERE Username = ? OR Email = ?";

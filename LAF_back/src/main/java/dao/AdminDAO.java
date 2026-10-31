@@ -56,7 +56,7 @@ public class AdminDAO extends DBContext {
     public List<Map<String, Object>> getAllUsers(String keyword, String campus, String gender, String roleId) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
-                "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, RoleID, "
+                "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, RoleID, IsActive, "
                 + "CONVERT(VARCHAR, CreatedAt, 103) as CreatedDate FROM Users WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
@@ -100,6 +100,7 @@ public class AdminDAO extends DBContext {
                 u.put("campus", rs.getString("Campus") != null ? rs.getString("Campus") : "Cần Thơ");
                 u.put("gender", rs.getString("Gender") != null ? rs.getString("Gender") : "Nam");
                 u.put("roleId", rs.getInt("RoleID"));
+                u.put("isActive", rs.getBoolean("IsActive"));
                 u.put("createdAt", rs.getString("CreatedDate"));
                 list.add(u);
             }
@@ -178,6 +179,20 @@ public class AdminDAO extends DBContext {
         } catch (Exception e) {
             return "Lỗi cập nhật: " + e.getMessage();
         }
+    }
+    
+        // Ban / mở khóa tài khoản (không xóa dữ liệu, không ban được Admin)
+    public boolean setUserActive(int userId, boolean active) {
+        String query = "UPDATE Users SET IsActive = ? WHERE UserID = ? AND RoleID <> 1";
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setBoolean(1, active);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Lỗi setUserActive: " + e.getMessage());
+        }
+        return false;
     }
 
     // 5. Xóa hoàn toàn tài khoản và dọn sạch các bảng phụ thuộc

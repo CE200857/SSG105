@@ -126,7 +126,19 @@ public class ForumDAO extends DBContext {
         return addForumPost(email, title, category, content, "Pending");
     }
 
+    // Chủ đề hợp lệ của Forum; mọi giá trị khác đều quy về "Khác"
+    public static String normalizeCategory(String category) {
+        if (category != null) {
+            String c = category.trim();
+            if (c.equals("Mẹo campus") || c.equals("Kinh nghiệm campus") || c.equals("Hỏi đáp")) {
+                return c;
+            }
+        }
+        return "Khác";
+    }
+
     public boolean addForumPost(String email, String title, String category, String content, String approvalStatus) {
+        category = normalizeCategory(category);
         String query = "INSERT INTO ForumPosts (UserID, Title, Category, Content, CreatedAt, ApprovalStatus) "
                 + "SELECT UserID, ?, ?, ?, GETDATE(), ? FROM Users WHERE Email = ?";
         try {
@@ -233,6 +245,7 @@ public class ForumDAO extends DBContext {
     }
 
     public boolean updateForumPost(int postId, String title, String category, String content) {
+        category = normalizeCategory(category);
         try {
             PreparedStatement ps = conn.prepareStatement("UPDATE ForumPosts SET Title = ?, Category = ?, Content = ? WHERE PostID = ?");
             ps.setNString(1, title);
