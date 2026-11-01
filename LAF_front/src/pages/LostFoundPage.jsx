@@ -14,6 +14,8 @@ import {
   Alert,
   Spinner,
   Dropdown,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -63,6 +65,7 @@ const LostFoundPage = ({ user }) => {
   // ===== STATE CHO MODAL XÓA BÀI & XÁC NHẬN TRẠNG THÁI =====
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [toast, setToast] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
   // ===== STATE CHO MODAL CHI TIẾT, BÌNH LUẬN, TRẢ LỜI & LIKE COMMENT =====
@@ -421,18 +424,32 @@ const LostFoundPage = ({ user }) => {
       params.append("action", "status");
       params.append("postId", selectedPostId);
       params.append("status", nextStatus);
-      await axios.post("/api/lost-posts", params);
-    } catch {
-      // Vẫn cập nhật giao diện
-    } finally {
-      setPosts(
-        posts.map((post) =>
-          post.id === selectedPostId ? { ...post, status: nextStatus } : post,
-        ),
-      );
-      if (selectedPostDetail && selectedPostDetail.id === selectedPostId) {
-        setSelectedPostDetail((prev) => ({ ...prev, status: nextStatus }));
+      const res = await axios.post("/api/lost-posts", params);
+
+      if (res.data?.success) {
+        // applied = admin đổi thẳng; còn lại là chờ duyệt
+        const patch = res.data.applied
+          ? { status: nextStatus }
+          : { pendingStatus: nextStatus };
+        setPosts(
+          posts.map((p) => (p.id === selectedPostId ? { ...p, ...patch } : p)),
+        );
+        if (selectedPostDetail && selectedPostDetail.id === selectedPostId) {
+          setSelectedPostDetail((prev) => ({ ...prev, ...patch }));
+        }
+        setToast({ variant: "success", msg: res.data.message });
+      } else {
+        setToast({
+          variant: "danger",
+          msg: res.data?.message || "Không gửi được yêu cầu.",
+        });
       }
+    } catch (err) {
+      setToast({
+        variant: "danger",
+        msg: err.response?.data?.message || "Lỗi kết nối máy chủ.",
+      });
+    } finally {
       setShowStatusModal(false);
     }
   };
@@ -913,7 +930,7 @@ const LostFoundPage = ({ user }) => {
 
                         <div
                           onClick={() => {
-                            if (isOwner(post)) {
+                            if (isOwner(post) && !post.pendingStatus) {
                               setSelectedPostId(post.id);
                               setShowStatusModal(true);
                             }
@@ -943,6 +960,17 @@ const LostFoundPage = ({ user }) => {
                           {post.status}
                         </div>
 
+                        {post.pendingStatus && (
+                          <Badge
+                            bg="warning"
+                            text="dark"
+                            className="rounded-pill"
+                          >
+                            <i className="bi bi-hourglass-split me-1"></i>Chờ
+                            admin duyệt
+                          </Badge>
+                        )}
+
                         {/* NÚT ... CHO BÀI ĐĂNG CỦA BẢN THÂN */}
                         {isOwner(post) && (
                           <Dropdown align="end">
@@ -968,21 +996,21 @@ const LostFoundPage = ({ user }) => {
                                 ></i>
                                 Chỉnh sửa bài đăng
                               </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleVisibility(post);
-                      }}
-                      className="py-2"
-                    >
-                      <i
-                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
-                        style={{ color: primaryColor }}
-                      ></i>
-                      {post.visibility === "Private"
-                        ? "Chuyển sang Công khai"
-                        : "Chuyển sang Riêng tư"}
-                    </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleVisibility(post);
+                                }}
+                                className="py-2"
+                              >
+                                <i
+                                  className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                                  style={{ color: primaryColor }}
+                                ></i>
+                                {post.visibility === "Private"
+                                  ? "Chuyển sang Công khai"
+                                  : "Chuyển sang Riêng tư"}
+                              </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setSelectedPostId(post.id);
@@ -1505,7 +1533,8 @@ const LostFoundPage = ({ user }) => {
               className="bi bi-check-circle-fill me-3"
               style={{ color: primaryColor, fontSize: "1.5rem" }}
             ></i>
-            Cập nhật trạng thái?
+            Yêu cầu đổi trạng thái sẽ được gửi đến admin kiểm tra. Trạng thái
+            chỉ thay đổi sau khi admin duyệt.
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -1540,6 +1569,24 @@ const LostFoundPage = ({ user }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <ToastContainer
+        position="top-center"
+        className="p-3 position-fixed"
+        style={{ zIndex: 2000 }}
+      >
+        <Toast
+          show={!!toast}
+          onClose={() => setToast(null)}
+          delay={4500}
+          autohide
+          bg={toast?.variant}
+        >
+          <Toast.Body className="text-white fw-semibold">
+            {toast?.msg}
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
 
       {/* ================= MODAL CHIA SẺ BÀI ĐĂNG ================= */}
       <Modal

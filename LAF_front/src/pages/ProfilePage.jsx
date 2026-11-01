@@ -54,6 +54,7 @@ const ProfilePage = ({ user }) => {
   const [userPosts, setUserPosts] = useState([]);
   const [sharedPosts, setSharedPosts] = useState([]);
   const [pendingPosts, setPendingPosts] = useState([]);
+  const [statusRequests, setStatusRequests] = useState([]);
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [activePostFilter, setActivePostFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
@@ -118,9 +119,15 @@ const ProfilePage = ({ user }) => {
         }
 
         const [lostRes, foundRes, forumRes] = await Promise.all([
-          axios.get("/api/lost-posts", { params: { email: user?.email || "" } }).catch(() => ({ data: [] })),
-          axios.get("/api/found-posts", { params: { email: user?.email || "" } }).catch(() => ({ data: [] })),
-          axios.get("/api/forum", { params: { email: user?.email || "" } }).catch(() => ({ data: [] })),
+          axios
+            .get("/api/lost-posts", { params: { email: user?.email || "" } })
+            .catch(() => ({ data: [] })),
+          axios
+            .get("/api/found-posts", { params: { email: user?.email || "" } })
+            .catch(() => ({ data: [] })),
+          axios
+            .get("/api/forum", { params: { email: user?.email || "" } })
+            .catch(() => ({ data: [] })),
         ]);
 
         const allLost = Array.isArray(lostRes.data) ? lostRes.data : [];
@@ -234,6 +241,17 @@ const ProfilePage = ({ user }) => {
           }
         } else {
           setPendingPosts([]);
+        }
+
+        if (isOwnProfile && user?.email) {
+          try {
+            const reqRes = await axios.get("/api/status-requests");
+            setStatusRequests(Array.isArray(reqRes.data) ? reqRes.data : []);
+          } catch {
+            setStatusRequests([]);
+          }
+        } else {
+          setStatusRequests([]);
         }
 
         const allShares =
@@ -592,7 +610,7 @@ const ProfilePage = ({ user }) => {
                     }}
                   >
                     <i className="bi bi-hourglass-split me-2"></i> Bài chờ duyệt
-                    {pendingPosts.length > 0 && (
+                    {pendingPosts.length + statusRequests.length > 0 && (
                       <span
                         className="ms-2 px-2 rounded-pill text-white"
                         style={{
@@ -600,7 +618,7 @@ const ProfilePage = ({ user }) => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        {pendingPosts.length}
+                        {pendingPosts.length + statusRequests.length}
                       </span>
                     )}
                   </Button>
@@ -636,31 +654,42 @@ const ProfilePage = ({ user }) => {
 
             <hr className="mt-4 mb-0 opacity-25" />
 
-            <div className="d-flex gap-2 pt-2 overflow-auto">
-              {[
-                { key: "ALL", label: "Tất cả bài viết" },
-                { key: "LOST", label: "Đồ thất lạc" },
-                { key: "FOUND", label: "Đồ nhặt được" },
-                { key: "FORUM", label: "Diễn đàn" },
-                { key: "SHARED", label: "Bài đã chia sẻ" },
-              ].map((t) => (
-                <Button
-                  key={t.key}
-                  variant="link"
-                  onClick={() => setActivePostFilter(t.key)}
-                  className="text-decoration-none fw-bold px-3 py-2 rounded-0"
-                  style={{
-                    color:
-                      activePostFilter === t.key ? primaryColor : "#65676B",
-                    borderBottom:
-                      activePostFilter === t.key
-                        ? `3px solid ${primaryColor}`
-                        : "3px solid transparent",
-                  }}
-                >
-                  {t.label}
-                </Button>
-              ))}
+            <div className="profile-tabs">
+              <div className="profile-tabs-inner">
+                {[
+                  {
+                    key: "ALL",
+                    label: "Tất cả bài viết",
+                    icon: "bi-grid-fill",
+                  },
+                  { key: "LOST", label: "Đồ thất lạc", icon: "bi-search" },
+                  {
+                    key: "FOUND",
+                    label: "Đồ nhặt được",
+                    icon: "bi-bag-check-fill",
+                  },
+                  {
+                    key: "FORUM",
+                    label: "Diễn đàn",
+                    icon: "bi-chat-square-text-fill",
+                  },
+                  {
+                    key: "SHARED",
+                    label: "Bài đã chia sẻ",
+                    icon: "bi-share-fill",
+                  },
+                ].map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setActivePostFilter(t.key)}
+                    className={`profile-tab ${activePostFilter === t.key ? "active" : ""}`}
+                  >
+                    <i className={`bi ${t.icon}`}></i>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </Container>
@@ -1079,21 +1108,21 @@ const ProfilePage = ({ user }) => {
                                 <i className="bi bi-pencil-square me-2 text-primary"></i>
                                 Chỉnh sửa bài viết
                               </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleVisibility(post);
-                      }}
-                      className="py-2"
-                    >
-                      <i
-                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
-                        style={{ color: primaryColor }}
-                      ></i>
-                      {post.visibility === "Private"
-                        ? "Chuyển sang Công khai"
-                        : "Chuyển sang Riêng tư"}
-                    </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleVisibility(post);
+                                }}
+                                className="py-2"
+                              >
+                                <i
+                                  className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                                  style={{ color: primaryColor }}
+                                ></i>
+                                {post.visibility === "Private"
+                                  ? "Chuyển sang Công khai"
+                                  : "Chuyển sang Riêng tư"}
+                              </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setDeletingItem({ ...post, isShare: false });
@@ -1244,6 +1273,36 @@ const ProfilePage = ({ user }) => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="mx-3 py-3 text-start">
+          {statusRequests.length > 0 && (
+            <div className="mb-3">
+              <div className="fw-bold mb-2" style={{ color: "#B45309" }}>
+                <i className="bi bi-arrow-left-right me-2"></i>
+                Yêu cầu đổi trạng thái đang chờ duyệt
+              </div>
+              <div className="d-flex flex-column gap-2">
+                {statusRequests.map((r) => (
+                  <div
+                    key={r.requestId}
+                    className="p-3 rounded-3"
+                    style={{
+                      border: "1px solid #F8DC9B",
+                      background: "#FFFBEB",
+                    }}
+                  >
+                    <div className="fw-semibold">{r.title}</div>
+                    <div className="small text-muted">
+                      {r.postType === "lost" ? "Tìm đồ" : "Nhặt đồ"} ·{" "}
+                      {r.fromLabel} → <strong>{r.toLabel}</strong> · Gửi lúc{" "}
+                      {r.createdAt}
+                    </div>
+                    <span className="badge text-bg-warning mt-1">
+                      Đang chờ admin duyệt
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {pendingPosts.length === 0 ? (
             <div className="text-center text-muted py-5">
               <i

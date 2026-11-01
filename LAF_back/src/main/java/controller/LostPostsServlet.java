@@ -22,15 +22,16 @@ public class LostPostsServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
-        
+
         String keyword = request.getParameter("keyword");
         String category = request.getParameter("category");
         String location = request.getParameter("location");
         String email = request.getParameter("email");
-        
+
         LostPostDAO dao = new LostPostDAO();
         List<Map<String, Object>> posts = dao.getAllLostPosts(keyword, category, location, email);
-        
+        new dao.StatusRequestDAO().attachPending("lost", posts);
+
         out.print(new Gson().toJson(posts));
         out.flush();
     }
@@ -44,7 +45,9 @@ public class LostPostsServlet extends HttpServlet {
         LostPostDAO dao = new LostPostDAO();
 
         String action = request.getParameter("action");
-        if (action == null) action = "create";
+        if (action == null) {
+            action = "create";
+        }
 
         if ("like".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
@@ -70,17 +73,22 @@ public class LostPostsServlet extends HttpServlet {
             result.put("comments", dao.getCommentsByPostId(postId, email));
         } else if ("status".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
-            String status = request.getParameter("status");
-            result.put("success", dao.updateStatus(postId, status));
-        }else if ("update".equals(action) || "edit".equals(action)) {
+            // Không đổi trực tiếp nữa: gửi yêu cầu để admin duyệt
+            result.putAll(new dao.StatusRequestDAO().createRequest("lost", postId,
+                    request.getParameter("email"), request.getParameter("status")));
+        } else if ("update".equals(action) || "edit".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
             // Frontend gửi title/content (bài Lost); vẫn nhận itemName/description để tương thích
             String itemName = request.getParameter("title");
-            if (itemName == null) itemName = request.getParameter("itemName");
+            if (itemName == null) {
+                itemName = request.getParameter("itemName");
+            }
             String category = request.getParameter("category");
             String location = request.getParameter("location");
             String description = request.getParameter("content");
-            if (description == null) description = request.getParameter("description");
+            if (description == null) {
+                description = request.getParameter("description");
+            }
             String imageUrl = request.getParameter("imageUrl");
             result.put("success", dao.updateLostPost(postId, itemName, category, location, description, imageUrl));
         } else if ("visibility".equals(action)) {
@@ -100,7 +108,7 @@ public class LostPostsServlet extends HttpServlet {
             String imageUrl = request.getParameter("imageUrl");
             boolean ok = dao.addLostPost(email, title, category, content, location, time, imageUrl);
             result.put("success", ok);
-              result.put("message", ok ? "Đã gửi bài đăng! Bài sẽ hiển thị sau khi admin duyệt." : "Lỗi khi đăng bài!");
+            result.put("message", ok ? "Đã gửi bài đăng! Bài sẽ hiển thị sau khi admin duyệt." : "Lỗi khi đăng bài!");
         }
 
         out.print(new Gson().toJson(result));

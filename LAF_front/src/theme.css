@@ -51,7 +51,12 @@ body {
   border-inline: none !important;
   background: transparent;
 }
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--lf-navy);
   letter-spacing: -0.01em;
 }
@@ -71,9 +76,16 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1;
   color: var(--lf-navy);
 }
-.lf-brand-light { font-weight: 400; }
-.lf-brand-amp { font-weight: 800; color: var(--lf-blue-600); }
-.lf-brand-bold { font-weight: 800; }
+.lf-brand-light {
+  font-weight: 400;
+}
+.lf-brand-amp {
+  font-weight: 800;
+  color: var(--lf-blue-600);
+}
+.lf-brand-bold {
+  font-weight: 800;
+}
 .lf-brand-tag {
   margin-left: 8px;
   align-self: center;
@@ -87,7 +99,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 .navbar .nav-link {
   border-radius: 999px;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 .navbar .nav-link:hover {
   background: var(--lf-blue-100);
@@ -99,7 +113,9 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--lf-radius) !important;
   border: 1px solid #e1effc !important;
   box-shadow: var(--lf-shadow);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
 }
 .card.rounded-4:not(.sticky-top):hover {
   transform: translateY(-3px);
@@ -121,21 +137,38 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 14px 34px rgba(18, 52, 90, 0.16) !important;
   padding: 6px;
 }
-.dropdown-item { border-radius: 10px; }
+.dropdown-item {
+  border-radius: 10px;
+}
 .dropdown-item:hover,
-.dropdown-item:focus { background: var(--lf-blue-100); color: var(--lf-blue-700); }
-.dropdown-item.text-danger:hover { background: #fee2e2; color: #b42318 !important; }
+.dropdown-item:focus {
+  background: var(--lf-blue-100);
+  color: var(--lf-blue-700);
+}
+.dropdown-item.text-danger:hover {
+  background: #fee2e2;
+  color: #b42318 !important;
+}
 
 /* ---------- Nút ---------- */
 .btn {
   border-radius: 12px;
   font-weight: 600;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
-.btn:not(.btn-link):not(.btn-light):hover { transform: translateY(-1px); }
+.btn:not(.btn-link):not(.btn-light):hover {
+  transform: translateY(-1px);
+}
 /* Nút nền xanh thương hiệu (viết inline) -> gradient + bóng */
 .btn[style*="rgb(31, 109, 186)"] {
-  background-image: linear-gradient(135deg, #3b8fdc 0%, #1858a0 100%) !important;
+  background-image: linear-gradient(
+    135deg,
+    #3b8fdc 0%,
+    #1858a0 100%
+  ) !important;
   border: 0 !important;
   box-shadow: 0 8px 20px rgba(31, 109, 186, 0.28);
   color: #fff;
@@ -144,8 +177,13 @@ h1, h2, h3, h4, h5, h6 {
   filter: brightness(1.06);
   box-shadow: 0 12px 26px rgba(31, 109, 186, 0.36);
 }
-.btn-light { background: var(--lf-blue-50); border-color: #e1effc; }
-.btn-light:hover { background: var(--lf-blue-100); }
+.btn-light {
+  background: var(--lf-blue-50);
+  border-color: #e1effc;
+}
+.btn-light:hover {
+  background: var(--lf-blue-100);
+}
 
 /* ---------- Ô nhập liệu ---------- */
 .form-control,
@@ -158,7 +196,9 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--lf-blue-500) !important;
   box-shadow: 0 0 0 0.22rem rgba(59, 143, 220, 0.22) !important;
 }
-.bg-light { background-color: #eef5fd !important; }
+.bg-light {
+  background-color: #eef5fd !important;
+}
 
 /* ---------- Nút Thích / Bình luận / Chia sẻ (tách rời nhau) ---------- */
 .post-actions {
@@ -174,17 +214,25 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 999px;
   background: var(--lf-blue-50);
   border: 1px solid #e1effc;
-  transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.15s,
+    box-shadow 0.2s;
   user-select: none;
 }
-.post-actions > span i { margin: 0 !important; }
+.post-actions > span i {
+  margin: 0 !important;
+}
 .post-actions > span:hover {
   background: var(--lf-blue-100);
   color: var(--lf-blue-700) !important;
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(31, 109, 186, 0.15);
 }
-.post-actions > span.ms-auto { margin-left: auto !important; }
+.post-actions > span.ms-auto {
+  margin-left: auto !important;
+}
 
 /* ---------- Bảng quản trị ---------- */
 .table > thead > tr > th {
@@ -192,13 +240,26 @@ h1, h2, h3, h4, h5, h6 {
   color: #fff !important;
   letter-spacing: 0.04em;
 }
-.table-hover > tbody > tr:hover > * { background-color: var(--lf-blue-50); }
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--lf-blue-50);
+}
 
 /* ---------- Thanh cuộn ---------- */
-* { scrollbar-width: thin; scrollbar-color: #9cc7ef transparent; }
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #9cc7ef; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #3b8fdc; }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9cc7ef transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #9cc7ef;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b8fdc;
+}
 
 /* ---------- Footer ---------- */
 .lf-footer {
@@ -217,17 +278,44 @@ h1, h2, h3, h4, h5, h6 {
   background: #fff;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
-.lf-footer-logo img { width: 100%; height: 100%; object-fit: contain; }
-.lf-brand-on-dark { color: #fff; }
-.lf-brand-on-dark .lf-brand-amp { color: #8fc4f5; }
-.lf-footer-muted { color: #a9c6e6; }
-.lf-footer-link { color: #cfe0f5 !important; transition: color 0.2s, padding 0.2s; }
-.lf-footer-link:hover { color: #fff !important; padding-left: 4px; }
-.lf-footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.18); color: #a9c6e6; }
+.lf-footer-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.lf-brand-on-dark {
+  color: #fff;
+}
+.lf-brand-on-dark .lf-brand-amp {
+  color: #8fc4f5;
+}
+.lf-footer-muted {
+  color: #a9c6e6;
+}
+.lf-footer-link {
+  color: #cfe0f5 !important;
+  transition:
+    color 0.2s,
+    padding 0.2s;
+}
+.lf-footer-link:hover {
+  color: #fff !important;
+  padding-left: 4px;
+}
+.lf-footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  color: #a9c6e6;
+}
 
 /* ---------- Giữ đúng nghĩa màu "thành công / thông tin" ---------- */
-.badge.bg-success, .bg-success { background-color: #16a34a !important; color: #fff !important; }
-.text-success { color: #15803d !important; }
+.badge.bg-success,
+.bg-success {
+  background-color: #16a34a !important;
+  color: #fff !important;
+}
+.text-success {
+  color: #15803d !important;
+}
 .btn-success {
   --bs-btn-bg: #16a34a;
   --bs-btn-border-color: #16a34a;
@@ -236,4 +324,72 @@ h1, h2, h3, h4, h5, h6 {
   --bs-btn-active-bg: #166534;
   --bs-btn-active-border-color: #166534;
 }
-.badge.bg-info, .bg-info { background-color: #0ea5e9 !important; color: #fff !important; }
+.badge.bg-info,
+.bg-info {
+  background-color: #0ea5e9 !important;
+  color: #fff !important;
+}
+/* ===== Thanh tab lọc bài đăng ở trang cá nhân ===== */
+.profile-tabs {
+  display: flex;
+  overflow-x: auto;
+  padding: 14px 0 16px;
+  scrollbar-width: none;
+}
+.profile-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-tabs-inner {
+  display: inline-flex;
+  gap: 4px;
+  padding: 5px;
+  background: #eef3f9;
+  border: 1px solid #e1eaf4;
+  border-radius: 999px;
+}
+
+.profile-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #5b6b7c;
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+}
+.profile-tab i {
+  color: #8a99aa;
+  transition: color 0.2s;
+}
+
+.profile-tab:hover {
+  background: #ffffff;
+  color: #12345a;
+}
+.profile-tab:hover i {
+  color: #1f6dba;
+}
+
+.profile-tab.active {
+  background: linear-gradient(135deg, #2a78c8 0%, #1858a0 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(24, 88, 160, 0.3);
+}
+.profile-tab.active i {
+  color: #ffffff;
+}
+
+.profile-tab:focus-visible {
+  outline: 2px solid #1f6dba;
+  outline-offset: 2px;
+}

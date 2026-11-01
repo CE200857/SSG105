@@ -105,10 +105,19 @@ const AdminPage = ({ user }) => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [pendingList, setPendingList] = useState([]);
+  const [statusReqList, setStatusReqList] = useState([]);
+  const [statReqView, setStatReqView] = useState(null);
   const [pendingFilter, setPendingFilter] = useState("all");
   const [deleteReason, setDeleteReason] = useState("");
   const [showPendingView, setShowPendingView] = useState(false);
   const [pendingViewItem, setPendingViewItem] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get("/api/admin", { params: { type: "statusRequests" } })
+      .then((res) => setStatusReqList(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
+  }, []);
 
   const showToast = (type, text) => {
     setFeedback({ type, text });
@@ -178,6 +187,11 @@ const AdminPage = ({ user }) => {
           params: { type: "pending" },
         });
         setPendingList(Array.isArray(res.data) ? res.data : []);
+      } else if (activeSection === "statusReq") {
+        const reqRes = await axios.get("/api/admin", {
+          params: { type: "statusRequests" },
+        });
+        setStatusReqList(Array.isArray(reqRes.data) ? reqRes.data : []);
       } else if (activeSection === "reviews") {
         const res = await axios.get("/api/admin", {
           params: {
@@ -418,7 +432,9 @@ const AdminPage = ({ user }) => {
             border: isPrivate ? "1px solid #FCA5A5" : "1px solid #9CC7EF",
           }}
         >
-          <i className={`bi ${isPrivate ? "bi-lock-fill" : "bi-globe2"} me-1`}></i>
+          <i
+            className={`bi ${isPrivate ? "bi-lock-fill" : "bi-globe2"} me-1`}
+          ></i>
           {isPrivate ? "Riêng tư" : "Công khai"}
         </button>
       </td>
@@ -448,6 +464,36 @@ const AdminPage = ({ user }) => {
         showToast("danger", res.data?.message || "Thao tác thất bại!");
       }
     } catch (err) {
+      showToast("danger", "Lỗi kết nối máy chủ!");
+    }
+  };
+
+  const handleStatusRequest = async (item, action) => {
+    let reason = "";
+    if (action === "reject") {
+      reason = window.prompt("Lý do không duyệt (không bắt buộc):", "");
+      if (reason === null) return;
+    }
+    try {
+      const params = new URLSearchParams();
+      params.append("entity", "statusRequest");
+      params.append("action", action);
+      params.append("id", item.requestId);
+      params.append("adminEmail", user?.email || "");
+      params.append("reason", reason);
+      const res = await axios.post("/api/admin", params);
+      if (res.data && res.data.success) {
+        showToast(
+          "success",
+          action === "approve"
+            ? "Đã duyệt và đổi trạng thái bài đăng!"
+            : "Đã từ chối yêu cầu!",
+        );
+        fetchSectionData();
+      } else {
+        showToast("danger", res.data?.message || "Không thể xử lý yêu cầu!");
+      }
+    } catch {
       showToast("danger", "Lỗi kết nối máy chủ!");
     }
   };
@@ -556,11 +602,10 @@ const AdminPage = ({ user }) => {
     const kw = forumFilter.keyword.toLowerCase();
     return (
       visMatches(forumFilter, item) &&
-      (
-      !kw ||
-      (item.title && item.title.toLowerCase().includes(kw)) ||
-      (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
-      (item.content && item.content.toLowerCase().includes(kw)))
+      (!kw ||
+        (item.title && item.title.toLowerCase().includes(kw)) ||
+        (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
+        (item.content && item.content.toLowerCase().includes(kw)))
     );
   });
 
@@ -568,11 +613,10 @@ const AdminPage = ({ user }) => {
     const kw = reviewFilter.keyword.toLowerCase();
     return (
       visMatches(reviewFilter, item) &&
-      (
-      !kw ||
-      (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
-      (item.username && item.username.toLowerCase().includes(kw)) ||
-      (item.comment && item.comment.toLowerCase().includes(kw)))
+      (!kw ||
+        (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
+        (item.username && item.username.toLowerCase().includes(kw)) ||
+        (item.comment && item.comment.toLowerCase().includes(kw)))
     );
   });
 
@@ -591,6 +635,12 @@ const AdminPage = ({ user }) => {
       label: "Bài đăng chờ duyệt",
       icon: "bi-hourglass-split",
       count: stats.pendingCount,
+    },
+    {
+      key: "statusReq",
+      label: "Yêu cầu đổi trạng thái",
+      icon: "bi-arrow-left-right",
+      count: statusReqList.length,
     },
     {
       key: "lost",
@@ -629,6 +679,12 @@ const AdminPage = ({ user }) => {
       title: "Bài đăng chờ duyệt (Pending)",
       subtitle:
         "Kiểm tra bài đăng của sinh viên ở Lost, Found, Forum. Duyệt để hiển thị công khai hoặc xóa kèm lý do.",
+      addBtn: "",
+    },
+    statusReq: {
+      title: "Yêu cầu đổi trạng thái",
+      subtitle:
+        "Sinh viên gửi yêu cầu chuyển bài sang Đã tìm được / Đã trao trả. Kiểm tra kỹ trước khi duyệt để tránh lừa đảo.",
       addBtn: "",
     },
     lost: {
@@ -702,7 +758,7 @@ const AdminPage = ({ user }) => {
               </p>
             </div>
 
-            {activeSection !== "pending" && (
+            {sectionMeta[activeSection].addBtn && (
               <Button
                 className="fw-bold px-4 py-2 border-0 shadow-sm d-flex align-items-center text-white"
                 style={{ backgroundColor: primaryColor, borderRadius: "10px" }}
@@ -876,7 +932,10 @@ const AdminPage = ({ user }) => {
                       <Form.Select
                         value={lostFilter.visibility || "Tất cả"}
                         onChange={(e) =>
-                          setLostFilter({ ...lostFilter, visibility: e.target.value })
+                          setLostFilter({
+                            ...lostFilter,
+                            visibility: e.target.value,
+                          })
                         }
                         className="bg-light border-0"
                       >
@@ -1010,7 +1069,10 @@ const AdminPage = ({ user }) => {
                       <Form.Select
                         value={foundFilter.visibility || "Tất cả"}
                         onChange={(e) =>
-                          setFoundFilter({ ...foundFilter, visibility: e.target.value })
+                          setFoundFilter({
+                            ...foundFilter,
+                            visibility: e.target.value,
+                          })
                         }
                         className="bg-light border-0"
                       >
@@ -1120,7 +1182,10 @@ const AdminPage = ({ user }) => {
                       <Form.Select
                         value={forumFilter.visibility || "Tất cả"}
                         onChange={(e) =>
-                          setForumFilter({ ...forumFilter, visibility: e.target.value })
+                          setForumFilter({
+                            ...forumFilter,
+                            visibility: e.target.value,
+                          })
                         }
                         className="bg-light border-0"
                       >
@@ -1228,7 +1293,10 @@ const AdminPage = ({ user }) => {
                       <Form.Select
                         value={reviewFilter.visibility || "Tất cả"}
                         onChange={(e) =>
-                          setReviewFilter({ ...reviewFilter, visibility: e.target.value })
+                          setReviewFilter({
+                            ...reviewFilter,
+                            visibility: e.target.value,
+                          })
                         }
                         className="bg-light border-0"
                       >
@@ -1422,6 +1490,13 @@ const AdminPage = ({ user }) => {
                   ))}
                 </div>
               )}
+              {activeSection === "statusReq" && (
+                <div className="text-secondary small">
+                  <i className="bi bi-info-circle me-2"></i>
+                  Trạng thái bài đăng chỉ thay đổi sau khi bạn bấm "Duyệt". Bấm
+                  "Không duyệt" để giữ nguyên trạng thái hiện tại.
+                </div>
+              )}
             </Card>
 
             {/* ================= BẢNG DỮ LIỆU QUẢN TRỊ ================= */}
@@ -1432,6 +1507,114 @@ const AdminPage = ({ user }) => {
                 </div>
               ) : (
                 <div className="table-responsive">
+                  {activeSection === "statusReq" && (
+                    <Table hover className="align-middle mb-0">
+                      <thead>
+                        <tr>
+                          {[
+                            "Loại",
+                            "Bài đăng",
+                            "Người đăng",
+                            "Đang chờ chuyển",
+                            "Gửi lúc",
+                            "Thao tác",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="py-3 text-secondary small fw-semibold"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statusReqList.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="text-center text-secondary py-5"
+                            >
+                              Không có yêu cầu đổi trạng thái nào đang chờ.
+                            </td>
+                          </tr>
+                        ) : (
+                          statusReqList.map((r) => (
+                            <tr key={r.requestId}>
+                              <td>
+                                <Badge bg={pendingTypeMeta[r.postType]?.bg}>
+                                  {pendingTypeMeta[r.postType]?.label}
+                                </Badge>
+                              </td>
+                              <td style={{ maxWidth: "320px" }}>
+                                <div
+                                  className="d-flex align-items-center gap-2"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => setStatReqView(r)}
+                                >
+                                  <Image
+                                    {...postImgProps(r)}
+                                    rounded
+                                    style={{
+                                      width: "48px",
+                                      height: "48px",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                  <span className="fw-semibold">{r.title}</span>
+                                </div>
+                              </td>
+                              <td className="small">
+                                {r.author}
+                                <div className="text-muted">
+                                  {r.authorEmail}
+                                </div>
+                              </td>
+                              <td>
+                                <Badge bg="secondary">{r.fromLabel}</Badge>
+                                <i className="bi bi-arrow-right mx-2"></i>
+                                <Badge bg="warning" text="dark">
+                                  {r.toLabel}
+                                </Badge>
+                              </td>
+                              <td className="small text-secondary">
+                                {r.createdAt}
+                              </td>
+                              <td>
+                                <div className="d-flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline-secondary"
+                                    onClick={() => setStatReqView(r)}
+                                  >
+                                    Xem
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() =>
+                                      handleStatusRequest(r, "approve")
+                                    }
+                                  >
+                                    Duyệt
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline-danger"
+                                    onClick={() =>
+                                      handleStatusRequest(r, "reject")
+                                    }
+                                  >
+                                    Không duyệt
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </Table>
+                  )}
                   {/* 0. BẢNG BÀI ĐĂNG CHỜ DUYỆT */}
                   {activeSection === "pending" && (
                     <Table hover className="align-middle mb-0">
@@ -3237,7 +3420,89 @@ const AdminPage = ({ user }) => {
           </Modal.Footer>
         </Modal>
       )}
-
+      {statReqView && (
+        <Modal
+          show
+          onHide={() => setStatReqView(null)}
+          centered
+          size="lg"
+          contentClassName="border-0 shadow-lg rounded-4"
+        >
+          <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
+            <Modal.Title className="fw-bold text-dark">
+              Chi tiết yêu cầu đổi trạng thái
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mx-3 text-start">
+            <div
+              className="p-3 rounded-3 mb-3"
+              style={{ background: "#fff8e6", border: "1px solid #F8DC9B" }}
+            >
+              Yêu cầu chuyển từ <strong>{statReqView.fromLabel}</strong>
+              <i className="bi bi-arrow-right mx-2"></i>
+              <strong>{statReqView.toLabel}</strong>
+              <div className="small text-muted mt-1">
+                Gửi lúc {statReqView.createdAt}
+              </div>
+            </div>
+            <Badge
+              bg={pendingTypeMeta[statReqView.postType]?.bg}
+              className="mb-2"
+            >
+              {pendingTypeMeta[statReqView.postType]?.label}
+            </Badge>
+            <h5 className="fw-bold">{statReqView.title}</h5>
+            <p className="text-secondary small mb-2">
+              Người đăng: <strong>{statReqView.author}</strong> (
+              {statReqView.authorEmail}) · Đăng ngày {statReqView.postCreatedAt}
+            </p>
+            <p className="text-secondary small mb-3">
+              {statReqView.category && (
+                <>
+                  Danh mục: <strong>{statReqView.category}</strong>
+                </>
+              )}
+              {statReqView.location && (
+                <>
+                  {" "}
+                  · Địa điểm: <strong>{statReqView.location}</strong>
+                </>
+              )}
+            </p>
+            <Image
+              {...postImgProps(statReqView)}
+              fluid
+              rounded
+              className="mb-3"
+              style={{ maxHeight: "260px" }}
+            />
+            <div style={{ whiteSpace: "pre-wrap" }}>{statReqView.content}</div>
+          </Modal.Body>
+          <Modal.Footer className="border-0 pt-0 mb-3 mx-3">
+            <Button variant="light" onClick={() => setStatReqView(null)}>
+              Đóng
+            </Button>
+            <Button
+              variant="outline-danger"
+              onClick={() => {
+                handleStatusRequest(statReqView, "reject");
+                setStatReqView(null);
+              }}
+            >
+              Không duyệt
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => {
+                handleStatusRequest(statReqView, "approve");
+                setStatReqView(null);
+              }}
+            >
+              Duyệt
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
       {/* ================= MODAL XÁC NHẬN XÓA (DELETE) ================= */}
       <Modal
         show={showDeleteModal}

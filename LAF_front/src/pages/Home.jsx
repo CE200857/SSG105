@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { postImgProps } from "../utils/postImage";
 
 const Home = ({ user }) => {
   const primaryColor = "#1f6dba";
@@ -312,31 +313,36 @@ const Home = ({ user }) => {
                 </div>
 
                 <div
-                  className="position-absolute bg-white p-3 shadow text-start"
+                  className="position-absolute bg-white shadow text-start"
                   style={{
                     bottom: "30px",
                     left: "-30px",
-                    borderRadius: "15px",
-                    maxWidth: "250px",
+                    borderRadius: "16px",
+                    width: "300px",
+                    padding: "16px 20px",
                   }}
                 >
-                  <div className="d-flex align-items-start gap-3">
+                  <div className="d-flex align-items-center gap-3">
                     <div
-                      className="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-success"
-                      style={{ width: "40px", height: "40px" }}
+                      className="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-success flex-shrink-0"
+                      style={{ width: "44px", height: "44px" }}
                     >
-                      <i className="bi bi-check2"></i>
+                      <i className="bi bi-check-lg fs-4"></i>
                     </div>
-                    <div>
+                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
                       <h6
                         className="mb-1 fw-bold"
-                        style={{ fontSize: "0.95rem", color: "#12345a" }}
+                        style={{
+                          fontSize: "0.95rem",
+                          color: "#12345a",
+                          lineHeight: 1.3,
+                        }}
                       >
                         Tìm lại đồ, kết nối bạn bè
                       </h6>
                       <p
                         className="mb-0 text-secondary"
-                        style={{ fontSize: "0.8rem" }}
+                        style={{ fontSize: "0.8rem", lineHeight: 1.4 }}
                       >
                         Cùng giúp nhau trong campus FPT Cần Thơ.
                       </p>
@@ -649,14 +655,19 @@ const Home = ({ user }) => {
                     <div className="position-relative">
                       <Card.Img
                         variant="top"
-                        src={post.img}
+                        {...postImgProps({
+                          image: post.img,
+                          category: post.itemCategory,
+                          title: post.title,
+                        })}
                         style={{ height: "180px", objectFit: "cover" }}
                       />
                       <Badge
+                        bg="light"
                         className="position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill shadow-sm"
                         style={{
-                          backgroundColor: "rgba(255,255,255,0.9)",
-                          color: post.tagColor,
+                          color: post.type === "lost" ? "#B42318" : "#0A6B57",
+                          fontWeight: 700,
                         }}
                       >
                         {post.type === "lost" ? (
@@ -916,34 +927,42 @@ const Home = ({ user }) => {
                 </h5>
               </div>
 
-              {forumPosts.length > 0 ? (
-                forumPosts.map((post, index) => (
-                  <div
-                    key={post.id}
-                    className={`mb-4 ${index > 0 ? "border-top pt-4" : ""}`}
-                  >
-                    <h6
-                      className="fw-bold text-dark text-truncate"
-                      title={post.title}
-                    >
-                      {post.title}
-                    </h6>
+              <div className="d-flex flex-column flex-grow-1">
+                {forumPosts.length > 0 ? (
+                  forumPosts.slice(0, 5).map((post, index) => (
                     <div
-                      className="d-flex gap-3 text-muted"
-                      style={{ fontSize: "0.85rem" }}
+                      key={post.id}
+                      className={`flex-fill d-flex flex-column justify-content-center py-3 ${index > 0 ? "border-top" : ""}`}
                     >
-                      <span className="text-primary-custom">
-                        {post.category}
-                      </span>
-                      <span>• {post.date}</span>
+                      <h6
+                        className="fw-bold text-dark mb-2"
+                        title={post.title}
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {post.title}
+                      </h6>
+                      <div
+                        className="d-flex gap-3 text-muted"
+                        style={{ fontSize: "0.85rem" }}
+                      >
+                        <span className="text-primary-custom">
+                          {post.category}
+                        </span>
+                        <span>• {post.date}</span>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center text-secondary py-3">
+                    Đang tải chủ đề...
                   </div>
-                ))
-              ) : (
-                <div className="text-center text-secondary py-3">
-                  Đang tải chủ đề...
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="mt-auto border-top pt-4">
                 <Link

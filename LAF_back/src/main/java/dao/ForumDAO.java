@@ -12,7 +12,7 @@ public class ForumDAO extends DBContext {
 
     public List<Map<String, Object>> getLatestForumPosts() {
         List<Map<String, Object>> list = new ArrayList<>();
-        String query = "SELECT TOP 2 PostID, Title, Category, "
+        String query = "SELECT TOP 5 PostID, Title, Category, "
                 + "CONVERT(VARCHAR, CreatedAt, 103) as Date "
                 + "FROM ForumPosts WHERE ApprovalStatus = 'Approved' AND Visibility = 'Public' ORDER BY CreatedAt DESC";
         try {

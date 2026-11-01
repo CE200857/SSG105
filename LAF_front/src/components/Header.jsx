@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Navbar,
   Nav,
@@ -50,8 +50,11 @@ const Header = ({ user, setUser }) => {
     fetchNotifications();
     const handleNewNotif = () => fetchNotifications();
     window.addEventListener("laf-notifications-updated", handleNewNotif);
-    return () =>
+    const timer = setInterval(fetchNotifications, 20000); // tự tải lại mỗi 20 giây
+    return () => {
       window.removeEventListener("laf-notifications-updated", handleNewNotif);
+      clearInterval(timer);
+    };
   }, [user, location.pathname]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -117,6 +120,46 @@ const Header = ({ user, setUser }) => {
 
   const isActive = (path) => location.pathname === path;
 
+  // ===== Đèn trượt theo mục đang chọn =====
+  const navRef = useRef(null);
+  const lampRef = useRef(null);
+
+  // Trả về true nếu tìm thấy mục đang chọn
+  const updateLamp = (animate) => {
+    const nav = navRef.current;
+    const lampEl = lampRef.current;
+    if (!nav || !lampEl) return false;
+    const el = nav.querySelector(".lf-tab.active");
+    if (!el) {
+      lampEl.style.opacity = "0"; // trang không thuộc menu: tắt đèn
+      return false;
+    }
+    if (!animate) lampEl.style.transition = "none";
+    lampEl.style.transform = `translateX(${el.offsetLeft + el.offsetWidth / 2 - 20}px)`;
+    lampEl.style.opacity = "1";
+    if (!animate) {
+      void lampEl.offsetWidth; // đặt vị trí ngay, không trượt từ mép trái
+      lampEl.style.transition = "";
+    }
+    return true;
+  };
+
+  useLayoutEffect(() => {
+    const lampEl = lampRef.current;
+    if (!lampEl) return;
+    if (updateLamp(lampEl.dataset.ready === "1")) lampEl.dataset.ready = "1";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const relayout = () => updateLamp(false);
+    window.addEventListener("resize", relayout);
+    if (document.fonts && document.fonts.ready)
+      document.fonts.ready.then(relayout);
+    return () => window.removeEventListener("resize", relayout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const getNotifIcon = (type) => {
     switch (type) {
       case "LIKE_POST":
@@ -131,6 +174,10 @@ const Header = ({ user, setUser }) => {
         return "bi-check-circle-fill text-success";
       case "POST_DELETED":
         return "bi-trash3-fill text-danger";
+      case "STATUS_APPROVED":
+        return "bi-check-circle-fill text-success";
+      case "STATUS_REJECTED":
+        return "bi-x-circle-fill text-danger";
       default:
         return "bi-bell-fill text-warning";
     }
@@ -167,61 +214,64 @@ const Header = ({ user, setUser }) => {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="mx-auto" style={{ fontWeight: "500" }}>
-            <Nav.Link
-              as={Link}
-              to="/"
-              className={`px-3 ${
-                isActive("/") ? "active-link" : "text-secondary"
-              }`}
-            >
-              Trang chủ
-            </Nav.Link>
-            <Nav.Link
-              as={Link}
-              to="/lost-found"
-              className={`px-3 ${
-                isActive("/lost-found") ? "active-link" : "text-secondary"
-              }`}
-            >
-              Đồ mất (Tìm đồ)
-            </Nav.Link>
-            <Nav.Link
-              as={Link}
-              to="/found-items"
-              className={`px-3 ${
-                isActive("/found-items") ? "active-link" : "text-secondary"
-              }`}
-            >
-              Đồ nhặt (Tìm chủ)
-            </Nav.Link>
-            <Nav.Link
-              as={Link}
-              to="/forum"
-              className={`px-3 ${
-                isActive("/forum") ? "active-link" : "text-secondary"
-              }`}
-            >
-              Diễn đàn
-            </Nav.Link>
-            <Nav.Link
-              as={Link}
-              to="/review"
-              className={`px-3 ${
-                isActive("/review") ? "active-link" : "text-secondary"
-              }`}
-            >
-              Đánh giá
-            </Nav.Link>
-            <Nav.Link
-              as={Link}
-              to="/overview"
-              className={`px-3 ${
-                isActive("/overview") ? "active-link" : "text-secondary"
-              }`}
-            >
-              Tổng quan
-            </Nav.Link>
+          <Nav
+            ref={navRef}
+            className="mx-auto align-items-center position-relative"
+          >
+            <span ref={lampRef} className="lf-lamp" aria-hidden="true"></span>
+            {[
+              {
+                to: "/",
+                label: "Trang chủ",
+                icon: "bi-house-door",
+                activeIcon: "bi-house-door-fill",
+              },
+              {
+                to: "/lost-found",
+                label: "Tìm đồ",
+                icon: "bi-search",
+                activeIcon: "bi-search",
+              },
+              {
+                to: "/found-items",
+                label: "Tìm chủ",
+                icon: "bi-bag-check",
+                activeIcon: "bi-bag-check-fill",
+              },
+              {
+                to: "/forum",
+                label: "Diễn đàn",
+                icon: "bi-chat-square-text",
+                activeIcon: "bi-chat-square-text-fill",
+              },
+              {
+                to: "/review",
+                label: "Đánh giá",
+                icon: "bi-star",
+                activeIcon: "bi-star-fill",
+              },
+              {
+                to: "/overview",
+                label: "Tổng quan",
+                icon: "bi-bar-chart",
+                activeIcon: "bi-bar-chart-fill",
+              },
+            ].map((item) => {
+              const active = isActive(item.to);
+              return (
+                <Nav.Link
+                  key={item.to}
+                  as={Link}
+                  to={item.to}
+                  className={`lf-tab ${active ? "active" : ""}`}
+                >
+                  <i
+                    className={`bi ${active ? item.activeIcon : item.icon}`}
+                  ></i>
+                  <span>{item.label}</span>
+                </Nav.Link>
+              );
+            })}
           </Nav>
 
           <Nav className="d-flex align-items-center gap-3">
@@ -362,16 +412,6 @@ const Header = ({ user, setUser }) => {
                     <Dropdown.Item as={Link} to="/profile" className="py-2">
                       <i className="bi bi-person me-2"></i> Trang cá nhân
                     </Dropdown.Item>
-                    {isAdmin && (
-                      <Dropdown.Item
-                        as={Link}
-                        to="/admin?tab=lost"
-                        className="py-2 fw-semibold text-success"
-                      >
-                        <i className="bi bi-speedometer2 me-2"></i> Quản trị hệ
-                        thống
-                      </Dropdown.Item>
-                    )}
                     <Dropdown.Item
                       onClick={handleLogout}
                       className="py-2 text-danger"
@@ -438,6 +478,91 @@ const Header = ({ user, setUser }) => {
         .btn-outline-custom:hover {
           background-color: ${primaryColor} !important;
           color: white !important;
+        }
+        .navbar .nav-link.lf-tab {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          padding: 8px 20px;
+          margin: 0 10px;
+          border-radius: 14px;
+          color: #6b7280 !important;
+          font-size: 0.78rem;
+          font-weight: 500;
+          line-height: 1.2;
+        }
+        .navbar .nav-link.lf-tab .bi {
+          font-size: 1.35rem;
+          line-height: 1;
+          transition: transform 0.2s ease;
+        }
+        .navbar .nav-link.lf-tab:hover {
+          background: #eef5fc;
+          color: ${primaryColor} !important;
+        }
+        .navbar .nav-link.lf-tab:hover .bi {
+          transform: translateY(-1px);
+        }
+        .navbar .nav-link.lf-tab.active {
+          background: transparent;
+          color: ${primaryColor} !important;
+          font-weight: 600;
+        }
+        .navbar .nav-link.lf-tab.active .bi-search {
+          -webkit-text-stroke: 0.7px currentColor;
+        }
+        @media (max-width: 1199.98px) {
+          .navbar .nav-link.lf-tab {
+            padding: 6px 12px;
+            margin: 0 4px;
+          }
+        }
+        @media (max-width: 991.98px) {
+          .navbar .nav-link.lf-tab {
+            flex-direction: row;
+            gap: 12px;
+            margin: 0;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+          }
+        }
+                  .lf-lamp {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 40px;
+          height: 4px;
+          border-radius: 0 0 6px 6px;
+          background: ${primaryColor};
+          box-shadow: 0 3px 14px 3px rgba(31, 109, 186, 0.55);
+          opacity: 0;
+          pointer-events: none;
+          transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1),
+            opacity 0.25s ease;
+        }
+        .lf-lamp::after {
+          content: "";
+          position: absolute;
+          top: 4px;
+          left: 50%;
+          width: 76px;
+          height: 52px;
+          transform: translateX(-50%);
+          background: radial-gradient(
+            ellipse at 50% 0%,
+            rgba(31, 109, 186, 0.26) 0%,
+            rgba(31, 109, 186, 0) 72%
+          );
+        }
+        .navbar .nav-link.lf-tab.active .bi {
+          filter: drop-shadow(0 0 6px rgba(31, 109, 186, 0.5));
+        }
+        @media (max-width: 991.98px) {
+          .lf-lamp { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lf-lamp { transition: none; }
         }
       `}</style>
     </Navbar>

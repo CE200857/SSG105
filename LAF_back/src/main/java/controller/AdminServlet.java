@@ -91,6 +91,9 @@ public class AdminServlet extends HttpServlet {
             case "pending":
                 out.print(gson.toJson(new ModerationDAO().getPendingPosts()));
                 break;
+            case "statusRequests":
+                out.print(gson.toJson(new dao.StatusRequestDAO().getPending(null)));
+                break;
             default:
                 out.print(gson.toJson(adminDao.getDashboardStats()));
                 break;
@@ -258,6 +261,18 @@ public class AdminServlet extends HttpServlet {
                             request.getParameter("adminEmail"));
                     result.put("success", ok);
                     result.put("message", ok ? "Đã duyệt bài đăng!" : "Không thể duyệt (bài không còn ở trạng thái chờ duyệt).");
+                }
+            } else if ("statusRequest".equals(entity)) {
+                dao.StatusRequestDAO srDao = new dao.StatusRequestDAO();
+                int rid = Integer.parseInt(request.getParameter("id"));
+                if ("approve".equals(action)) {
+                    boolean ok = srDao.approve(rid, request.getParameter("adminEmail"));
+                    result.put("success", ok);
+                    result.put("message", ok ? "Đã duyệt yêu cầu!" : "Không thể duyệt (yêu cầu không còn chờ duyệt).");
+                } else if ("reject".equals(action)) {
+                    boolean ok = srDao.reject(rid, request.getParameter("adminEmail"), request.getParameter("reason"));
+                    result.put("success", ok);
+                    result.put("message", ok ? "Đã từ chối yêu cầu!" : "Không thể từ chối (yêu cầu không còn chờ duyệt).");
                 }
             } else if ("review".equals(entity)) {
                 if ("create".equals(action)) {
