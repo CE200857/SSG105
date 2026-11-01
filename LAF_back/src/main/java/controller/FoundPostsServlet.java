@@ -30,11 +30,12 @@ public class FoundPostsServlet extends HttpServlet {
 
         FoundPostDAO dao = new FoundPostDAO();
         List<Map<String, Object>> posts = dao.getFoundPosts(keyword, category, location, sort, email);
+        new dao.StatusRequestDAO().attachPending("found", posts);
 
         out.print(new Gson().toJson(posts));
         out.flush();
     }
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -44,7 +45,9 @@ public class FoundPostsServlet extends HttpServlet {
         FoundPostDAO dao = new FoundPostDAO();
 
         String action = request.getParameter("action");
-        if (action == null) action = "create";
+        if (action == null) {
+            action = "create";
+        }
 
         if ("like".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
@@ -63,8 +66,8 @@ public class FoundPostsServlet extends HttpServlet {
             }
         } else if ("status".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
-            String status = request.getParameter("status");
-            result.put("success", dao.updateStatus(postId, status));
+            result.putAll(new dao.StatusRequestDAO().createRequest("found", postId,
+                    request.getParameter("email"), request.getParameter("status")));
         } else if ("update".equals(action) || "edit".equals(action)) {
             int postId = Integer.parseInt(request.getParameter("postId"));
             String itemName = request.getParameter("itemName");

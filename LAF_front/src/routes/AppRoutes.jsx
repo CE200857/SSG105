@@ -9,6 +9,7 @@ import {
 import Login from "../components/DatNT/Login";
 import Register from "../components/DatNT/Register";
 import CreateProfile from "../components/DatNT/CreateProfile";
+import ForgotPassword from "../components/DatNT/ForgotPassword";
 
 // Import Header & Footer
 import Header from "../components/Header";
@@ -52,99 +53,81 @@ const AdminGlobalSidebar = () => {
     location.pathname === "/admin" ? searchParams.get("tab") || "lost" : "";
 
   const adminMenus = [
-    {
-      key: "pending",
-      label: "Bài đăng chờ duyệt",
-      icon: "bi-hourglass-split",
-    },  
-    {
-      key: "lost",
-      label: "Quản lý bài đăng Lost",
-      icon: "bi-search",
-    },
-    {
-      key: "found",
-      label: "Quản lý bài đăng Found",
-      icon: "bi-bag-check-fill",
-    },
-    {
-      key: "forum",
-      label: "Quản lý bài đăng Forum",
-      icon: "bi-chat-square-quote-fill",
-    },
-    {
-      key: "reviews",
-      label: "Quản lý bài đăng Review",
-      icon: "bi-star-fill",
-    },
-    {
-      key: "users",
-      label: "Quản lý Account Student",
-      icon: "bi-people-fill",
-    },
+    { key: "pending", label: "Chờ duyệt", full: "Bài đăng chờ duyệt", icon: "bi-clipboard-check", activeIcon: "bi-clipboard-check-fill" },
+    { key: "statusReq", label: "Trạng thái", full: "Yêu cầu đổi trạng thái", icon: "bi-toggle-off", activeIcon: "bi-toggle-on" },
+    { key: "lost", label: "Lost", full: "Quản lý bài đăng Lost", icon: "bi-search", activeIcon: "bi-search" },
+    { key: "found", label: "Found", full: "Quản lý bài đăng Found", icon: "bi-bag-check", activeIcon: "bi-bag-check-fill" },
+    { key: "forum", label: "Forum", full: "Quản lý bài đăng Forum", icon: "bi-chat-square-quote", activeIcon: "bi-chat-square-quote-fill" },
+    { key: "reviews", label: "Review", full: "Quản lý bài đăng Review", icon: "bi-star", activeIcon: "bi-star-fill" },
+    { key: "users", label: "Tài khoản", full: "Quản lý Account Student", icon: "bi-people", activeIcon: "bi-people-fill" },
   ];
 
   return (
     <aside
-      className="bg-white border-end shadow-sm flex-shrink-0 text-start d-none d-lg-block"
-      style={{ width: "270px", minHeight: "calc(100vh - 70px)" }}
+      className="bg-white border-end flex-shrink-0 d-none d-lg-block"
+      style={{ width: "92px", minHeight: "calc(100vh - 70px)" }}
     >
-      <div className="p-3 sticky-top" style={{ top: "80px", zIndex: 1000 }}>
-        <div className="px-2 mb-2">
-          <small
-            className="fw-bold text-uppercase text-secondary"
-            style={{ fontSize: "0.72rem", letterSpacing: "0.5px" }}
-          >
-            Trang Quản Lý (Full CRUD)
-          </small>
-        </div>
+      <div
+        className="sticky-top d-flex flex-column align-items-center gap-1 py-3"
+        style={{ top: "80px", zIndex: 1000 }}
+      >
+        {adminMenus.map((item) => {
+          const isAct = currentTab === item.key;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              title={item.full}
+              onClick={() => navigate(`/admin?tab=${item.key}`)}
+              className={`admin-rail-item ${isAct ? "active" : ""}`}
+            >
+              <i className={`bi ${isAct ? item.activeIcon : item.icon}`}></i>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
 
-        <div className="d-flex flex-column gap-2">
-          {adminMenus.map((item) => {
-            const isAct = currentTab === item.key;
-            return (
-              <div
-                key={item.key}
-                onClick={() => navigate(`/admin?tab=${item.key}`)}
-                className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-semibold"
-                style={{
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  backgroundColor: isAct ? primaryColor : "transparent",
-                  color: isAct ? "white" : "#334155",
-                  fontSize: "0.9rem",
-                }}
-              >
-                <i className={`bi ${item.icon} fs-5`}></i>
-                <span>{item.label}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <hr className="my-3 opacity-25" />
+        <hr className="w-50 my-2 opacity-25" />
 
         <div
-          className="p-3 rounded-3"
-          style={{
-            backgroundColor: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            fontSize: "0.8rem",
-          }}
+          className="text-center"
+          title="Chế độ Quản trị viên: bạn có thể xem mọi trang như sinh viên, hoặc dùng các mục bên trên để quản lý."
         >
-          <div className="fw-bold text-dark mb-1">
-            <i
-              className="bi bi-shield-check me-2"
-              style={{ color: primaryColor }}
-            ></i>
-            Chế độ Quản trị viên
+          <i className="bi bi-shield-check fs-5" style={{ color: primaryColor }}></i>
+          <div className="text-secondary" style={{ fontSize: "0.65rem" }}>
+            Admin
           </div>
-          <p className="text-secondary mb-0">
-            Bạn có thể xem mọi trang trên thanh menu như sinh viên, hoặc chọn
-            các mục bên trên để thực hiện quyền CRUD tuyệt đối.
-          </p>
         </div>
       </div>
+
+      <style>{`
+        .admin-rail-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          width: 72px;
+          padding: 10px 4px;
+          border: 0;
+          background: transparent;
+          border-radius: 16px;
+          color: #6b7280;
+          font-size: 0.72rem;
+          font-weight: 500;
+          line-height: 1.2;
+          cursor: pointer;
+          transition: background-color 0.2s, color 0.2s;
+        }
+        .admin-rail-item .bi { font-size: 1.4rem; line-height: 1; }
+        .admin-rail-item:hover { background: #eef5fc; color: ${primaryColor}; }
+        .admin-rail-item.active {
+          background: #e3eefa;
+          color: ${primaryColor};
+          font-weight: 600;
+        }
+        .admin-rail-item.active .bi-search { -webkit-text-stroke: 0.7px currentColor; }
+        .admin-rail-item:focus-visible { outline: 2px solid ${primaryColor}; outline-offset: 2px; }
+      `}</style>
     </aside>
   );
 };
@@ -176,10 +159,7 @@ export default function AppRoutes({ user, setUser }) {
       <Route element={<MainLayout user={user} setUser={setUser} />}>
         {/* Auth Routes */}
         <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route
-          path="/forgot-password"
-          element={<div>Trang quên mật khẩu</div>}
-        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
         <Route path="/create-profile" element={<CreateProfile />} />
 

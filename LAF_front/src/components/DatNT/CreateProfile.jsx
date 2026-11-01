@@ -52,6 +52,7 @@ const CreateProfile = () => {
       const params = new URLSearchParams();
       params.append('username', registerData.username);
       params.append('email', registerData.email);
+      params.append('code', registerData.code);
       params.append('password', registerData.password);
       params.append('fullName', fullName.trim());
       params.append('phone', phone.trim());

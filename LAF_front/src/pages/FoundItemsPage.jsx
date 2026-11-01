@@ -15,6 +15,8 @@ import {
   Modal,
   Image,
   Dropdown,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -60,6 +62,8 @@ const FoundItemsPage = ({ user }) => {
   const [editImagePreview, setEditImagePreview] = useState(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [toast, setToast] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
   // ===== STATE CHO MODAL CHI TIẾT, BÌNH LUẬN, TRẢ LỜI & LIKE COMMENT =====
@@ -411,27 +415,50 @@ const FoundItemsPage = ({ user }) => {
     }
   };
 
-  const handleToggleStatus = async (post, e) => {
+  // Bấm nút trạng thái: mở popup xác nhận (không đổi ngay)
+  const handleToggleStatus = (post, e) => {
     e.stopPropagation();
-    if (!isOwner(post)) return;
+    if (!isOwner(post) || post.pendingStatus) return;
+    setSelectedPostId(post.id);
+    setShowStatusModal(true);
+  };
 
-    const nextStatus = post.status === "Unclaimed" ? "Claimed" : "Unclaimed";
+  const handleStatusConfirm = async () => {
+    const target = posts.find((p) => p.id === selectedPostId);
+    if (!target) return;
+    const nextStatus = target.status === "Unclaimed" ? "Claimed" : "Unclaimed";
+
     try {
       const params = new URLSearchParams();
       params.append("action", "status");
-      params.append("postId", post.id);
+      params.append("postId", selectedPostId);
       params.append("status", nextStatus);
+      const res = await axios.post("/api/found-posts", params);
 
-      await axios.post("/api/found-posts", params);
-    } catch {
-      // Vẫn cập nhật state
-    } finally {
-      setPosts(
-        posts.map((p) => (p.id === post.id ? { ...p, status: nextStatus } : p)),
-      );
-      if (selectedPost && selectedPost.id === post.id) {
-        setSelectedPost((prev) => ({ ...prev, status: nextStatus }));
+      if (res.data?.success) {
+        const patch = res.data.applied
+          ? { status: nextStatus }
+          : { pendingStatus: nextStatus };
+        setPosts(
+          posts.map((p) => (p.id === selectedPostId ? { ...p, ...patch } : p)),
+        );
+        if (selectedPost && selectedPost.id === selectedPostId) {
+          setSelectedPost((prev) => ({ ...prev, ...patch }));
+        }
+        setToast({ variant: "success", msg: res.data.message });
+      } else {
+        setToast({
+          variant: "danger",
+          msg: res.data?.message || "Không gửi được yêu cầu.",
+        });
       }
+    } catch (err) {
+      setToast({
+        variant: "danger",
+        msg: err.response?.data?.message || "Lỗi kết nối máy chủ.",
+      });
+    } finally {
+      setShowStatusModal(false);
     }
   };
 
@@ -961,6 +988,17 @@ const FoundItemsPage = ({ user }) => {
                               : "Đã trao trả"}
                           </div>
 
+                          {post.pendingStatus && (
+                            <Badge
+                              bg="warning"
+                              text="dark"
+                              className="rounded-pill"
+                            >
+                              <i className="bi bi-hourglass-split me-1"></i>Chờ
+                              duyệt
+                            </Badge>
+                          )}
+
                           {isOwner(post) && (
                             <Dropdown align="end">
                               <Dropdown.Toggle
@@ -985,21 +1023,21 @@ const FoundItemsPage = ({ user }) => {
                                   ></i>
                                   Chỉnh sửa bài đăng
                                 </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleVisibility(post);
-                      }}
-                      className="py-2"
-                    >
-                      <i
-                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
-                        style={{ color: primaryColor }}
-                      ></i>
-                      {post.visibility === "Private"
-                        ? "Chuyển sang Công khai"
-                        : "Chuyển sang Riêng tư"}
-                    </Dropdown.Item>
+                                <Dropdown.Item
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleVisibility(post);
+                                  }}
+                                  className="py-2"
+                                >
+                                  <i
+                                    className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                                    style={{ color: primaryColor }}
+                                  ></i>
+                                  {post.visibility === "Private"
+                                    ? "Chuyển sang Công khai"
+                                    : "Chuyển sang Riêng tư"}
+                                </Dropdown.Item>
                                 <Dropdown.Item
                                   onClick={() => {
                                     setSelectedPostId(post.id);
@@ -1515,6 +1553,75 @@ const FoundItemsPage = ({ user }) => {
         </Modal.Footer>
       </Modal>
 
+      <Modal
+        show={showStatusModal}
+        onHide={() => setShowStatusModal(false)}
+        centered
+        contentClassName="border-0 shadow-lg rounded-4"
+      >
+        <Modal.Header closeButton className="border-0 pb-0 mt-3 mx-3">
+          <Modal.Title
+            className="fw-bold d-flex align-items-center"
+            style={{ color: "#212529", fontSize: "1.4rem" }}
+          >
+            <i
+              className="bi bi-check-circle-fill me-3"
+              style={{ color: "#1f6dba", fontSize: "1.5rem" }}
+            ></i>
+            Cập nhật trạng thái?
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body
+          className="text-secondary mx-3 pt-3 pb-4"
+          style={{ fontSize: "1.05rem", lineHeight: "1.6" }}
+        >
+          Yêu cầu đổi trạng thái trao trả sẽ được gửi đến admin kiểm tra. Trạng
+          thái chỉ thay đổi sau khi admin duyệt.
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0 mb-3 mx-3 d-flex justify-content-end gap-2">
+          <Button
+            className="fw-semibold border-0 text-dark"
+            style={{
+              backgroundColor: "#F4F4F5",
+              borderRadius: "12px",
+              padding: "10px 20px",
+            }}
+            onClick={() => setShowStatusModal(false)}
+          >
+            Hủy
+          </Button>
+          <Button
+            className="fw-semibold text-white border-0"
+            style={{
+              backgroundColor: "#1f6dba",
+              borderRadius: "12px",
+              padding: "10px 20px",
+            }}
+            onClick={handleStatusConfirm}
+          >
+            Xác nhận
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <ToastContainer
+        position="top-center"
+        className="p-3 position-fixed"
+        style={{ zIndex: 2000 }}
+      >
+        <Toast
+          show={!!toast}
+          onClose={() => setToast(null)}
+          delay={4500}
+          autohide
+          bg={toast?.variant}
+        >
+          <Toast.Body className="text-white fw-semibold">
+            {toast?.msg}
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+
       {/* ================= MODAL CHIA SẺ BÀI ĐĂNG ================= */}
       <Modal
         show={showShareModal}
@@ -1607,7 +1714,7 @@ const FoundItemsPage = ({ user }) => {
                   setShowDetailModal(false);
                   handleViewUserProfile(
                     selectedPost.author,
-                    selectedPost.authorEmail
+                    selectedPost.authorEmail,
                   );
                 }}
               >
