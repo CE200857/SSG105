@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Login from "../components/DatNT/Login";
+import { Suspense, lazy, useEffect } from "react";
 import Register from "../components/DatNT/Register";
 import CreateProfile from "../components/DatNT/CreateProfile";
 import ForgotPassword from "../components/DatNT/ForgotPassword";
@@ -17,15 +18,16 @@ import Footer from "../components/Footer";
 
 // Import các trang
 import Home from "../pages/Home";
-import OverviewPage from "../pages/OverviewPage";
-import LostFoundPage from "../pages/LostFoundPage";
-import ProfilePage from "../pages/ProfilePage";
-import ChangePasswordPage from "../pages/ChangePasswordPage";
-import EditProfilePage from "../pages/EditProfilePage";
-import ReviewPage from "../pages/ReviewPage";
-import ForumPage from "../pages/ForumPage";
-import FoundItemsPage from "../pages/FoundItemsPage";
-import AdminPage from "../pages/AdminPage";
+// Các trang nặng được tải khi cần (giảm thời gian mở web lần đầu)
+const OverviewPage = lazy(() => import("../pages/OverviewPage"));
+const LostFoundPage = lazy(() => import("../pages/LostFoundPage"));
+const ProfilePage = lazy(() => import("../pages/ProfilePage"));
+const ChangePasswordPage = lazy(() => import("../pages/ChangePasswordPage"));
+const EditProfilePage = lazy(() => import("../pages/EditProfilePage"));
+const ReviewPage = lazy(() => import("../pages/ReviewPage"));
+const ForumPage = lazy(() => import("../pages/ForumPage"));
+const FoundItemsPage = lazy(() => import("../pages/FoundItemsPage"));
+const AdminPage = lazy(() => import("../pages/AdminPage"));
 
 // Helper lấy chuẩn RoleID (1 = Admin, 2 = Student)
 const getUserRole = (user) => {
@@ -53,13 +55,55 @@ const AdminGlobalSidebar = () => {
     location.pathname === "/admin" ? searchParams.get("tab") || "lost" : "";
 
   const adminMenus = [
-    { key: "pending", label: "Chờ duyệt", full: "Bài đăng chờ duyệt", icon: "bi-clipboard-check", activeIcon: "bi-clipboard-check-fill" },
-    { key: "statusReq", label: "Trạng thái", full: "Yêu cầu đổi trạng thái", icon: "bi-toggle-off", activeIcon: "bi-toggle-on" },
-    { key: "lost", label: "Lost", full: "Quản lý bài đăng Lost", icon: "bi-search", activeIcon: "bi-search" },
-    { key: "found", label: "Found", full: "Quản lý bài đăng Found", icon: "bi-bag-check", activeIcon: "bi-bag-check-fill" },
-    { key: "forum", label: "Forum", full: "Quản lý bài đăng Forum", icon: "bi-chat-square-quote", activeIcon: "bi-chat-square-quote-fill" },
-    { key: "reviews", label: "Review", full: "Quản lý bài đăng Review", icon: "bi-star", activeIcon: "bi-star-fill" },
-    { key: "users", label: "Tài khoản", full: "Quản lý Account Student", icon: "bi-people", activeIcon: "bi-people-fill" },
+    {
+      key: "pending",
+      label: "Chờ duyệt",
+      full: "Bài đăng chờ duyệt",
+      icon: "bi-clipboard-check",
+      activeIcon: "bi-clipboard-check-fill",
+    },
+    {
+      key: "statusReq",
+      label: "Trạng thái",
+      full: "Yêu cầu đổi trạng thái",
+      icon: "bi-toggle-off",
+      activeIcon: "bi-toggle-on",
+    },
+    {
+      key: "lost",
+      label: "Lost",
+      full: "Quản lý bài đăng Lost",
+      icon: "bi-search",
+      activeIcon: "bi-search",
+    },
+    {
+      key: "found",
+      label: "Found",
+      full: "Quản lý bài đăng Found",
+      icon: "bi-bag-check",
+      activeIcon: "bi-bag-check-fill",
+    },
+    {
+      key: "forum",
+      label: "Forum",
+      full: "Quản lý bài đăng Forum",
+      icon: "bi-chat-square-quote",
+      activeIcon: "bi-chat-square-quote-fill",
+    },
+    {
+      key: "reviews",
+      label: "Review",
+      full: "Quản lý bài đăng Review",
+      icon: "bi-star",
+      activeIcon: "bi-star-fill",
+    },
+    {
+      key: "users",
+      label: "Tài khoản",
+      full: "Quản lý Account Student",
+      icon: "bi-people",
+      activeIcon: "bi-people-fill",
+    },
   ];
 
   return (
@@ -93,7 +137,10 @@ const AdminGlobalSidebar = () => {
           className="text-center"
           title="Chế độ Quản trị viên: bạn có thể xem mọi trang như sinh viên, hoặc dùng các mục bên trên để quản lý."
         >
-          <i className="bi bi-shield-check fs-5" style={{ color: primaryColor }}></i>
+          <i
+            className="bi bi-shield-check fs-5"
+            style={{ color: primaryColor }}
+          ></i>
           <div className="text-secondary" style={{ fontSize: "0.65rem" }}>
             Admin
           </div>
@@ -132,8 +179,31 @@ const AdminGlobalSidebar = () => {
   );
 };
 
+// Cuộn lên đầu trang mỗi khi chuyển trang
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+  return null;
+};
+
+// Hiện vòng xoay trong lúc tải trang
+const PageLoader = () => (
+  <div
+    className="d-flex flex-column justify-content-center align-items-center gap-3"
+    style={{ minHeight: "55vh" }}
+  >
+    <div className="spinner-border" style={{ color: "#1f6dba" }} role="status">
+      <span className="visually-hidden">Đang tải...</span>
+    </div>
+    <small className="text-secondary">Đang tải...</small>
+  </div>
+);
+
 // Khung Layout chính: Nếu là Admin sẽ có thêm Sidebar bên trái
 const MainLayout = ({ user, setUser }) => {
+  const location = useLocation();
   const isAdmin = getUserRole(user) === 1;
 
   return (
@@ -145,10 +215,15 @@ const MainLayout = ({ user, setUser }) => {
       >
         {isAdmin && <AdminGlobalSidebar user={user} />}
         <main className="flex-grow-1" style={{ minWidth: 0 }}>
-          <Outlet />
+          <ScrollToTop />
+          <Suspense fallback={<PageLoader />}>
+            <div key={location.pathname} className="page-fade">
+              <Outlet />
+            </div>
+          </Suspense>
         </main>
       </div>
-      <Footer />
+      <Footer user={user} />
     </div>
   );
 };

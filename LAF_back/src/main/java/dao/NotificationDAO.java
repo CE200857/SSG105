@@ -11,12 +11,16 @@ import java.util.Map;
 public class NotificationDAO extends DBContext {
 
     public int getUserIdByEmail(String email) {
-        if (email == null || email.trim().isEmpty()) return -1;
+        if (email == null || email.trim().isEmpty()) {
+            return -1;
+        }
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT UserID FROM Users WHERE Email = ?");
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt("UserID");
+            if (rs.next()) {
+                return rs.getInt("UserID");
+            }
         } catch (Exception e) {
             System.out.println("Lỗi getUserIdByEmail: " + e.getMessage());
         }
@@ -24,12 +28,16 @@ public class NotificationDAO extends DBContext {
     }
 
     public String getFullNameByEmail(String email) {
-        if (email == null || email.trim().isEmpty()) return "Một người dùng";
+        if (email == null || email.trim().isEmpty()) {
+            return "Một người dùng";
+        }
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT FullName FROM Users WHERE Email = ?");
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getNString("FullName");
+            if (rs.next()) {
+                return rs.getNString("FullName");
+            }
         } catch (Exception e) {
             System.out.println("Lỗi getFullNameByEmail: " + e.getMessage());
         }
@@ -38,9 +46,11 @@ public class NotificationDAO extends DBContext {
 
     public void createNotification(int recipientId, int senderId, String type, String postType, int postId, String message) {
         // Không tự thông báo cho chính mình
-        if (recipientId <= 0 || senderId <= 0 || recipientId == senderId) return;
-        String query = "INSERT INTO Notifications (RecipientUserID, SenderUserID, Type, PostType, PostID, Message, IsRead, CreatedAt) " +
-                       "VALUES (?, ?, ?, ?, ?, ?, 0, GETDATE())";
+        if (recipientId <= 0 || senderId <= 0 || recipientId == senderId) {
+            return;
+        }
+        String query = "INSERT INTO Notifications (RecipientUserID, SenderUserID, Type, PostType, PostID, Message, IsRead, CreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, 0, GETDATE())";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, recipientId);
@@ -57,13 +67,13 @@ public class NotificationDAO extends DBContext {
 
     public List<Map<String, Object>> getNotificationsByEmail(String email) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String query = "SELECT TOP 30 n.NotificationID, n.Type, n.PostType, n.PostID, n.Message, n.IsRead, " +
-                       "CONVERT(VARCHAR, n.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, n.CreatedAt, 108) as Time, " +
-                       "u.FullName as SenderName, u.Username as SenderUsername " +
-                       "FROM Notifications n " +
-                       "JOIN Users r ON n.RecipientUserID = r.UserID " +
-                       "JOIN Users u ON n.SenderUserID = u.UserID " +
-                       "WHERE r.Email = ? ORDER BY n.CreatedAt DESC";
+        String query = "SELECT TOP 30 n.NotificationID, n.Type, n.PostType, n.PostID, n.Message, n.IsRead, "
+                + "CONVERT(VARCHAR, n.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, n.CreatedAt, 108) as Time, "
+                + "u.FullName as SenderName, u.Username as SenderUsername "
+                + "FROM Notifications n "
+                + "JOIN Users r ON n.RecipientUserID = r.UserID "
+                + "JOIN Users u ON n.SenderUserID = u.UserID "
+                + "WHERE r.Email = ? ORDER BY n.CreatedAt DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, email);
@@ -87,10 +97,13 @@ public class NotificationDAO extends DBContext {
         return list;
     }
 
-    public boolean markAsRead(int notificationId) {
-        try {
-            PreparedStatement ps = conn.prepareStatement("UPDATE Notifications SET IsRead = 1 WHERE NotificationID = ?");
+    // Chỉ cho đánh dấu đã đọc thông báo của chính người nhận
+    public boolean markAsRead(int notificationId, String email) {
+        String sql = "UPDATE Notifications SET IsRead = 1 WHERE NotificationID = ? "
+                + "AND RecipientUserID = (SELECT UserID FROM Users WHERE Email = ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, notificationId);
+            ps.setString(2, email);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("Lỗi markAsRead: " + e.getMessage());
@@ -101,7 +114,7 @@ public class NotificationDAO extends DBContext {
     public boolean markAllAsRead(String email) {
         try {
             PreparedStatement ps = conn.prepareStatement(
-                "UPDATE Notifications SET IsRead = 1 WHERE RecipientUserID = (SELECT UserID FROM Users WHERE Email = ?)"
+                    "UPDATE Notifications SET IsRead = 1 WHERE RecipientUserID = (SELECT UserID FROM Users WHERE Email = ?)"
             );
             ps.setString(1, email);
             return ps.executeUpdate() >= 0;

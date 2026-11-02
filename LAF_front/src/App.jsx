@@ -5,6 +5,7 @@ import AppRoutes from "./routes/AppRoutes";
 import axios from "axios";
 import "./App.css";
 import "./theme.css";
+import GlobalLoadingBar from "./components/GlobalLoadingBar";
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -40,6 +41,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <GlobalLoadingBar />
       <AppRoutes user={user} setUser={setUser} />
     </BrowserRouter>
   );
