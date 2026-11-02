@@ -764,10 +764,10 @@ const Home = ({ user }) => {
               </p>
             </div>
             <Link
-              to="/guidelines"
+              to="/lost-found"
               className="text-decoration-none fw-bold text-primary-custom"
             >
-              Hướng dẫn chi tiết <i className="bi bi-arrow-right"></i>
+              Bắt đầu tìm đồ <i className="bi bi-arrow-right"></i>
             </Link>
           </div>
 

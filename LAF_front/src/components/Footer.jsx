@@ -1,13 +1,63 @@
 import { Container, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-const Footer = () => {
+// Chỉ liệt kê những trang thật sự có trong AppRoutes
+const EXPLORE_LINKS = [
+  { to: "/", label: "Trang chủ", icon: "bi-house-door" },
+  { to: "/lost-found", label: "Tìm đồ (Đồ mất)", icon: "bi-search" },
+  { to: "/found-items", label: "Tìm chủ (Đồ nhặt)", icon: "bi-bag-check" },
+  { to: "/forum", label: "Diễn đàn", icon: "bi-chat-square-text" },
+  { to: "/review", label: "Đánh giá", icon: "bi-star" },
+  { to: "/overview", label: "Tổng quan", icon: "bi-bar-chart" },
+];
+
+const MEMBER_LINKS = [
+  { to: "/profile", label: "Trang cá nhân", icon: "bi-person" },
+  { to: "/edit-profile", label: "Chỉnh sửa hồ sơ", icon: "bi-pencil-square" },
+  { to: "/change-password", label: "Đổi mật khẩu", icon: "bi-shield-lock" },
+];
+
+const GUEST_LINKS = [
+  { to: "/login", label: "Đăng nhập", icon: "bi-box-arrow-in-right" },
+  { to: "/register", label: "Đăng ký tài khoản", icon: "bi-person-plus" },
+  { to: "/forgot-password", label: "Quên mật khẩu", icon: "bi-key" },
+];
+
+const SAFETY_TIPS = [
+  "Xác minh đặc điểm riêng của món đồ trước khi trao trả.",
+  "Hẹn nhận lại ở nơi công cộng trong campus.",
+  "Không chia sẻ số thẻ, CMND/CCCD.",
+];
+
+const FooterLinks = ({ title, links }) => (
+  <>
+    <h6 className="fw-bold mb-3 text-white">{title}</h6>
+    <ul
+      className="list-unstyled d-flex flex-column gap-2 mb-0"
+      style={{ fontSize: "0.9rem" }}
+    >
+      {links.map((item) => (
+        <li key={item.to}>
+          <Link
+            to={item.to}
+            className="text-decoration-none lf-footer-link d-inline-flex align-items-center gap-2"
+          >
+            <i className={`bi ${item.icon}`}></i>
+            {item.label}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </>
+);
+
+const Footer = ({ user }) => {
   return (
     <footer className="lf-footer">
       <Container className="text-start">
-        <Row className="mb-4">
-          {/* Cột 1: Logo & mô tả */}
-          <Col lg={4} md={12} className="mb-4 mb-lg-0">
+        <Row className="mb-4 gy-4">
+          {/* Cột 1: Logo, mô tả, lưu ý an toàn */}
+          <Col lg={5} md={12}>
             <div className="d-flex align-items-center mb-3">
               <span className="lf-footer-logo">
                 <img src="/logo.png" alt="Lost&Found" />
@@ -18,60 +68,58 @@ const Footer = () => {
                 <span className="lf-brand-bold">Found</span>
               </span>
             </div>
-            <p className="mb-2" style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
+            <p
+              className="mb-3"
+              style={{ fontSize: "0.9rem", lineHeight: "1.6" }}
+            >
               Không gian kết nối sinh viên trong campus FPT Cần Thơ khi cần tìm
               lại đồ thất lạc hoặc chia sẻ món đồ nhặt được.
             </p>
-            <p className="lf-footer-muted" style={{ fontSize: "0.85rem", lineHeight: "1.6" }}>
-              Hãy trao đổi an toàn, xác minh thông tin trước khi gặp gỡ và giữ
-              campus tử tế hơn.
-            </p>
+            <ul
+              className="list-unstyled d-flex flex-column gap-2 mb-0 lf-footer-muted"
+              style={{ fontSize: "0.85rem", lineHeight: "1.5" }}
+            >
+              {SAFETY_TIPS.map((tip) => (
+                <li key={tip} className="d-flex gap-2">
+                  <i
+                    className="bi bi-check-circle-fill flex-shrink-0"
+                    style={{ color: "#8fc4f5" }}
+                  ></i>
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
           </Col>
 
           {/* Cột 2: Khám phá */}
-          <Col lg={2} md={4} sm={6} className="mb-3 mb-md-0">
-            <h6 className="fw-bold mb-3 text-white">Khám phá</h6>
-            <ul className="list-unstyled d-flex flex-column gap-2" style={{ fontSize: "0.9rem" }}>
-              <li><Link to="/" className="text-decoration-none lf-footer-link">Trang chủ</Link></li>
-              <li><Link to="/lost-found" className="text-decoration-none lf-footer-link">Trang đồ thất lạc</Link></li>
-              <li><Link to="/forum" className="text-decoration-none lf-footer-link">Diễn đàn</Link></li>
-              <li><Link to="/review" className="text-decoration-none lf-footer-link">Đánh giá</Link></li>
-            </ul>
+          <Col lg={4} md={6} sm={6}>
+            <FooterLinks title="Khám phá" links={EXPLORE_LINKS} />
           </Col>
 
-          {/* Cột 3: Hỗ trợ cộng đồng */}
-          <Col lg={3} md={4} sm={6} className="mb-3 mb-md-0">
-            <h6 className="fw-bold mb-3 text-white">Hỗ trợ cộng đồng</h6>
-            <ul className="list-unstyled d-flex flex-column gap-2" style={{ fontSize: "0.9rem" }}>
-              <li><Link to="/post-lost" className="text-decoration-none lf-footer-link">Đăng tin mất đồ</Link></li>
-              <li><Link to="/post-found" className="text-decoration-none lf-footer-link">Đăng đồ nhặt được</Link></li>
-              <li><Link to="/guidelines" className="text-decoration-none lf-footer-link">Góc nhắc nhở</Link></li>
-            </ul>
-          </Col>
-
-          {/* Cột 4: Cộng đồng */}
-          <Col lg={3} md={4} sm={12}>
-            <h6 className="fw-bold mb-3 text-white">Cộng đồng</h6>
-            <ul className="list-unstyled d-flex flex-column gap-2" style={{ fontSize: "0.9rem" }}>
-              <li><Link to="/student-forum" className="text-decoration-none lf-footer-link">Diễn đàn sinh viên</Link></li>
-              <li><Link to="/stories" className="text-decoration-none lf-footer-link">Câu chuyện tìm lại</Link></li>
-              <li><Link to="/how-to-connect" className="text-decoration-none lf-footer-link">Hướng dẫn kết nối</Link></li>
-            </ul>
+          {/* Cột 3: Tài khoản (đổi theo trạng thái đăng nhập) */}
+          <Col lg={3} md={6} sm={6}>
+            <FooterLinks
+              title="Tài khoản"
+              links={user ? MEMBER_LINKS : GUEST_LINKS}
+            />
           </Col>
         </Row>
 
-        {/* Bản quyền & mạng xã hội */}
+        {/* Bản quyền */}
         <div
-          className="d-flex flex-column flex-md-row justify-content-between pt-3 lf-footer-bottom"
+          className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pt-3 lf-footer-bottom"
           style={{ fontSize: "0.85rem" }}
         >
-          <div className="mb-2 mb-md-0">
+          <div>
             © 2026 Lost&amp;Found · Đồ thất lạc luôn có đường về · FPT Cần Thơ
           </div>
-          <div className="d-flex gap-3">
-            <a href="#" className="text-decoration-none lf-footer-link">Facebook</a>
-            <a href="#" className="text-decoration-none lf-footer-link">Instagram</a>
-          </div>
+          <button
+            type="button"
+            className="lf-footer-top"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
+            <i className="bi bi-arrow-up-short"></i> Lên đầu trang
+          </button>
         </div>
       </Container>
     </footer>

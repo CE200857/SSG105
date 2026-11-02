@@ -118,56 +118,8 @@ const FoundItemsPage = ({ user }) => {
     return true;
   };
 
-  const pushNotification = async ({
-    recipientEmail,
-    recipientName,
-    type,
-    postId,
-    message,
-  }) => {
-    if (!user) return;
-    if (
-      (recipientEmail && recipientEmail === user.email) ||
-      (recipientName && recipientName === user.fullName)
-    ) {
-      return;
-    }
-
-    const newNotif = {
-      id: Date.now(),
-      recipientEmail: recipientEmail || "",
-      recipientName: recipientName || "",
-      senderName: user.fullName,
-      type,
-      postType: "found",
-      postId,
-      message,
-      time: "Vừa xong",
-      isRead: false,
-    };
-
-    const existing =
-      JSON.parse(localStorage.getItem("laf_notifications")) || [];
-    localStorage.setItem(
-      "laf_notifications",
-      JSON.stringify([newNotif, ...existing]),
-    );
-    window.dispatchEvent(new Event("laf-notifications-updated"));
-
-    try {
-      const params = new URLSearchParams();
-      params.append("action", "create");
-      params.append("recipientEmail", recipientEmail || "");
-      params.append("senderName", user.fullName);
-      params.append("type", type);
-      params.append("postType", "found");
-      params.append("postId", postId);
-      params.append("message", message);
-      await axios.post("/api/notifications", params);
-    } catch {
-      // Đã lưu localStorage
-    }
-  };
+  // Thông báo do máy chủ tự tạo khi like/bình luận/chia sẻ, không cần gửi từ trình duyệt
+  const pushNotification = async () => {};
 
   const handleViewUserProfile = (authorName, authorEmail, e) => {
     if (e) e.stopPropagation();

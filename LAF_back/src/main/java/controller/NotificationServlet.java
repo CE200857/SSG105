@@ -43,8 +43,12 @@ public class NotificationServlet extends HttpServlet {
             String email = request.getParameter("email");
             res.put("success", dao.markAllAsRead(email));
         } else {
-            int id = Integer.parseInt(request.getParameter("id"));
-            res.put("success", dao.markAsRead(id));
+            try {
+                int id = Integer.parseInt(request.getParameter("id"));
+                res.put("success", dao.markAsRead(id, request.getParameter("email")));
+            } catch (NumberFormatException e) {
+                res.put("success", false);
+            }
         }
 
         out.print(new Gson().toJson(res));

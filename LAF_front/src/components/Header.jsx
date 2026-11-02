@@ -34,10 +34,10 @@ const Header = ({ user, setUser }) => {
     try {
       const res = await axios.get("/api/notifications", {
         params: { email: user.email },
+        silent: true, // tự cập nhật nền: không hiện thanh tải
       });
       if (Array.isArray(res.data)) {
-        const merged = [...res.data, ...myLocalNotifs];
-        setNotifications(merged);
+        setNotifications(res.data);
         return;
       }
     } catch {
@@ -93,7 +93,15 @@ const Header = ({ user, setUser }) => {
         n.id === notif.id ? { ...n, isRead: true } : n,
       ),
     );
-
+    // Lưu trạng thái "đã đọc" lên máy chủ (id từ máy chủ luôn nhỏ, bỏ qua id local dạng Date.now())
+    if (!notif.isRead && Number(notif.id) < 2147483647) {
+      const params = new URLSearchParams();
+      params.append("id", notif.id);
+      params.append("email", user.email);
+      axios
+        .post("/api/notifications", params, { silent: true })
+        .catch(() => {});
+    }
     if (notif.type === "POST_DELETED") return;
 
     if (notif.postType === "lost") {

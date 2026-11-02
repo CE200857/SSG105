@@ -161,56 +161,8 @@ const ForumPage = ({ user }) => {
     );
   };
 
-  const pushNotification = async ({
-    recipientEmail,
-    recipientName,
-    type,
-    postId,
-    message,
-  }) => {
-    if (!user) return;
-    if (
-      (recipientEmail && recipientEmail === user.email) ||
-      (recipientName && recipientName === user.fullName)
-    ) {
-      return;
-    }
-
-    const newNotif = {
-      id: Date.now(),
-      recipientEmail: recipientEmail || "",
-      recipientName: recipientName || "",
-      senderName: user.fullName,
-      type,
-      postType: "forum",
-      postId,
-      message,
-      time: "Vừa xong",
-      isRead: false,
-    };
-
-    const existing =
-      JSON.parse(localStorage.getItem("laf_notifications")) || [];
-    localStorage.setItem(
-      "laf_notifications",
-      JSON.stringify([newNotif, ...existing]),
-    );
-    window.dispatchEvent(new Event("laf-notifications-updated"));
-
-    try {
-      const params = new URLSearchParams();
-      params.append("action", "create");
-      params.append("recipientEmail", recipientEmail || "");
-      params.append("senderName", user.fullName);
-      params.append("type", type);
-      params.append("postType", "forum");
-      params.append("postId", postId);
-      params.append("message", message);
-      await axios.post("/api/notifications", params);
-    } catch {
-      // Đã lưu đồng bộ vào localStorage
-    }
-  };
+  // Thông báo do máy chủ tự tạo khi like/bình luận/chia sẻ, không cần gửi từ trình duyệt
+  const pushNotification = async () => {};
 
   const handleViewUserProfile = (authorName, username, e) => {
     if (e) e.stopPropagation();
@@ -776,21 +728,21 @@ const ForumPage = ({ user }) => {
                                 <i className="bi bi-pencil-square me-2 text-primary"></i>
                                 Chỉnh sửa bài viết
                               </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleVisibility(post);
-                      }}
-                      className="py-2"
-                    >
-                      <i
-                        className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
-                        style={{ color: primaryColor }}
-                      ></i>
-                      {post.visibility === "Private"
-                        ? "Chuyển sang Công khai"
-                        : "Chuyển sang Riêng tư"}
-                    </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleVisibility(post);
+                                }}
+                                className="py-2"
+                              >
+                                <i
+                                  className={`bi ${post.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                                  style={{ color: primaryColor }}
+                                ></i>
+                                {post.visibility === "Private"
+                                  ? "Chuyển sang Công khai"
+                                  : "Chuyển sang Riêng tư"}
+                              </Dropdown.Item>
                               <Dropdown.Item
                                 onClick={() => {
                                   setSelectedPostId(post.id);
@@ -1227,21 +1179,21 @@ const ForumPage = ({ user }) => {
                           <i className="bi bi-pencil-square me-2 text-primary"></i>
                           Chỉnh sửa bài viết
                         </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleVisibility(selectedPostDetail);
-                      }}
-                      className="py-2"
-                    >
-                      <i
-                        className={`bi ${selectedPostDetail.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
-                        style={{ color: primaryColor }}
-                      ></i>
-                      {selectedPostDetail.visibility === "Private"
-                        ? "Chuyển sang Công khai"
-                        : "Chuyển sang Riêng tư"}
-                    </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleVisibility(selectedPostDetail);
+                          }}
+                          className="py-2"
+                        >
+                          <i
+                            className={`bi ${selectedPostDetail.visibility === "Private" ? "bi-globe2" : "bi-lock-fill"} me-2`}
+                            style={{ color: primaryColor }}
+                          ></i>
+                          {selectedPostDetail.visibility === "Private"
+                            ? "Chuyển sang Công khai"
+                            : "Chuyển sang Riêng tư"}
+                        </Dropdown.Item>
                         <Dropdown.Item
                           onClick={() => {
                             setSelectedPostId(selectedPostDetail.id);

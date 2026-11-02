@@ -37,6 +37,7 @@ entity\Users.class
 controller\UpdateProfileServlet.class
 filter\CorsFilter.class
 controller\LostPostsServlet.class
+filter\ConnectionCleanupFilter.class
 controller\ProfileServlet.class
 dao\SessionDAO.class
 com\mycompany\laf_back\JakartaRestConfiguration.class
