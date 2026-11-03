@@ -1,4 +1,5 @@
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\AvatarDAO.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\DeleteAccountServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\UserDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\filter\PasswordUtils.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\com\mycompany\laf_back\JakartaRestConfiguration.java
@@ -53,6 +54,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\Likes.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\LostPostDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\util\DBContext.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\com\mycompany\laf_back\resources\TestResource.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\AccountDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\ModerationDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\LostImages.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\CommentServlet.java

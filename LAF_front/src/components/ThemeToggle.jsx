@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { THEME_KEY, applyTheme, getInitialTheme } from "../utils/theme";
+import { THEME_EVENT } from "../utils/settings";
 
 // Nút đổi giao diện sáng/tối: giao diện sáng hiện mặt trăng, giao diện tối hiện mặt trời
 export default function ThemeToggle() {
@@ -14,6 +15,18 @@ export default function ThemeToggle() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  // Đồng bộ khi giao diện được đổi từ trang Cài đặt hoặc theo hệ thống
+  useEffect(() => {
+    const sync = () =>
+      setTheme(
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "dark"
+          : "light",
+      );
+    window.addEventListener(THEME_EVENT, sync);
+    return () => window.removeEventListener(THEME_EVENT, sync);
+  }, []);
 
   const toggle = () => {
     const next = isDark ? "light" : "dark";

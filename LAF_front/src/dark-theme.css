@@ -572,3 +572,11 @@ html.theme-anim *::after {
     border-color 0.35s ease,
     box-shadow 0.35s ease !important;
 }
+
+[data-bs-theme="dark"] .settings-menu-item.active,
+[data-bs-theme="dark"] .settings-option.active {
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .settings-option.active {
+  border-color: var(--lf-d-brand);
+}

@@ -5,10 +5,13 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import './index.css';
 import App from './App.jsx';
 import axios from 'axios';
+import { initDisplaySettings } from './utils/settings';
 
 // Đổi port và tên context path ứng với Tomcat của bạn
 axios.defaults.baseURL = 'http://localhost:8080/LAF_back';
 axios.defaults.withCredentials = true;
+
+initDisplaySettings();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

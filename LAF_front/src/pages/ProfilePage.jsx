@@ -709,20 +709,6 @@ const ProfilePage = ({ user, setUser }) => {
                   </Button>
 
                   <Button
-                    variant="light"
-                    onClick={() => navigate("/change-password")}
-                    className="fw-semibold px-3 py-2 shadow-sm d-flex align-items-center"
-                    style={{
-                      border: "1px solid #d8dadf",
-                      backgroundColor: "#E4E6EB",
-                      color: "#050505",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <i className="bi bi-shield-lock-fill me-2"></i> Đổi mật khẩu
-                  </Button>
-
-                  <Button
                     onClick={() => navigate("/edit-profile")}
                     className="fw-semibold px-3 py-2 shadow-sm border-0 d-flex align-items-center text-white"
                     style={{
