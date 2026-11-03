@@ -1,0 +1,639 @@
+USE [master]
+GO
+/****** Object:  Database [LostAndFoundDB]    Script Date: 11/3/2026 9:38:27 AM ******/
+CREATE DATABASE [LostAndFoundDB]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'LostAndFoundDB', FILENAME = N'E:\SQL\MSSQL17.MSSQLSERVER\MSSQL\DATA\LostAndFoundDB.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'LostAndFoundDB_log', FILENAME = N'E:\SQL\MSSQL17.MSSQLSERVER\MSSQL\DATA\LostAndFoundDB_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [LostAndFoundDB] SET COMPATIBILITY_LEVEL = 170
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [LostAndFoundDB].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [LostAndFoundDB] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [LostAndFoundDB] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [LostAndFoundDB] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET  ENABLE_BROKER 
+GO
+ALTER DATABASE [LostAndFoundDB] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [LostAndFoundDB] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET RECOVERY FULL 
+GO
+ALTER DATABASE [LostAndFoundDB] SET  MULTI_USER 
+GO
+ALTER DATABASE [LostAndFoundDB] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [LostAndFoundDB] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [LostAndFoundDB] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [LostAndFoundDB] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [LostAndFoundDB] SET OPTIMIZED_LOCKING = OFF 
+GO
+ALTER DATABASE [LostAndFoundDB] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [LostAndFoundDB] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [LostAndFoundDB] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [LostAndFoundDB]
+GO
+/****** Object:  Table [dbo].[CommentLikes]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CommentLikes](
+	[CommentType] [varchar](20) NOT NULL,
+	[CommentID] [int] NOT NULL,
+	[UserID] [int] NOT NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CommentType] ASC,
+	[CommentID] ASC,
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[EmailVerification]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[EmailVerification](
+	[Email] [varchar](100) NOT NULL,
+	[Code] [char](6) NOT NULL,
+	[Attempts] [int] NOT NULL,
+	[SentAt] [datetime] NOT NULL,
+	[ExpiresAt] [datetime] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ForumComments]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ForumComments](
+	[CommentID] [int] IDENTITY(1,1) NOT NULL,
+	[PostID] [int] NULL,
+	[UserID] [int] NULL,
+	[Content] [nvarchar](max) NOT NULL,
+	[CreatedAt] [datetime] NULL,
+	[ParentCommentID] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CommentID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ForumLikes]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ForumLikes](
+	[PostID] [int] NOT NULL,
+	[UserID] [int] NOT NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[PostID] ASC,
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ForumPosts]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ForumPosts](
+	[PostID] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NULL,
+	[Title] [nvarchar](255) NOT NULL,
+	[Category] [nvarchar](100) NOT NULL,
+	[Content] [nvarchar](max) NULL,
+	[CreatedAt] [datetime] NULL,
+	[ApprovalStatus] [varchar](20) NOT NULL,
+	[Visibility] [varchar](10) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[PostID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FoundComments]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FoundComments](
+	[CommentID] [int] IDENTITY(1,1) NOT NULL,
+	[FoundPostID] [int] NULL,
+	[UserID] [int] NULL,
+	[Content] [nvarchar](max) NOT NULL,
+	[CreatedAt] [datetime] NULL,
+	[ParentCommentID] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CommentID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FoundImages]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FoundImages](
+	[ImageID] [int] IDENTITY(1,1) NOT NULL,
+	[FoundPostID] [int] NULL,
+	[ImageURL] [varchar](max) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ImageID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FoundLikes]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FoundLikes](
+	[FoundPostID] [int] NOT NULL,
+	[UserID] [int] NOT NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[FoundPostID] ASC,
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FoundPosts]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FoundPosts](
+	[FoundPostID] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NULL,
+	[Category] [nvarchar](100) NOT NULL,
+	[ItemName] [nvarchar](100) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[LocationFound] [nvarchar](255) NULL,
+	[TimeFound] [datetime] NULL,
+	[Status] [varchar](20) NULL,
+	[CreatedAt] [datetime] NULL,
+	[ApprovalStatus] [varchar](20) NOT NULL,
+	[Visibility] [varchar](10) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[FoundPostID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LostComments]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LostComments](
+	[CommentID] [int] IDENTITY(1,1) NOT NULL,
+	[LostPostID] [int] NULL,
+	[UserID] [int] NULL,
+	[Content] [nvarchar](max) NOT NULL,
+	[CreatedAt] [datetime] NULL,
+	[ParentCommentID] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CommentID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LostImages]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LostImages](
+	[ImageID] [int] IDENTITY(1,1) NOT NULL,
+	[LostPostID] [int] NULL,
+	[ImageURL] [varchar](max) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ImageID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LostLikes]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LostLikes](
+	[LostPostID] [int] NOT NULL,
+	[UserID] [int] NOT NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[LostPostID] ASC,
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LostPosts]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LostPosts](
+	[LostPostID] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NULL,
+	[Category] [nvarchar](100) NOT NULL,
+	[Title] [nvarchar](200) NOT NULL,
+	[Content] [nvarchar](max) NULL,
+	[LocationLost] [nvarchar](255) NULL,
+	[TimeLost] [datetime] NULL,
+	[Status] [varchar](20) NULL,
+	[CreatedAt] [datetime] NULL,
+	[ApprovalStatus] [varchar](20) NOT NULL,
+	[Visibility] [varchar](10) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[LostPostID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Notifications]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Notifications](
+	[NotificationID] [int] IDENTITY(1,1) NOT NULL,
+	[RecipientUserID] [int] NULL,
+	[SenderUserID] [int] NULL,
+	[Type] [varchar](30) NOT NULL,
+	[PostType] [varchar](20) NOT NULL,
+	[PostID] [int] NOT NULL,
+	[Message] [nvarchar](500) NOT NULL,
+	[IsRead] [bit] NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[NotificationID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Reviews]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Reviews](
+	[ReviewID] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NULL,
+	[Rating] [int] NULL,
+	[Content] [nvarchar](max) NULL,
+	[CreatedAt] [datetime] NULL,
+	[Visibility] [varchar](10) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ReviewID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Roles]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Roles](
+	[RoleID] [int] IDENTITY(1,1) NOT NULL,
+	[RoleName] [varchar](50) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[RoleID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SharedComments]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SharedComments](
+	[CommentID] [int] IDENTITY(1,1) NOT NULL,
+	[ShareID] [int] NULL,
+	[UserID] [int] NULL,
+	[Content] [nvarchar](max) NOT NULL,
+	[ParentCommentID] [int] NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CommentID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SharedLikes]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SharedLikes](
+	[ShareID] [int] NOT NULL,
+	[UserID] [int] NOT NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ShareID] ASC,
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SharedPosts]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SharedPosts](
+	[ShareID] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NULL,
+	[OriginalPostType] [varchar](20) NOT NULL,
+	[OriginalPostID] [int] NOT NULL,
+	[ShareContent] [nvarchar](max) NULL,
+	[CreatedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ShareID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[StatusRequests]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[StatusRequests](
+	[RequestID] [int] IDENTITY(1,1) NOT NULL,
+	[PostType] [varchar](10) NOT NULL,
+	[PostID] [int] NOT NULL,
+	[UserID] [int] NOT NULL,
+	[NewStatus] [varchar](20) NOT NULL,
+	[Status] [varchar](10) NOT NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[ResolvedAt] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[RequestID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 11/3/2026 9:38:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[UserID] [int] IDENTITY(1,1) NOT NULL,
+	[Username] [varchar](50) NOT NULL,
+	[FullName] [nvarchar](100) NOT NULL,
+	[Email] [varchar](100) NOT NULL,
+	[Phone] [varchar](15) NULL,
+	[Campus] [nvarchar](50) NULL,
+	[Gender] [nvarchar](10) NULL,
+	[PasswordHash] [varchar](255) NOT NULL,
+	[RoleID] [int] NULL,
+	[CreatedAt] [datetime] NULL,
+	[IsActive] [bit] NOT NULL,
+	[AvatarURL] [varchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[Username] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[Email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UX_StatusRequests_Pending]    Script Date: 11/3/2026 9:38:28 AM ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UX_StatusRequests_Pending] ON [dbo].[StatusRequests]
+(
+	[PostType] ASC,
+	[PostID] ASC
+)
+WHERE ([Status]='Pending')
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[CommentLikes] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[EmailVerification] ADD  DEFAULT ((0)) FOR [Attempts]
+GO
+ALTER TABLE [dbo].[EmailVerification] ADD  DEFAULT (getdate()) FOR [SentAt]
+GO
+ALTER TABLE [dbo].[ForumComments] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[ForumLikes] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[ForumPosts] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[ForumPosts] ADD  CONSTRAINT [DF_ForumPosts_Approval]  DEFAULT ('Approved') FOR [ApprovalStatus]
+GO
+ALTER TABLE [dbo].[ForumPosts] ADD  CONSTRAINT [DF_ForumPosts_Visibility]  DEFAULT ('Public') FOR [Visibility]
+GO
+ALTER TABLE [dbo].[FoundComments] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[FoundLikes] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[FoundPosts] ADD  DEFAULT ('Unclaimed') FOR [Status]
+GO
+ALTER TABLE [dbo].[FoundPosts] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[FoundPosts] ADD  CONSTRAINT [DF_FoundPosts_Approval]  DEFAULT ('Approved') FOR [ApprovalStatus]
+GO
+ALTER TABLE [dbo].[FoundPosts] ADD  CONSTRAINT [DF_FoundPosts_Visibility]  DEFAULT ('Public') FOR [Visibility]
+GO
+ALTER TABLE [dbo].[LostComments] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[LostLikes] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[LostPosts] ADD  DEFAULT ('Not Found') FOR [Status]
+GO
+ALTER TABLE [dbo].[LostPosts] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[LostPosts] ADD  CONSTRAINT [DF_LostPosts_Approval]  DEFAULT ('Approved') FOR [ApprovalStatus]
+GO
+ALTER TABLE [dbo].[LostPosts] ADD  CONSTRAINT [DF_LostPosts_Visibility]  DEFAULT ('Public') FOR [Visibility]
+GO
+ALTER TABLE [dbo].[Notifications] ADD  DEFAULT ((0)) FOR [IsRead]
+GO
+ALTER TABLE [dbo].[Notifications] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Reviews] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Reviews] ADD  CONSTRAINT [DF_Reviews_Visibility]  DEFAULT ('Public') FOR [Visibility]
+GO
+ALTER TABLE [dbo].[SharedComments] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[SharedLikes] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[SharedPosts] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[StatusRequests] ADD  DEFAULT ('Pending') FOR [Status]
+GO
+ALTER TABLE [dbo].[StatusRequests] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Users] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF_Users_IsActive]  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[CommentLikes]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[ForumComments]  WITH CHECK ADD FOREIGN KEY([PostID])
+REFERENCES [dbo].[ForumPosts] ([PostID])
+GO
+ALTER TABLE [dbo].[ForumComments]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[ForumLikes]  WITH CHECK ADD FOREIGN KEY([PostID])
+REFERENCES [dbo].[ForumPosts] ([PostID])
+GO
+ALTER TABLE [dbo].[ForumLikes]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[ForumPosts]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[FoundComments]  WITH CHECK ADD FOREIGN KEY([FoundPostID])
+REFERENCES [dbo].[FoundPosts] ([FoundPostID])
+GO
+ALTER TABLE [dbo].[FoundComments]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[FoundImages]  WITH CHECK ADD FOREIGN KEY([FoundPostID])
+REFERENCES [dbo].[FoundPosts] ([FoundPostID])
+GO
+ALTER TABLE [dbo].[FoundLikes]  WITH CHECK ADD FOREIGN KEY([FoundPostID])
+REFERENCES [dbo].[FoundPosts] ([FoundPostID])
+GO
+ALTER TABLE [dbo].[FoundLikes]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[FoundPosts]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[LostComments]  WITH CHECK ADD FOREIGN KEY([LostPostID])
+REFERENCES [dbo].[LostPosts] ([LostPostID])
+GO
+ALTER TABLE [dbo].[LostComments]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[LostImages]  WITH CHECK ADD FOREIGN KEY([LostPostID])
+REFERENCES [dbo].[LostPosts] ([LostPostID])
+GO
+ALTER TABLE [dbo].[LostLikes]  WITH CHECK ADD FOREIGN KEY([LostPostID])
+REFERENCES [dbo].[LostPosts] ([LostPostID])
+GO
+ALTER TABLE [dbo].[LostLikes]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[LostPosts]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[Notifications]  WITH CHECK ADD FOREIGN KEY([RecipientUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[Notifications]  WITH CHECK ADD FOREIGN KEY([SenderUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[SharedComments]  WITH CHECK ADD FOREIGN KEY([ShareID])
+REFERENCES [dbo].[SharedPosts] ([ShareID])
+GO
+ALTER TABLE [dbo].[SharedComments]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[SharedLikes]  WITH CHECK ADD FOREIGN KEY([ShareID])
+REFERENCES [dbo].[SharedPosts] ([ShareID])
+GO
+ALTER TABLE [dbo].[SharedLikes]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[SharedPosts]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[StatusRequests]  WITH CHECK ADD FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD FOREIGN KEY([RoleID])
+REFERENCES [dbo].[Roles] ([RoleID])
+GO
+ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD CHECK  (([Rating]>=(1) AND [Rating]<=(5)))
+GO
+USE [master]
+GO
+ALTER DATABASE [LostAndFoundDB] SET  READ_WRITE 
+GO

@@ -150,6 +150,7 @@ SSG105/
 │   │   └── util/               # Database, email, image, and auth utilities
 │   └── pom.xml
 │
+├── data.sql                    # SQL Server database creation and schema script
 └── README.md
 ```
 
@@ -165,14 +166,31 @@ Install the following tools before running the project:
 - **npm:** installed with Node.js.
 - **JDK:** Java 11.
 - **Apache Maven:** a Maven installation compatible with the Maven Wrapper/build configuration (the project currently uses Maven directly).
-- **Microsoft SQL Server:** a running SQL Server instance.
+- **Microsoft SQL Server 2025 (17.x):** recommended for running the supplied `data.sql` script without modification. The script sets database compatibility level `170`, which is supported by SQL Server 2025 (17.x). See [Microsoft's compatibility-level documentation](https://learn.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql-compatibility-level).
 - **Apache Tomcat 10.1+** or another servlet container compatible with Jakarta Servlet 6.0 / Jakarta EE 10.
 
 ### 1. Prepare the Database
 
-The backend expects a SQL Server database named `LostAndFoundDB` by default.
+The backend expects a SQL Server database named `LostAndFoundDB`. The repository includes [`data.sql`](./data.sql), a SQL Server schema script that creates the database and its tables, primary keys, foreign keys, and check constraints.
 
-**Important:** The provided ZIP does not contain a database creation script, schema dump, or seed-data script. Prepare the database schema and any required initial records separately before starting the application. The backend DAOs expect the tables used by the application, including users, Lost & Found posts, forum posts, comments, reviews, notifications, and related interaction records.
+**Database script details**
+
+- Creates the `LostAndFoundDB` database.
+- Defines 21 tables covering users and roles, email verification, Lost & Found posts and interactions, forum discussions, shared posts, reviews, notifications, and status requests.
+- Creates the schema only. The script contains no `INSERT` statements, so it does not populate sample users or sample posts.
+- Sets compatibility level `170`; use SQL Server 2025 (17.x) to run the script unchanged.
+
+**Before executing `data.sql`**
+
+1. Open SQL Server Management Studio (SSMS) and connect to the SQL Server instance where you want to create the database.
+2. Open `data.sql` from the repository root.
+3. Review the two `FILENAME` values in the `CREATE DATABASE` statement near the beginning of the script. They currently point to `E:\SQL\MSSQL17.MSSQLSERVER\MSSQL\DATA\`. Change them to valid data and log directories on the SQL Server host if that exact directory does not exist. The SQL Server service account must have permission to write to those directories.
+4. Execute the entire script. It starts in `master`, creates `LostAndFoundDB`, switches to the new database, and creates the tables and relationships.
+5. Refresh the Databases list in SSMS and confirm that `LostAndFoundDB` has been created.
+
+The script creates a database with a fixed name and does not check whether it already exists. Do not run it again against an existing database unless you have confirmed how you want to handle that database and its data.
+
+If you use a SQL Server version other than 2025, review the script's compatibility-level setting and any version-specific database options before running it; changing `170` alone may not make every statement compatible with an older SQL Server release.
 
 Configure the JDBC connection using the Java system property `laf.db.url` (see [Configuration Notes](#configuration-notes)). Do not use sample or source-code fallback credentials for a shared or public environment.
 
@@ -312,4 +330,4 @@ This project is an academic application and should not be treated as production-
 
 ## Current Project Scope
 
-The supplied project contains the frontend and backend source code, Maven and npm configuration, and static frontend assets. It does **not** include a database schema/backup, seed data, deployment descriptors for a production environment, or an automated test suite. These items must be prepared separately for a complete reproducible deployment.
+The supplied project contains the frontend and backend source code, Maven and npm configuration, static frontend assets, and `data.sql` for creating the SQL Server database schema. The SQL script does not include seed data or sample accounts. Production deployment configuration and an automated test suite are not included and must be prepared separately for a production-ready deployment.
