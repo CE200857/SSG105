@@ -496,6 +496,15 @@ html[data-bs-theme="dark"],
   border-color: rgba(125, 211, 252, 0.35) !important;
 }
 
+/* Chữ gần như đen viết cứng (nút "Đổi mật khẩu") -> chữ sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(5, 5, 5)"],
+    [style*="; color: rgb(5, 5, 5)"]
+  ) {
+  color: var(--lf-d-text) !important;
+}
+
 /* ---------- Nút đổi giao diện sáng/tối ---------- */
 .theme-toggle {
   position: relative;

@@ -539,3 +539,12 @@ button,
 [data-bs-theme="dark"] .comment-act { color: var(--lf-d-muted); }
 [data-bs-theme="dark"] .comment-act:hover { color: var(--lf-d-brand); }
 [data-bs-theme="dark"] .comment-act-danger:hover { color: #fca5a5; }
+
+/* Thẻ đang mở menu "..." phải nổi lên trên các thẻ bên dưới (tránh menu bị chìm / cắt) */
+.card:has(.dropdown-menu.show),
+.card:has(.show > .dropdown-menu) {
+  z-index: 1060;
+}
+.dropdown-menu.show {
+  z-index: 1061;
+}
