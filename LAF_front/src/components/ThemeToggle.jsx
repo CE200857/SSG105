@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { THEME_KEY, applyTheme, getInitialTheme } from "../utils/theme";
 import { THEME_EVENT } from "../utils/settings";
+import { useI18n } from "../i18n";
 
 // Nút đổi giao diện sáng/tối: giao diện sáng hiện mặt trăng, giao diện tối hiện mặt trời
 export default function ThemeToggle() {
+  const { t } = useI18n();
   const [theme, setTheme] = useState(() => {
     const current = document.documentElement.getAttribute("data-bs-theme");
     return current === "dark" || current === "light"
@@ -46,8 +48,8 @@ export default function ThemeToggle() {
       type="button"
       className={`theme-toggle ${isDark ? "is-dark" : ""}`}
       onClick={toggle}
-      aria-label={isDark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
-      title={isDark ? "Giao diện sáng" : "Giao diện tối"}
+      aria-label={isDark ? t("theme.toLight") : t("theme.toDark")}
+      title={isDark ? t("theme.light") : t("theme.dark")}
     >
       <i className="bi bi-moon-stars-fill theme-icon moon"></i>
       <i className="bi bi-sun-fill theme-icon sun"></i>

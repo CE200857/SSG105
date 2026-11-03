@@ -33,9 +33,9 @@ export const setThemeMode = (mode) => {
 
 /* ---------------- Cỡ chữ & hiệu ứng ---------------- */
 export const FONT_SIZES = {
-  small: { label: "Nhỏ", px: 14.5 },
-  normal: { label: "Vừa", px: 16 },
-  large: { label: "Lớn", px: 18 },
+  small: { label: "Nhỏ", labelKey: "settings.font.small", px: 14.5 },
+  normal: { label: "Vừa", labelKey: "settings.font.normal", px: 16 },
+  large: { label: "Lớn", labelKey: "settings.font.large", px: 18 },
 };
 
 const DEFAULT_DISPLAY = { fontSize: "normal", reduceMotion: false };

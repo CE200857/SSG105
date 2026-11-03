@@ -22,7 +22,7 @@ public class FoundPostDAO extends DBContext {
         StringBuilder query = new StringBuilder(
                 "SELECT f.FoundPostID, f.Category, f.ItemName, f.Description, f.LocationFound, "
                 + "CONVERT(VARCHAR, f.TimeFound, 103) + ' - ' + CONVERT(VARCHAR, f.TimeFound, 108) as TimeFound, "
-                + "f.Status, f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, i.ImageURL, "
+                + "f.Status, f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, u.AvatarURL, i.ImageURL, "
                 + "(SELECT COUNT(*) FROM FoundLikes fl WHERE fl.FoundPostID = f.FoundPostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM FoundLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.FoundPostID = f.FoundPostID AND u2.Email = ?) as UserLiked "
                 + "FROM FoundPosts f "
@@ -83,6 +83,7 @@ public class FoundPostDAO extends DBContext {
                 map.put("author", rs.getString("FullName"));
                 map.put("username", rs.getString("Username"));
                 map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("avatar", rs.getString("AvatarURL"));
                 map.put("category", rs.getString("Category") != null ? rs.getString("Category") : "Đồ dùng cá nhân");
                 map.put("visibility", rs.getString("Visibility"));
                 // Bài chưa có ảnh -> để null, frontend tự hiện ảnh minh họa
@@ -107,7 +108,7 @@ public class FoundPostDAO extends DBContext {
         boolean viewerIsAdmin = isAdminEmail(currentUserEmail);
         String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
                 + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
-                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, "
+                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, u.AvatarURL, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'found' AND cl.CommentID = c.CommentID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'found' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
                 + "FROM FoundComments c JOIN Users u ON c.UserID = u.UserID "
@@ -124,6 +125,7 @@ public class FoundPostDAO extends DBContext {
                 c.put("username", rs.getString("Username"));
                 String authorEmail = rs.getString("CommentAuthorEmail");
                 c.put("authorEmail", authorEmail);
+                c.put("avatar", rs.getString("AvatarURL"));
                 c.put("canManage", viewerIsAdmin
                         || (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(authorEmail)));
                 c.put("text", rs.getString("Content"));

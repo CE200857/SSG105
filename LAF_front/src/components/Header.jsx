@@ -14,12 +14,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAvatarSrc } from "../utils/avatar";
 import ThemeToggle from "./ThemeToggle";
+import { useI18n } from "../i18n";
 import { clearAuthStorage } from "../utils/session";
 import { SETTINGS_EVENT, getNotifPrefs, isNotifVisible } from "../utils/settings";
 
 const Header = ({ user, setUser }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const primaryColor = "#1f6dba";
 
   const [notifications, setNotifications] = useState([]);
@@ -252,37 +254,37 @@ const Header = ({ user, setUser }) => {
             {[
               {
                 to: "/",
-                label: "Trang chủ",
+                label: t("nav.home"),
                 icon: "bi-house-door",
                 activeIcon: "bi-house-door-fill",
               },
               {
                 to: "/lost-found",
-                label: "Tìm đồ",
+                label: t("nav.lost"),
                 icon: "bi-search",
                 activeIcon: "bi-search",
               },
               {
                 to: "/found-items",
-                label: "Tìm chủ",
+                label: t("nav.found"),
                 icon: "bi-bag-check",
                 activeIcon: "bi-bag-check-fill",
               },
               {
                 to: "/forum",
-                label: "Diễn đàn",
+                label: t("nav.forum"),
                 icon: "bi-chat-square-text",
                 activeIcon: "bi-chat-square-text-fill",
               },
               {
                 to: "/review",
-                label: "Đánh giá",
+                label: t("nav.review"),
                 icon: "bi-star",
                 activeIcon: "bi-star-fill",
               },
               {
                 to: "/overview",
-                label: "Tổng quan",
+                label: t("nav.overview"),
                 icon: "bi-bar-chart",
                 activeIcon: "bi-bar-chart-fill",
               },
@@ -338,7 +340,7 @@ const Header = ({ user, setUser }) => {
                   >
                     <div className="d-flex justify-content-between align-items-center px-3 py-3 border-bottom bg-light">
                       <h6 className="fw-bold mb-0" style={{ color: "#12345a" }}>
-                        Thông báo
+                        {t("header.notifications")}
                       </h6>
                       {unreadCount > 0 && (
                         <Button
@@ -353,7 +355,7 @@ const Header = ({ user, setUser }) => {
                           }}
                           onClick={handleMarkAllRead}
                         >
-                          Đánh dấu đã đọc
+                          {t("header.markAllRead")}
                         </Button>
                       )}
                     </div>
@@ -362,7 +364,7 @@ const Header = ({ user, setUser }) => {
                       <div className="text-center py-4 text-muted">
                         <i className="bi bi-bell-slash fs-2 d-block mb-2 opacity-50"></i>
                         <span style={{ fontSize: "0.9rem" }}>
-                          Chưa có thông báo nào.
+                          {t("header.noNotifications")}
                         </span>
                       </div>
                     ) : (
@@ -402,7 +404,7 @@ const Header = ({ user, setUser }) => {
                                 className="text-muted"
                                 style={{ fontSize: "0.75rem" }}
                               >
-                                {notif.time || "Vừa xong"}
+                                {notif.time || t("header.justNow")}
                               </small>
                             </div>
                           </div>
@@ -441,16 +443,16 @@ const Header = ({ user, setUser }) => {
                       </div>
                     </Dropdown.ItemText>
                     <Dropdown.Item as={Link} to="/profile" className="py-2">
-                      <i className="bi bi-person me-2"></i> Trang cá nhân
+                      <i className="bi bi-person me-2"></i> {t("header.profile")}
                     </Dropdown.Item>
                     <Dropdown.Item as={Link} to="/settings" className="py-2">
-                      <i className="bi bi-gear me-2"></i> Cài đặt
+                      <i className="bi bi-gear me-2"></i> {t("header.settings")}
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={handleLogout}
                       className="py-2 text-danger"
                     >
-                      <i className="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                      <i className="bi bi-box-arrow-right me-2"></i> {t("header.logout")}
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -463,7 +465,7 @@ const Header = ({ user, setUser }) => {
                   className="btn-solid-custom shadow-sm"
                   style={{ borderRadius: "10px", padding: "8px 24px" }}
                 >
-                  Đăng nhập
+                  {t("header.login")}
                 </Button>
                 <Button
                   as={Link}
@@ -471,7 +473,7 @@ const Header = ({ user, setUser }) => {
                   className="btn-outline-custom shadow-sm"
                   style={{ borderRadius: "10px", padding: "8px 24px" }}
                 >
-                  Đăng ký
+                  {t("header.register")}
                 </Button>
               </div>
             )}

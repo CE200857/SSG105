@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAvatarSrc } from "../utils/avatar";
 import { clearAuthStorage } from "../utils/session";
+import { LANGUAGES, useI18n } from "../i18n";
 import {
   FONT_SIZES,
   THEME_EVENT,
@@ -26,16 +27,17 @@ import {
 } from "../utils/settings";
 
 const SECTIONS = [
-  { key: "account", label: "Tài khoản", icon: "bi-person-circle" },
-  { key: "appearance", label: "Giao diện & trợ năng", icon: "bi-palette" },
-  { key: "notifications", label: "Thông báo", icon: "bi-bell" },
-  { key: "security", label: "Bảo mật & đăng nhập", icon: "bi-shield-lock" },
+  { key: "account", labelKey: "settings.section.account", icon: "bi-person-circle" },
+  { key: "appearance", labelKey: "settings.section.appearance", icon: "bi-palette" },
+  { key: "language", labelKey: "settings.section.language", icon: "bi-translate" },
+  { key: "notifications", labelKey: "settings.section.notifications", icon: "bi-bell" },
+  { key: "security", labelKey: "settings.section.security", icon: "bi-shield-lock" },
 ];
 
 const THEME_OPTIONS = [
-  { key: "light", label: "Sáng", icon: "bi-sun-fill" },
-  { key: "dark", label: "Tối", icon: "bi-moon-stars-fill" },
-  { key: "system", label: "Theo thiết bị", icon: "bi-circle-half" },
+  { key: "light", labelKey: "settings.theme.light", icon: "bi-sun-fill" },
+  { key: "dark", labelKey: "settings.theme.dark", icon: "bi-moon-stars-fill" },
+  { key: "system", labelKey: "settings.theme.system", icon: "bi-circle-half" },
 ];
 
 const Row2 = ({ title, desc, children }) => (
@@ -54,6 +56,7 @@ const Row2 = ({ title, desc, children }) => (
 
 const SettingsPage = ({ user, setUser }) => {
   const navigate = useNavigate();
+  const { t, lang, setLang } = useI18n();
   const [section, setSection] = useState("account");
   const [themeMode, setMode] = useState(getThemeMode());
   const [display, setDisplay] = useState(getDisplaySettings());
@@ -107,11 +110,11 @@ const SettingsPage = ({ user, setUser }) => {
         navigate("/login");
         return;
       }
-      setDelError((res.data && res.data.message) || "Không thể xóa tài khoản.");
+      setDelError((res.data && res.data.message) || t("settings.delete.failed"));
     } catch (err) {
       setDelError(
         err?.response?.data?.message ||
-          "Không thể kết nối máy chủ, vui lòng thử lại.",
+          t("settings.delete.connectError"),
       );
     } finally {
       setDelBusy(false);
@@ -120,7 +123,7 @@ const SettingsPage = ({ user, setUser }) => {
 
   const canDelete =
     delPassword.length > 0 &&
-    delConfirm.trim().toUpperCase() === "XÓA TÀI KHOẢN";
+    delConfirm.trim().toUpperCase() === t("settings.delete.phrase").toUpperCase();
 
   const handleLogout = async () => {
     try {
@@ -138,7 +141,7 @@ const SettingsPage = ({ user, setUser }) => {
     <Container className="py-4 settings-page text-start" style={{ maxWidth: "1100px" }}>
       <h3 className="fw-bold mb-4">
         <i className="bi bi-gear-fill me-2" style={{ color: "#1f6dba" }}></i>
-        Cài đặt
+        {t("settings.title")}
       </h3>
 
       <Row className="g-4">
@@ -152,7 +155,7 @@ const SettingsPage = ({ user, setUser }) => {
                 onClick={() => setSection(s.key)}
               >
                 <i className={`bi ${s.icon}`}></i>
-                <span>{s.label}</span>
+                <span>{t(s.labelKey)}</span>
               </button>
             ))}
           </Card>
@@ -175,24 +178,26 @@ const SettingsPage = ({ user, setUser }) => {
                     <div className="text-muted">{user.email}</div>
                   </div>
                 </div>
-                <Row2 title="Họ và tên">{user.fullName || "—"}</Row2>
-                <Row2 title="Email">{user.email || "—"}</Row2>
+                <Row2 title={t("settings.account.fullName")}>{user.fullName || "—"}</Row2>
+                <Row2 title={t("settings.account.email")}>{user.email || "—"}</Row2>
                 {user.username && (
-                  <Row2 title="Tên người dùng">@{user.username}</Row2>
+                  <Row2 title={t("settings.account.username")}>@{user.username}</Row2>
                 )}
-                {user.campus && <Row2 title="Cơ sở">{user.campus}</Row2>}
+                {user.campus && <Row2 title={t("settings.account.campus")}>{user.campus}</Row2>}
                 <div className="d-flex flex-wrap gap-2 mt-4">
                   <Button
                     style={{ backgroundColor: "#1f6dba", borderColor: "#1f6dba" }}
                     onClick={() => navigate("/edit-profile")}
                   >
-                    <i className="bi bi-pencil-fill me-2"></i>Chỉnh sửa thông tin
+                    <i className="bi bi-pencil-fill me-2"></i>
+                    {t("settings.account.edit")}
                   </Button>
                   <Button
                     variant="outline-secondary"
                     onClick={() => navigate("/profile")}
                   >
-                    <i className="bi bi-person me-2"></i>Xem trang cá nhân
+                    <i className="bi bi-person me-2"></i>
+                    {t("settings.account.viewProfile")}
                   </Button>
                 </div>
               </>
@@ -200,7 +205,7 @@ const SettingsPage = ({ user, setUser }) => {
 
             {section === "appearance" && (
               <>
-                <h5 className="fw-bold mb-3">Giao diện</h5>
+                <h5 className="fw-bold mb-3">{t("settings.appearance.theme")}</h5>
                 <div className="d-flex flex-wrap gap-3 mb-4">
                   {THEME_OPTIONS.map((o) => (
                     <button
@@ -210,12 +215,12 @@ const SettingsPage = ({ user, setUser }) => {
                       onClick={() => pickTheme(o.key)}
                     >
                       <i className={`bi ${o.icon} d-block fs-3 mb-1`}></i>
-                      {o.label}
+                      {t(o.labelKey)}
                     </button>
                   ))}
                 </div>
 
-                <h5 className="fw-bold mb-3">Cỡ chữ</h5>
+                <h5 className="fw-bold mb-3">{t("settings.appearance.fontSize")}</h5>
                 <div className="d-flex flex-wrap gap-3 mb-4">
                   {Object.entries(FONT_SIZES).map(([key, f]) => (
                     <button
@@ -230,15 +235,15 @@ const SettingsPage = ({ user, setUser }) => {
                       >
                         Aa
                       </span>
-                      {f.label}
+                      {t(f.labelKey)}
                     </button>
                   ))}
                 </div>
 
-                <h5 className="fw-bold mb-1">Trợ năng</h5>
+                <h5 className="fw-bold mb-1">{t("settings.appearance.accessibility")}</h5>
                 <Row2
-                  title="Giảm hiệu ứng chuyển động"
-                  desc="Tắt các hiệu ứng mờ dần, trượt và hoạt ảnh trên trang."
+                  title={t("settings.appearance.reduceMotion")}
+                  desc={t("settings.appearance.reduceMotionDesc")}
                 >
                   <Form.Check
                     type="switch"
@@ -252,16 +257,40 @@ const SettingsPage = ({ user, setUser }) => {
               </>
             )}
 
+            {section === "language" && (
+              <>
+                <h5 className="fw-bold mb-1">{t("settings.language.title")}</h5>
+                <p className="text-muted">{t("settings.language.desc")}</p>
+                <div className="d-flex flex-wrap gap-3 mb-3">
+                  {LANGUAGES.map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      lang={l.code}
+                      className={`settings-option ${lang === l.code ? "active" : ""}`}
+                      onClick={() => setLang(l.code)}
+                    >
+                      <span className="d-block fw-bold fs-4 mb-1">{l.short}</span>
+                      {l.name}
+                    </button>
+                  ))}
+                </div>
+                <div className="text-muted small">
+                  <i className="bi bi-info-circle me-1"></i>
+                  {t("settings.language.note")}
+                </div>
+              </>
+            )}
+
             {section === "notifications" && (
               <>
-                <h5 className="fw-bold mb-1">Thông báo</h5>
+                <h5 className="fw-bold mb-1">{t("settings.notif.title")}</h5>
                 <p className="text-muted">
-                  Chọn loại thông báo hiện trên chuông. Thông báo của hệ thống
-                  (duyệt bài, xóa bài, đổi trạng thái) luôn được hiển thị.
+                  {t("settings.notif.desc")}
                 </p>
                 <Row2
-                  title="Lượt thích"
-                  desc="Khi ai đó thích bài viết hoặc bình luận của bạn."
+                  title={t("settings.notif.likes")}
+                  desc={t("settings.notif.likesDesc")}
                 >
                   <Form.Check
                     type="switch"
@@ -271,8 +300,8 @@ const SettingsPage = ({ user, setUser }) => {
                   />
                 </Row2>
                 <Row2
-                  title="Bình luận & phản hồi"
-                  desc="Khi ai đó bình luận hoặc trả lời bình luận của bạn."
+                  title={t("settings.notif.comments")}
+                  desc={t("settings.notif.commentsDesc")}
                 >
                   <Form.Check
                     type="switch"
@@ -283,7 +312,10 @@ const SettingsPage = ({ user, setUser }) => {
                     }
                   />
                 </Row2>
-                <Row2 title="Chia sẻ" desc="Khi ai đó chia sẻ bài viết của bạn.">
+                <Row2
+                  title={t("settings.notif.shares")}
+                  desc={t("settings.notif.sharesDesc")}
+                >
                   <Form.Check
                     type="switch"
                     id="sw-shares"
@@ -296,33 +328,36 @@ const SettingsPage = ({ user, setUser }) => {
 
             {section === "security" && (
               <>
-                <h5 className="fw-bold mb-1">Bảo mật & đăng nhập</h5>
+                <h5 className="fw-bold mb-1">{t("settings.security.title")}</h5>
                 <Row2
-                  title="Đổi mật khẩu"
-                  desc="Nên dùng mật khẩu mạnh và không trùng với tài khoản khác."
+                  title={t("settings.security.changePassword")}
+                  desc={t("settings.security.changePasswordDesc")}
                 >
                   <Button
                     variant="outline-secondary"
                     size="sm"
                     onClick={() => navigate("/change-password")}
                   >
-                    Đổi mật khẩu
+                    {t("settings.security.changePassword")}
                   </Button>
                 </Row2>
                 <Row2
-                  title="Đăng xuất"
-                  desc="Thoát khỏi tài khoản trên thiết bị này."
+                  title={t("settings.security.logout")}
+                  desc={t("settings.security.logoutDesc")}
                 >
                   <Button variant="outline-danger" size="sm" onClick={handleLogout}>
-                    <i className="bi bi-box-arrow-right me-1"></i>Đăng xuất
+                    <i className="bi bi-box-arrow-right me-1"></i>
+                    {t("settings.security.logout")}
                   </Button>
                 </Row2>
                 <Row2
-                  title={<span className="text-danger">Xóa tài khoản</span>}
+                  title={<span className="text-danger">
+                      {t("settings.security.delete")}
+                    </span>}
                   desc={
                     isAdmin
-                      ? "Tài khoản Quản trị viên không thể tự xóa."
-                      : "Xóa vĩnh viễn tài khoản cùng toàn bộ bài viết, bình luận và dữ liệu liên quan."
+                      ? t("settings.security.deleteDescAdmin")
+                      : t("settings.security.deleteDesc")
                   }
                 >
                   <Button
@@ -331,7 +366,8 @@ const SettingsPage = ({ user, setUser }) => {
                     disabled={isAdmin}
                     onClick={openDelete}
                   >
-                    <i className="bi bi-trash3-fill me-1"></i>Xóa tài khoản
+                    <i className="bi bi-trash3-fill me-1"></i>
+                    {t("settings.security.delete")}
                   </Button>
                 </Row2>
               </>
@@ -347,14 +383,15 @@ const SettingsPage = ({ user, setUser }) => {
       >
         <Modal.Header closeButton={!delBusy}>
           <Modal.Title className="fs-5 text-danger fw-bold">
-            <i className="bi bi-exclamation-triangle-fill me-2"></i>Xóa tài khoản
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            {t("settings.security.delete")}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-start">
           <Alert variant="danger" className="small">
-            Hành động này <strong>không thể hoàn tác</strong>. Toàn bộ bài đăng,
-            bình luận, lượt thích, đánh giá, bài chia sẻ và thông báo của bạn sẽ
-            bị xóa vĩnh viễn.
+            {t("settings.delete.warnPre")}
+            <strong>{t("settings.delete.warnStrong")}</strong>
+            {t("settings.delete.warnPost")}
           </Alert>
           <Form
             onSubmit={(e) => {
@@ -364,7 +401,7 @@ const SettingsPage = ({ user, setUser }) => {
           >
             <Form.Group className="mb-3">
               <Form.Label className="fw-semibold">
-                Nhập mật khẩu hiện tại
+                {t("settings.delete.passwordLabel")}
               </Form.Label>
               <Form.Control
                 type="password"
@@ -376,14 +413,16 @@ const SettingsPage = ({ user, setUser }) => {
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label className="fw-semibold">
-                Gõ <span className="text-danger">XÓA TÀI KHOẢN</span> để xác nhận
+                {t("settings.delete.confirmPre")}
+                <span className="text-danger">{t("settings.delete.phrase")}</span>
+                {t("settings.delete.confirmPost")}
               </Form.Label>
               <Form.Control
                 type="text"
                 value={delConfirm}
                 onChange={(e) => setDelConfirm(e.target.value)}
                 disabled={delBusy}
-                placeholder="XÓA TÀI KHOẢN"
+                placeholder={t("settings.delete.phrase")}
               />
             </Form.Group>
             {delError && (
@@ -397,14 +436,14 @@ const SettingsPage = ({ user, setUser }) => {
             onClick={() => setShowDelete(false)}
             disabled={delBusy}
           >
-            Hủy
+            {t("settings.delete.cancel")}
           </Button>
           <Button
             variant="danger"
             onClick={handleDeleteAccount}
             disabled={!canDelete || delBusy}
           >
-            {delBusy ? "Đang xóa..." : "Xóa vĩnh viễn"}
+            {delBusy ? t("settings.delete.busy") : t("settings.delete.submit")}
           </Button>
         </Modal.Footer>
       </Modal>
