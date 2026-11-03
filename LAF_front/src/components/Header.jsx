@@ -12,6 +12,8 @@ import {
 } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getAvatarSrc } from "../utils/avatar";
+import ThemeToggle from "./ThemeToggle";
 
 const Header = ({ user, setUser }) => {
   const location = useLocation();
@@ -21,41 +23,54 @@ const Header = ({ user, setUser }) => {
   const [notifications, setNotifications] = useState([]);
   const isAdmin = user && Number(user.roleId || user.RoleID) === 1;
 
-  const fetchNotifications = async () => {
-    if (!user) return;
-    let localNotifs =
-      JSON.parse(localStorage.getItem("laf_notifications")) || [];
-    const myLocalNotifs = localNotifs.filter(
-      (n) =>
-        (n.recipientEmail && n.recipientEmail === user.email) ||
-        (n.recipientName && n.recipientName === user.fullName),
-    );
+  // Lấy thông báo của ĐÚNG tài khoản đang đăng nhập.
+  // isStale() = true nếu trong lúc chờ server người dùng đã đổi tài khoản / đăng xuất.
+  const fetchNotifications = async (isStale = () => false) => {
+    if (!user || !user.email) {
+      setNotifications([]);
+      return;
+    }
+    const email = user.email;
 
     try {
       const res = await axios.get("/api/notifications", {
-        params: { email: user.email },
+        params: { email },
         silent: true, // tự cập nhật nền: không hiện thanh tải
       });
+      if (isStale()) return;
       if (Array.isArray(res.data)) {
         setNotifications(res.data);
         return;
       }
     } catch {
-      // Dùng localNotifs
+      if (isStale()) return;
     }
-    setNotifications(myLocalNotifs);
+
+    // Dự phòng khi server lỗi: chỉ lấy thông báo cục bộ của chính email này
+    const localNotifs =
+      JSON.parse(localStorage.getItem("laf_notifications")) || [];
+    setNotifications(localNotifs.filter((n) => n.recipientEmail === email));
   };
 
+  // Đổi tài khoản / đăng xuất -> xóa ngay thông báo của tài khoản trước
   useEffect(() => {
-    fetchNotifications();
-    const handleNewNotif = () => fetchNotifications();
+    setNotifications([]);
+  }, [user?.email]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const isStale = () => cancelled;
+
+    fetchNotifications(isStale);
+    const handleNewNotif = () => fetchNotifications(isStale);
     window.addEventListener("laf-notifications-updated", handleNewNotif);
-    const timer = setInterval(fetchNotifications, 20000); // tự tải lại mỗi 20 giây
+    const timer = setInterval(() => fetchNotifications(isStale), 20000); // tự tải lại mỗi 20 giây
     return () => {
+      cancelled = true;
       window.removeEventListener("laf-notifications-updated", handleNewNotif);
       clearInterval(timer);
     };
-  }, [user, location.pathname]);
+  }, [user?.email, location.pathname]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -64,9 +79,7 @@ const Header = ({ user, setUser }) => {
     let localNotifs =
       JSON.parse(localStorage.getItem("laf_notifications")) || [];
     localNotifs = localNotifs.map((n) =>
-      n.recipientEmail === user.email || n.recipientName === user.fullName
-        ? { ...n, isRead: true }
-        : n,
+      n.recipientEmail === user.email ? { ...n, isRead: true } : n,
     );
     localStorage.setItem("laf_notifications", JSON.stringify(localNotifs));
     setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
@@ -283,6 +296,7 @@ const Header = ({ user, setUser }) => {
           </Nav>
 
           <Nav className="d-flex align-items-center gap-3">
+            <ThemeToggle />
             {user ? (
               <>
                 <Dropdown align="end">
@@ -321,8 +335,13 @@ const Header = ({ user, setUser }) => {
                         <Button
                           variant="link"
                           size="sm"
-                          className="p-0 text-decoration-none fw-semibold"
-                          style={{ color: primaryColor, fontSize: "0.8rem" }}
+                          className="px-3 py-1 text-decoration-none fw-semibold rounded-pill"
+                          style={{
+                            color: "#ffffff",
+                            backgroundColor: "#1f6dba",
+                            border: "0",
+                            fontSize: "0.8rem",
+                          }}
                           onClick={handleMarkAllRead}
                         >
                           Đánh dấu đã đọc
@@ -391,12 +410,7 @@ const Header = ({ user, setUser }) => {
                     className="d-flex align-items-center text-decoration-none text-dark p-0"
                   >
                     <Image
-                      src={
-                        user.avatar ||
-                        "https://ui-avatars.com/api/?name=" +
-                          encodeURIComponent(user.fullName) +
-                          "&background=0C8B72&color=fff"
-                      }
+                      src={getAvatarSrc(user.avatar, user.fullName, 80)}
                       roundedCircle
                       width="40"
                       height="40"

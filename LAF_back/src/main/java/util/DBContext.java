@@ -45,6 +45,21 @@ public class DBContext {
         }
     }
 
+    // Người này có phải admin (RoleID = 1) không
+    protected boolean isAdminEmail(String email) {
+        if (email == null || email.isEmpty() || conn == null) {
+            return false;
+        }
+        try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT RoleID FROM Users WHERE Email = ?")) {
+            ps.setString(1, email);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) == 1;
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     // ===== Gọi bởi ConnectionCleanupFilter =====
     public static void beginRequest() {
         REQUEST_CONNS.set(new ArrayList<>());

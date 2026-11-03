@@ -1,0 +1,565 @@
+/* =====================================================================
+   CHẾ ĐỘ TỐI  (bật bằng thuộc tính data-bs-theme="dark" trên <html>)
+   ===================================================================== */
+[data-bs-theme="dark"] {
+  color-scheme: dark;
+  --lf-d-bg: #0c1626;
+  --lf-d-surface: #14233a;
+  --lf-d-surface-2: #1a2d49;
+  --lf-d-border: #274060;
+  --lf-d-text: #e3ecf8;
+  --lf-d-muted: #9db2cc;
+  --lf-d-brand: #7ab8f0;
+
+  /* Biến của theme sáng -> bản tối (nền nhạt, viền, hover) */
+  --lf-blue-50: #14233a;
+  --lf-blue-100: #1a2d49;
+  --lf-blue-200: #234066;
+  --lf-blue-300: #3a5f8f;
+  --lf-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --lf-shadow-hover: 0 16px 38px rgba(0, 0, 0, 0.5);
+  --seoul-border: var(--lf-d-border);
+  --seoul-ink: var(--lf-d-text);
+  --seoul-muted: var(--lf-d-muted);
+
+  /* Bootstrap */
+  --bs-body-bg: var(--lf-d-bg);
+  --bs-body-color: var(--lf-d-text);
+  --bs-emphasis-color: #ffffff;
+  --bs-secondary-color: var(--lf-d-muted);
+  --bs-secondary-bg: var(--lf-d-surface-2);
+  --bs-tertiary-bg: var(--lf-d-surface-2);
+  --bs-border-color: var(--lf-d-border);
+  --bs-link-color: var(--lf-d-brand);
+  --bs-link-hover-color: #a9d1f7;
+}
+
+html[data-bs-theme="dark"],
+[data-bs-theme="dark"] body {
+  color: var(--lf-d-text);
+  background: linear-gradient(180deg, #0f2038 0, #0c1626 460px, #0a1220 100%)
+    fixed;
+}
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] h2,
+[data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4,
+[data-bs-theme="dark"] h5,
+[data-bs-theme="dark"] h6 {
+  color: #eaf2fc;
+}
+
+/* ---------- Thanh điều hướng ---------- */
+[data-bs-theme="dark"] .navbar {
+  background: rgba(12, 22, 38, 0.86) !important;
+  border-bottom-color: var(--lf-d-border);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+}
+[data-bs-theme="dark"] .navbar-toggler-icon {
+  filter: invert(1) brightness(1.6);
+}
+[data-bs-theme="dark"] .lf-brand-text {
+  color: var(--lf-d-text);
+}
+[data-bs-theme="dark"] .lf-brand-amp {
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .lf-brand-tag {
+  background: var(--lf-blue-100);
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .navbar .nav-link:hover {
+  color: var(--lf-d-brand) !important;
+}
+[data-bs-theme="dark"] .navbar .nav-link.lf-tab {
+  color: var(--lf-d-muted) !important;
+}
+[data-bs-theme="dark"] .navbar .nav-link.lf-tab:hover {
+  background: var(--lf-d-surface-2);
+  color: var(--lf-d-brand) !important;
+}
+[data-bs-theme="dark"] .navbar .nav-link.lf-tab.active,
+[data-bs-theme="dark"] .active-link {
+  color: var(--lf-d-brand) !important;
+}
+[data-bs-theme="dark"] .active-link {
+  border-bottom-color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .lf-lamp {
+  background: #5aa7ea;
+  box-shadow: 0 3px 14px 3px rgba(90, 167, 234, 0.6);
+}
+[data-bs-theme="dark"] .btn-outline-custom {
+  background-color: transparent !important;
+  color: var(--lf-d-brand) !important;
+  border-color: var(--lf-d-brand) !important;
+}
+[data-bs-theme="dark"] .btn-outline-custom:hover {
+  background-color: #1f6dba !important;
+  border-color: #1f6dba !important;
+  color: #fff !important;
+}
+
+/* ---------- Thẻ, modal, dropdown, form ---------- */
+[data-bs-theme="dark"] .card {
+  --bs-card-bg: var(--lf-d-surface);
+  --bs-card-cap-bg: var(--lf-d-surface-2);
+  background-color: var(--lf-d-surface);
+  color: var(--lf-d-text);
+  border-color: var(--lf-d-border) !important;
+}
+[data-bs-theme="dark"] .modal-content {
+  --bs-modal-bg: var(--lf-d-surface);
+  background-color: var(--lf-d-surface);
+  color: var(--lf-d-text);
+}
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+  border-color: var(--lf-d-border);
+}
+[data-bs-theme="dark"] .modal-backdrop.show {
+  background: #000;
+  opacity: 0.6;
+}
+[data-bs-theme="dark"] .dropdown-menu {
+  --bs-dropdown-bg: var(--lf-d-surface);
+  --bs-dropdown-color: var(--lf-d-text);
+  --bs-dropdown-link-color: var(--lf-d-text);
+  --bs-dropdown-link-hover-color: var(--lf-d-brand);
+  --bs-dropdown-link-hover-bg: var(--lf-d-surface-2);
+  --bs-dropdown-border-color: var(--lf-d-border);
+  --bs-dropdown-divider-bg: var(--lf-d-border);
+  border-color: var(--lf-d-border) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5) !important;
+}
+[data-bs-theme="dark"] .dropdown-item {
+  color: var(--lf-d-text);
+}
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+  background: var(--lf-d-surface-2);
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .dropdown-item.text-danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+  color: #fca5a5 !important;
+}
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .input-group-text {
+  background-color: var(--lf-d-surface-2);
+  border-color: var(--lf-d-border);
+  color: var(--lf-d-text);
+}
+[data-bs-theme="dark"] .form-control::placeholder {
+  color: var(--lf-d-muted);
+}
+[data-bs-theme="dark"] .form-control:disabled {
+  background-color: var(--lf-d-surface);
+}
+[data-bs-theme="dark"] .btn-light {
+  --bs-btn-color: var(--lf-d-text);
+  --bs-btn-hover-color: var(--lf-d-text);
+  color: var(--lf-d-text);
+  background: var(--lf-d-surface-2);
+  border-color: var(--lf-d-border);
+}
+[data-bs-theme="dark"] .btn-light:hover {
+  background: var(--lf-blue-200);
+}
+[data-bs-theme="dark"] .btn-outline-dark,
+[data-bs-theme="dark"] .btn-outline-secondary {
+  --bs-btn-color: var(--lf-d-text);
+  --bs-btn-border-color: var(--lf-d-border);
+  --bs-btn-hover-bg: var(--lf-d-surface-2);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--lf-d-border);
+}
+
+/* ---------- Lớp tiện ích Bootstrap ---------- */
+[data-bs-theme="dark"] .bg-white {
+  background-color: var(--lf-d-surface) !important;
+}
+[data-bs-theme="dark"] .bg-light {
+  background-color: var(--lf-d-surface-2) !important;
+}
+[data-bs-theme="dark"] .text-dark {
+  color: var(--lf-d-text) !important;
+}
+[data-bs-theme="dark"] .text-secondary,
+[data-bs-theme="dark"] .text-muted,
+[data-bs-theme="dark"] .text-body-secondary {
+  color: var(--lf-d-muted) !important;
+}
+[data-bs-theme="dark"] .text-primary-custom {
+  color: var(--lf-d-brand) !important;
+}
+[data-bs-theme="dark"] .text-success {
+  color: #4ade80 !important;
+}
+[data-bs-theme="dark"] .border,
+[data-bs-theme="dark"] .border-top,
+[data-bs-theme="dark"] .border-bottom,
+[data-bs-theme="dark"] .border-start,
+[data-bs-theme="dark"] .border-end {
+  border-color: var(--lf-d-border) !important;
+}
+[data-bs-theme="dark"] hr {
+  border-color: var(--lf-d-border);
+  opacity: 0.6;
+}
+
+/* ---------- Bảng, nút Thích/Bình luận, tab, sidebar admin ---------- */
+[data-bs-theme="dark"] .table {
+  background: var(--lf-d-surface);
+  --bs-table-striped-bg: var(--lf-d-surface-2);
+  --bs-table-hover-bg: var(--lf-d-surface-2);
+}
+[data-bs-theme="dark"] .table-responsive {
+  background: var(--lf-d-surface);
+  border-color: var(--lf-d-border);
+}
+[data-bs-theme="dark"] .post-actions > span {
+  border-color: var(--lf-d-border);
+  color: var(--lf-d-muted);
+}
+[data-bs-theme="dark"] .post-actions > span:hover {
+  color: var(--lf-d-brand) !important;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+[data-bs-theme="dark"] .profile-tabs-inner {
+  background: var(--lf-d-surface-2);
+  border-color: var(--lf-d-border);
+}
+[data-bs-theme="dark"] .profile-tab {
+  color: var(--lf-d-muted);
+}
+[data-bs-theme="dark"] .profile-tab i {
+  color: #7f95b0;
+}
+[data-bs-theme="dark"] .profile-tab:hover {
+  background: var(--lf-d-surface);
+  color: var(--lf-d-text);
+}
+[data-bs-theme="dark"] .profile-tab:hover i {
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .profile-tab.active,
+[data-bs-theme="dark"] .profile-tab.active i {
+  color: #fff;
+}
+[data-bs-theme="dark"] .admin-rail-item {
+  color: var(--lf-d-muted);
+}
+[data-bs-theme="dark"] .admin-rail-item:hover {
+  background: var(--lf-d-surface-2);
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .admin-rail-item.active {
+  background: #1d3558;
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] * {
+  scrollbar-color: #3a5f8f transparent;
+}
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3a5f8f;
+}
+
+/* ---------- Màu viết cứng trong style inline của các trang ---------- */
+/* Nền cấp trang */
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(248, 249, 250)"],
+    [style*="background: rgb(248, 249, 250)"],
+    [style*="background-color: rgb(249, 250, 251)"],
+    [style*="background: rgb(249, 250, 251)"]
+  ) {
+  background-color: var(--lf-d-bg) !important;
+}
+/* Nền thẻ / khung trắng */
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(255, 255, 255)"],
+    [style*="background: rgb(255, 255, 255)"],
+    [style*="background-color: white"],
+    [style*="background: white"]
+  ) {
+  background-color: var(--lf-d-surface) !important;
+}
+/* Nền nhạt phụ */
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(248, 250, 252)"],
+    [style*="background: rgb(248, 250, 252)"],
+    [style*="background-color: rgb(244, 249, 255)"],
+    [style*="background: rgb(244, 249, 255)"],
+    [style*="background-color: rgb(234, 243, 252)"],
+    [style*="background: rgb(234, 243, 252)"],
+    [style*="background-color: rgb(241, 245, 249)"],
+    [style*="background: rgb(241, 245, 249)"],
+    [style*="background-color: rgb(244, 244, 245)"],
+    [style*="background: rgb(244, 244, 245)"],
+    [style*="background-color: rgb(240, 242, 245)"],
+    [style*="background: rgb(240, 242, 245)"],
+    [style*="background-color: rgb(228, 230, 235)"],
+    [style*="background: rgb(228, 230, 235)"],
+    [style*="background-color: rgb(238, 243, 249)"],
+    [style*="background: rgb(238, 243, 249)"],
+    [style*="background-color: rgb(227, 238, 250)"],
+    [style*="background: rgb(227, 238, 250)"],
+    [style*="background-color: rgb(238, 245, 253)"],
+    [style*="background: rgb(238, 245, 253)"],
+    [style*="background-color: rgb(225, 239, 252)"],
+    [style*="background: rgb(225, 239, 252)"],
+    [style*="background-color: rgb(245, 245, 245)"],
+    [style*="background: rgb(245, 245, 245)"]
+  ) {
+  background-color: var(--lf-d-surface-2) !important;
+}
+/* Viền nhạt */
+[data-bs-theme="dark"]
+  :is(
+    [style*="rgb(226, 232, 240)"],
+    [style*="rgb(206, 212, 218)"],
+    [style*="rgb(222, 226, 230)"],
+    [style*="rgb(203, 213, 225)"],
+    [style*="rgb(225, 239, 252)"],
+    [style*="rgb(214, 230, 247)"],
+    [style*="rgb(216, 218, 223)"],
+    [style*="rgb(213, 218, 224)"]
+  ) {
+  border-color: var(--lf-d-border) !important;
+}
+/* Chữ navy / đen / xám đậm -> chữ sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(18, 52, 90)"],
+    [style*="; color: rgb(18, 52, 90)"],
+    [style^="color: rgb(33, 37, 41)"],
+    [style*="; color: rgb(33, 37, 41)"],
+    [style^="color: rgb(51, 51, 51)"],
+    [style*="; color: rgb(51, 51, 51)"],
+    [style^="color: rgb(51, 65, 85)"],
+    [style*="; color: rgb(51, 65, 85)"],
+    [style^="color: rgb(27, 47, 75)"],
+    [style*="; color: rgb(27, 47, 75)"],
+    [style^="color: rgb(12, 39, 70)"],
+    [style*="; color: rgb(12, 39, 70)"]
+  ) {
+  color: var(--lf-d-text) !important;
+}
+/* Chữ xám -> xám nhạt */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(108, 117, 125)"],
+    [style*="; color: rgb(108, 117, 125)"],
+    [style^="color: rgb(71, 85, 105)"],
+    [style*="; color: rgb(71, 85, 105)"],
+    [style^="color: rgb(75, 85, 99)"],
+    [style*="; color: rgb(75, 85, 99)"]
+  ) {
+  color: var(--lf-d-muted) !important;
+}
+/* Chữ xanh thương hiệu -> xanh sáng (không đụng vào nút) */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(31, 109, 186)"],
+    [style*="; color: rgb(31, 109, 186)"]
+  ):not(.btn) {
+  color: var(--lf-d-brand) !important;
+}
+
+/* Hộp cảnh báo vàng / đỏ / xanh viết cứng */
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(255, 248, 230)"],
+    [style*="background: rgb(255, 248, 230)"],
+    [style*="background-color: rgb(255, 251, 235)"],
+    [style*="background: rgb(255, 251, 235)"],
+    [style*="background-color: rgb(255, 243, 214)"],
+    [style*="background: rgb(255, 243, 214)"]
+  ) {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+}
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(254, 226, 226)"],
+    [style*="background: rgb(254, 226, 226)"]
+  ) {
+  background-color: rgba(220, 38, 38, 0.18) !important;
+}
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(209, 250, 229)"],
+    [style*="background: rgb(209, 250, 229)"]
+  ) {
+  background-color: rgba(22, 163, 74, 0.18) !important;
+}
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(224, 242, 254)"],
+    [style*="background: rgb(224, 242, 254)"]
+  ) {
+  background-color: rgba(14, 165, 233, 0.18) !important;
+}
+[data-bs-theme="dark"] :is([style*="rgb(248, 220, 155)"]) {
+  border-color: rgba(251, 191, 36, 0.4) !important;
+}
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(180, 83, 9)"],
+    [style*="; color: rgb(180, 83, 9)"],
+    [style^="color: rgb(217, 119, 6)"],
+    [style*="; color: rgb(217, 119, 6)"]
+  ) {
+  color: #fbbf24 !important;
+}
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(174, 17, 17)"],
+    [style*="; color: rgb(174, 17, 17)"],
+    [style^="color: rgb(180, 35, 24)"],
+    [style*="; color: rgb(180, 35, 24)"],
+    [style^="color: rgb(153, 27, 27)"],
+    [style*="; color: rgb(153, 27, 27)"]
+  ) {
+  color: #fca5a5 !important;
+}
+/* Nhãn trạng thái / chế độ xem trong bảng quản trị */
+/* Nền vàng nhạt (Đang tìm đồ / Đang tìm chủ) -> nền vàng trong suốt */
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(254, 243, 199)"],
+    [style*="background: rgb(254, 243, 199)"]
+  ) {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+}
+/* Chữ xanh lá đậm (Đã tìm được / Đã trao trả) -> xanh lá sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(6, 95, 70)"],
+    [style*="; color: rgb(6, 95, 70)"],
+    [style^="color: rgb(6, 118, 71)"],
+    [style*="; color: rgb(6, 118, 71)"]
+  ) {
+  color: #4ade80 !important;
+}
+/* Chữ xanh dương đậm (Công khai) -> xanh sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(24, 88, 160)"],
+    [style*="; color: rgb(24, 88, 160)"]
+  ):not(.btn) {
+  color: var(--lf-d-brand) !important;
+}
+/* Viền xanh nhạt của chip "Công khai" -> viền tối */
+[data-bs-theme="dark"] [style*="rgb(156, 199, 239)"] {
+  border-color: var(--lf-d-border) !important;
+}
+
+/* Chữ xanh dương đậm trên nhãn (Student, chủ đề diễn đàn) -> xanh da trời sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(7, 89, 133)"],
+    [style*="; color: rgb(7, 89, 133)"],
+    [style^="color: rgb(3, 105, 161)"],
+    [style*="; color: rgb(3, 105, 161)"],
+    [style^="color: rgb(29, 78, 216)"],
+    [style*="; color: rgb(29, 78, 216)"]
+  ):not(.btn) {
+  color: #7dd3fc !important;
+}
+/* Chữ xanh ngọc đậm (nhãn chủ đề "Mẹo campus") -> xanh ngọc sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(10, 115, 96)"],
+    [style*="; color: rgb(10, 115, 96)"]
+  ) {
+  color: #5eead4 !important;
+}
+/* Nền nhãn chủ đề diễn đàn (Mẹo / Kinh nghiệm / Hỏi đáp / Khác) -> nền tối trong suốt */
+[data-bs-theme="dark"]
+  :is(
+    [style*="background-color: rgb(227, 245, 239)"],
+    [style*="background-color: rgb(230, 238, 255)"]
+  ) {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+}
+[data-bs-theme="dark"]
+  :is(
+    [style*="border: 1px solid rgb(183, 227, 214)"],
+    [style*="border: 1px solid rgb(191, 210, 255)"],
+    [style*="border: 1px solid rgb(248, 220, 155)"],
+    [style*="border: 1px solid rgb(213, 218, 224)"]
+  ) {
+  border-color: rgba(125, 211, 252, 0.35) !important;
+}
+
+/* ---------- Nút đổi giao diện sáng/tối ---------- */
+.theme-toggle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.12s ease;
+}
+.theme-toggle:hover {
+  background: #e1effc;
+}
+.theme-toggle:active {
+  transform: scale(0.9);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid #1f6dba;
+  outline-offset: 2px;
+}
+.theme-toggle .theme-icon {
+  position: absolute;
+  font-size: 1.25rem;
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.45, 0.5, 1),
+    opacity 0.25s ease;
+}
+/* Giao diện sáng: hiện mặt trăng (bấm để sang tối) */
+.theme-toggle .moon {
+  color: #3b4f7a;
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+.theme-toggle .sun {
+  color: #f59e0b;
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.4);
+}
+/* Giao diện tối: hiện mặt trời (bấm để sang sáng) */
+.theme-toggle.is-dark .moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.4);
+}
+.theme-toggle.is-dark .sun {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+[data-bs-theme="dark"] .theme-toggle:hover {
+  background: var(--lf-d-surface-2);
+}
+
+/* Chuyển màu mượt trong lúc đổi giao diện (chỉ bật tạm ~0,5 giây) */
+html.theme-anim *,
+html.theme-anim *::before,
+html.theme-anim *::after {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease !important;
+}

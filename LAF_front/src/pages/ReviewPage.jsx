@@ -285,7 +285,7 @@ const ReviewPage = ({ user }) => {
                   </p>
                   <Button
                     variant="outline-primary"
-                    style={{ borderColor: primaryColor, color: primaryColor }}
+                    style={{ borderColor: primaryColor, color: "#f8f8f9" }}
                     onClick={() => navigate("/login")}
                   >
                     Đăng nhập ngay
