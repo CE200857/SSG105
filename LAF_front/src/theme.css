@@ -497,3 +497,45 @@ button,
 .lf-footer-top:active {
   transform: scale(0.96);
 }
+/* ===== Nút camera đổi avatar ===== */
+.avatar-camera-btn {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a78c8 0%, #1858a0 100%);
+  color: #fff;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 12px rgba(18, 52, 90, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.avatar-camera-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(18, 52, 90, 0.4);
+}
+.avatar-camera-btn:active:not(:disabled) { transform: scale(0.95); }
+.avatar-camera-btn:disabled { cursor: progress; }
+.avatar-camera-btn:focus-visible { outline: 2px solid #1f6dba; outline-offset: 2px; }
+[data-bs-theme="dark"] .avatar-camera-btn { border-color: #14233a; }
+
+/* ===== Nút Chỉnh sửa / Xóa dưới bình luận ===== */
+.comment-act {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #6c757d;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.comment-act:hover { color: #1f6dba; }
+.comment-act-danger:hover { color: #dc3545; }
+[data-bs-theme="dark"] .comment-act { color: var(--lf-d-muted); }
+[data-bs-theme="dark"] .comment-act:hover { color: var(--lf-d-brand); }
+[data-bs-theme="dark"] .comment-act-danger:hover { color: #fca5a5; }

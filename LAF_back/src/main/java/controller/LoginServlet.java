@@ -73,6 +73,7 @@ public class LoginServlet extends HttpServlet {
             userMap.put("fullName", user.getFullName());
             userMap.put("email", user.getEmail());
             userMap.put("roleId", user.getRoleID());
+            userMap.put("avatar", new dao.AvatarDAO().getAvatarByUserId(user.getUserID()));
 
             result.put("status", "success");
             result.put("message", "Đăng nhập thành công");

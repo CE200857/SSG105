@@ -17,6 +17,7 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import CommentContent from "../components/CommentContent";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
 
@@ -416,6 +417,26 @@ const ForumPage = ({ user }) => {
     } catch (error) {
       console.error("Lỗi khi gửi bình luận:", error);
     }
+  };
+
+  // ===== Sửa / xóa bình luận =====
+  const applyCommentChange = (updater) => {
+    const comments = updater(selectedPostDetail.comments || []);
+    const updated = { ...selectedPostDetail, comments, commentsCount: comments.length };
+    setSelectedPostDetail(updated);
+    setPosts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  };
+
+  // Phần trả lời lưu ở trình duyệt (commentMeta)
+  const updateReply = (parentId, updater) => {
+    const key = `c_${parentId}`;
+    const current = commentMeta[key] || { likes: 0, likedBy: [], replies: [] };
+    const nextMeta = {
+      ...commentMeta,
+      [key]: { ...current, replies: updater(current.replies || []) },
+    };
+    setCommentMeta(nextMeta);
+    localStorage.setItem("laf_comment_meta_forum", JSON.stringify(nextMeta));
   };
 
   const handleLikeComment = (comment) => {
@@ -1399,12 +1420,20 @@ const ForumPage = ({ user }) => {
                                   {c.time}
                                 </span>
                               </div>
-                              <p
-                                className="mb-0 text-secondary"
-                                style={{ fontSize: "0.9rem" }}
-                              >
-                                {c.text}
-                              </p>
+                              <CommentContent
+                                type="forum"
+                                comment={c}
+                                onEdited={(text) =>
+                                  applyCommentChange((list) =>
+                                    list.map((x) => (x.id === c.id ? { ...x, text } : x)),
+                                  )
+                                }
+                                onDeleted={(ids) =>
+                                  applyCommentChange((list) =>
+                                    list.filter((x) => !ids.includes(x.id)),
+                                  )
+                                }
+                              />
                             </div>
 
                             <div
@@ -1487,12 +1516,25 @@ const ForumPage = ({ user }) => {
                                           {rep.time}
                                         </small>
                                       </div>
-                                      <p
-                                        className="mb-0 text-secondary"
-                                        style={{ fontSize: "0.85rem" }}
-                                      >
-                                        {rep.text}
-                                      </p>
+                                      <CommentContent
+                                        local
+                                        fontSize="0.85rem"
+                                        comment={{
+                                          id: rep.id,
+                                          text: rep.text,
+                                          canManage: Boolean(
+                                            user && rep.authorEmail && rep.authorEmail === user.email,
+                                          ),
+                                        }}
+                                        onEdited={(text) =>
+                                          updateReply(c.id, (list) =>
+                                            list.map((r) => (r.id === rep.id ? { ...r, text } : r)),
+                                          )
+                                        }
+                                        onDeleted={() =>
+                                          updateReply(c.id, (list) => list.filter((r) => r.id !== rep.id))
+                                        }
+                                      />
                                     </div>
                                   </div>
                                 ))}

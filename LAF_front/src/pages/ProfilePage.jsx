@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Container,
   Row,
@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { getAvatarSrc } from "../utils/avatar";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
 import { postImgProps, getPostImage } from "../utils/postImage";
@@ -41,7 +42,10 @@ const PENDING_SOURCE = {
   },
 };
 
-const ProfilePage = ({ user }) => {
+const ProfilePage = ({ user, setUser }) => {
+  const avatarInputRef = useRef(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarMsg, setAvatarMsg] = useState(null);
   const primaryColor = "#1f6dba";
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -505,9 +509,53 @@ const ProfilePage = ({ user }) => {
     );
   }
 
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    profileData.fullName,
-  )}&background=0C8B72&color=fff&size=200`;
+  const avatarUrl = getAvatarSrc(profileData.avatar, profileData.fullName);
+
+  // Đổi ảnh đại diện ngay trên trang cá nhân
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ""; // cho phép chọn lại cùng một file
+    if (!file) return;
+    const okTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!okTypes.includes(file.type)) {
+      setAvatarMsg({ type: "danger", text: "Chỉ hỗ trợ ảnh JPG, PNG, GIF, WEBP." });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarMsg({ type: "danger", text: "Ảnh tối đa 2MB." });
+      return;
+    }
+    setAvatarBusy(true);
+    setAvatarMsg(null);
+    try {
+      const form = new FormData();
+      form.append("avatar", file);
+      const res = await axios.post("/api/upload-avatar", form);
+      if (res.data && res.data.success) {
+        const avatar = res.data.avatar;
+        setProfileData((p) => ({ ...p, avatar }));
+        const updatedUser = { ...user, avatar };
+        sessionStorage.setItem("user", JSON.stringify(updatedUser));
+        if (localStorage.getItem("user")) {
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+        if (setUser) setUser(updatedUser);
+        setAvatarMsg({ type: "success", text: "Đã đổi ảnh đại diện." });
+      } else {
+        setAvatarMsg({
+          type: "danger",
+          text: (res.data && res.data.message) || "Không thể đổi ảnh.",
+        });
+      }
+    } catch (err) {
+      setAvatarMsg({
+        type: "danger",
+        text: err.response?.data?.message || "Không thể tải ảnh lên, thử lại sau.",
+      });
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
 
   const getSourceBadge = (source) => {
     if (source === "LOST")
@@ -555,8 +603,45 @@ const ProfilePage = ({ user }) => {
                       objectFit: "cover",
                       border: "5px solid white",
                       backgroundColor: "white",
+                      opacity: avatarBusy ? 0.5 : 1,
+                      transition: "opacity 0.2s",
                     }}
                   />
+                  {isOwnProfile && (
+                    <>
+                      <button
+                        type="button"
+                        className="avatar-camera-btn"
+                        title="Đổi ảnh đại diện"
+                        aria-label="Đổi ảnh đại diện"
+                        disabled={avatarBusy}
+                        onClick={() =>
+                          avatarInputRef.current && avatarInputRef.current.click()
+                        }
+                      >
+                        {avatarBusy ? (
+                          <span className="spinner-border spinner-border-sm"></span>
+                        ) : (
+                          <i className="bi bi-camera-fill"></i>
+                        )}
+                      </button>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/gif,image/webp"
+                        className="d-none"
+                        onChange={handleAvatarChange}
+                      />
+                      {avatarMsg && (
+                        <div
+                          className={`small mt-2 text-center text-${avatarMsg.type}`}
+                          style={{ maxWidth: "170px" }}
+                        >
+                          {avatarMsg.text}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div className="mb-2">

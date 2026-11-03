@@ -15,10 +15,10 @@ public class ProfileDAO extends DBContext {
         String query;
         String param;
         if (username != null && !username.trim().isEmpty()) {
-            query = "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, CONVERT(VARCHAR, CreatedAt, 103) as JoinedDate FROM Users WHERE Username = ?";
+            query = "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, AvatarURL, CONVERT(VARCHAR, CreatedAt, 103) as JoinedDate FROM Users WHERE Username = ?";
             param = username.trim();
         } else {
-            query = "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, CONVERT(VARCHAR, CreatedAt, 103) as JoinedDate FROM Users WHERE Email = ?";
+            query = "SELECT UserID, Username, FullName, Email, Phone, Campus, Gender, AvatarURL, CONVERT(VARCHAR, CreatedAt, 103) as JoinedDate FROM Users WHERE Email = ?";
             param = email != null ? email.trim() : "";
         }
 
@@ -39,6 +39,7 @@ public class ProfileDAO extends DBContext {
                 result.put("phone", rs.getString("Phone") != null ? rs.getString("Phone") : "Chưa cập nhật");
                 result.put("campus", rs.getString("Campus") != null ? rs.getString("Campus") : "Cần Thơ");
                 result.put("gender", rs.getString("Gender") != null ? rs.getString("Gender") : "Chưa xác định");
+        result.put("avatar", rs.getString("AvatarURL"));
                 result.put("joinedDate", rs.getString("JoinedDate"));
 
                 // Lấy bài đăng Lost, Found, Forum của user này

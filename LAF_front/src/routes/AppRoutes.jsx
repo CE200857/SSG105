@@ -245,7 +245,7 @@ export default function AppRoutes({ user, setUser }) {
         <Route path="/forum" element={<ForumPage user={user} />} />
         <Route path="/review" element={<ReviewPage user={user} />} />
         <Route path="/overview" element={<OverviewPage />} />
-        <Route path="/profile" element={<ProfilePage user={user} />} />
+        <Route path="/profile" element={<ProfilePage user={user} setUser={setUser} />} />
 
         {/* Đổi mật khẩu & Sửa hồ sơ cho phép cả Role 1 (Admin) và Role 2 (Student) */}
         <Route

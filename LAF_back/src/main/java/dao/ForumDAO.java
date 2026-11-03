@@ -109,9 +109,10 @@ public class ForumDAO extends DBContext {
 
     public List<Map<String, Object>> getCommentsByPostId(int postId, String currentUserEmail) {
         List<Map<String, Object>> comments = new ArrayList<>();
+        boolean viewerIsAdmin = isAdminEmail(currentUserEmail);
         String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
                 + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
-                + "u.FullName, u.Username, "
+                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
                 + "FROM ForumComments c JOIN Users u ON c.UserID = u.UserID "
@@ -126,6 +127,10 @@ public class ForumDAO extends DBContext {
                 c.put("id", rs.getInt("CommentID"));
                 c.put("author", rs.getString("FullName"));
                 c.put("username", rs.getString("Username"));
+                String authorEmail = rs.getString("CommentAuthorEmail");
+                c.put("authorEmail", authorEmail);
+                c.put("canManage", viewerIsAdmin
+                        || (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(authorEmail)));
                 c.put("text", rs.getString("Content"));
                 c.put("time", rs.getString("Time"));
                 int parentId = rs.getInt("ParentCommentID");

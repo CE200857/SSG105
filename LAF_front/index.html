@@ -10,6 +10,20 @@
       href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Áp dụng giao diện sáng/tối ngay khi tải trang, tránh nháy sáng
+      (function () {
+        try {
+          var t = localStorage.getItem("laf_theme");
+          if (t !== "light" && t !== "dark") {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          }
+          document.documentElement.setAttribute("data-bs-theme", t);
+        } catch (e) {}
+      })();
+    </script>
     <title>Lost&amp;Found – FPT Cần Thơ</title>
   </head>
   <body>
