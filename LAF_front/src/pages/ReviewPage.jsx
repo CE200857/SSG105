@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
+import AvatarFill from "../components/AvatarFill";
 
 const ReviewPage = ({ user }) => {
   const primaryColor = "#1f6dba";
@@ -433,7 +434,7 @@ const ReviewPage = ({ user }) => {
                               )
                             }
                           >
-                            {rev.fullName.charAt(0)}
+                            <AvatarFill user={user} name={rev.fullName} username={rev.username} email={rev.authorEmail || rev.email} avatar={rev.avatar || rev.authorAvatar} />
                           </div>
                           <div className="flex-grow-1 text-truncate">
                             <div className="d-flex align-items-center gap-2">
@@ -605,7 +606,7 @@ const ReviewPage = ({ user }) => {
                             backgroundColor: primaryColor,
                           }}
                         >
-                          {rev.fullName.charAt(0)}
+                          <AvatarFill user={user} name={rev.fullName} username={rev.username} email={rev.authorEmail || rev.email} avatar={rev.avatar || rev.authorAvatar} />
                         </div>
                         <div>
                           <h6 className="fw-bold mb-0 text-dark hover-primary">
@@ -733,7 +734,7 @@ const ReviewPage = ({ user }) => {
                       backgroundColor: primaryColor,
                     }}
                   >
-                    {selectedReview.fullName.charAt(0)}
+                    <AvatarFill user={user} name={selectedReview.fullName} username={selectedReview.username} email={selectedReview.authorEmail || selectedReview.email} avatar={selectedReview.avatar || selectedReview.authorAvatar} />
                   </div>
                   <div>
                     <h6 className="fw-bold mb-0 text-dark hover-primary">

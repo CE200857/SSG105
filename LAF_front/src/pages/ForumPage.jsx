@@ -20,6 +20,7 @@ import axios from "axios";
 import CommentContent from "../components/CommentContent";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
+import AvatarFill from "../components/AvatarFill";
 
 // Mác phân loại chủ đề của bài viết Forum
 const CATEGORY_META = {
@@ -705,7 +706,7 @@ const ForumPage = ({ user }) => {
                             backgroundColor: primaryColor,
                           }}
                         >
-                          {post.fullName ? post.fullName.charAt(0) : "U"}
+                          <AvatarFill user={user} name={post.fullName} username={post.username} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
                         </div>
                         <div>
                           <h6
@@ -1162,9 +1163,7 @@ const ForumPage = ({ user }) => {
                       backgroundColor: primaryColor,
                     }}
                   >
-                    {selectedPostDetail.fullName
-                      ? selectedPostDetail.fullName.charAt(0)
-                      : "U"}
+                    <AvatarFill user={user} name={selectedPostDetail.fullName} username={selectedPostDetail.username} email={selectedPostDetail.authorEmail} avatar={selectedPostDetail.avatar || selectedPostDetail.authorAvatar} />
                   </div>
                   <div>
                     <h5 className="fw-bold mb-0 text-dark hover-primary">
@@ -1327,7 +1326,7 @@ const ForumPage = ({ user }) => {
                         fontSize: "0.9rem",
                       }}
                     >
-                      {user.fullName.charAt(0)}
+                      <AvatarFill user={user} name={user.fullName} username={user.username} email={user.email} avatar={user.avatar} />
                     </div>
                     <div className="flex-grow-1 position-relative">
                       <Form.Control
@@ -1395,7 +1394,7 @@ const ForumPage = ({ user }) => {
                               handleViewUserProfile(c.author, "");
                             }}
                           >
-                            {c.author ? c.author.charAt(0) : "U"}
+                            <AvatarFill user={user} name={c.author} username={c.username} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
                           </div>
                           <div className="flex-grow-1">
                             <div className="bg-light p-3 rounded-4 border">
@@ -1489,7 +1488,7 @@ const ForumPage = ({ user }) => {
                                         handleViewUserProfile(rep.author, "");
                                       }}
                                     >
-                                      {rep.author.charAt(0)}
+                                      <AvatarFill user={user} name={rep.author} username={rep.username} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
                                     </div>
                                     <div className="bg-white p-2 px-3 rounded-3 border flex-grow-1">
                                       <div className="d-flex justify-content-between">

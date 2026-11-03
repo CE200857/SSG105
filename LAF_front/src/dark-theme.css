@@ -496,6 +496,15 @@ html[data-bs-theme="dark"],
   border-color: rgba(125, 211, 252, 0.35) !important;
 }
 
+/* Chữ gần như đen viết cứng (nút "Đổi mật khẩu") -> chữ sáng */
+[data-bs-theme="dark"]
+  :is(
+    [style^="color: rgb(5, 5, 5)"],
+    [style*="; color: rgb(5, 5, 5)"]
+  ) {
+  color: var(--lf-d-text) !important;
+}
+
 /* ---------- Nút đổi giao diện sáng/tối ---------- */
 .theme-toggle {
   position: relative;
@@ -562,4 +571,12 @@ html.theme-anim *::after {
     color 0.35s ease,
     border-color 0.35s ease,
     box-shadow 0.35s ease !important;
+}
+
+[data-bs-theme="dark"] .settings-menu-item.active,
+[data-bs-theme="dark"] .settings-option.active {
+  color: var(--lf-d-brand);
+}
+[data-bs-theme="dark"] .settings-option.active {
+  border-color: var(--lf-d-brand);
 }

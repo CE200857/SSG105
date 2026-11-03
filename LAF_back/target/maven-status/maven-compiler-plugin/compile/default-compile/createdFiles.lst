@@ -7,6 +7,7 @@ entity\PostDTO.class
 dao\LostPostDAO.class
 dao\PostDAO.class
 controller\ChangePasswordServlet.class
+controller\DeleteAccountServlet.class
 dto\OverviewDTO.class
 entity\FoundPosts.class
 entity\LostPosts.class
@@ -33,6 +34,7 @@ dao\OverviewDAO.class
 entity\Likes.class
 com\mycompany\laf_back\resources\JakartaEE10Resource.class
 controller\EmailCodeServlet.class
+dao\AccountDAO.class
 dao\AdminDAO.class
 controller\AvatarServlet.class
 controller\StatusRequestServlet.class

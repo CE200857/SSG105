@@ -28,6 +28,7 @@ const ReviewPage = lazy(() => import("../pages/ReviewPage"));
 const ForumPage = lazy(() => import("../pages/ForumPage"));
 const FoundItemsPage = lazy(() => import("../pages/FoundItemsPage"));
 const AdminPage = lazy(() => import("../pages/AdminPage"));
+const SettingsPage = lazy(() => import("../pages/SettingsPage"));
 
 // Helper lấy chuẩn RoleID (1 = Admin, 2 = Student)
 const getUserRole = (user) => {
@@ -261,6 +262,15 @@ export default function AppRoutes({ user, setUser }) {
           element={
             <ProtectedRoute user={user} allowedRoles={[1, 2]}>
               <EditProfilePage user={user} setUser={setUser} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute user={user} allowedRoles={[1, 2]}>
+              <SettingsPage user={user} setUser={setUser} />
             </ProtectedRoute>
           }
         />

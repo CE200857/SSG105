@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { clearAuthStorage } from "../../utils/session";
 
 const Login = ({ setUser }) => {
   const primaryColor = "#1f6dba";
@@ -82,6 +83,7 @@ const Login = ({ setUser }) => {
           roleId: normalizedRoleId,
         };
 
+        clearAuthStorage(); // bỏ sạch thông tin tài khoản trước đó
         sessionStorage.setItem("user", JSON.stringify(finalUser));
 
         if (rememberMe) {

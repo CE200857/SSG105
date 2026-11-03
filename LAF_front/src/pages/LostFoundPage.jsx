@@ -24,6 +24,7 @@ import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
 import { compressImage } from "../utils/compressImage";
 import { postImgProps, getPostImage } from "../utils/postImage";
+import AvatarFill from "../components/AvatarFill";
 
 const LostFoundPage = ({ user }) => {
   const primaryColor = "#1f6dba";
@@ -868,7 +869,7 @@ const LostFoundPage = ({ user }) => {
                             backgroundColor: primaryColor,
                           }}
                         >
-                          {post.author ? post.author.charAt(0) : "U"}
+                          <AvatarFill user={user} name={post.author} username={post.username} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
                         </div>
                         <div>
                           <h6 className="fw-bold mb-0 text-dark hover-primary">
@@ -1665,9 +1666,7 @@ const LostFoundPage = ({ user }) => {
                     backgroundColor: primaryColor,
                   }}
                 >
-                  {selectedPostDetail.author
-                    ? selectedPostDetail.author.charAt(0)
-                    : "U"}
+                  <AvatarFill user={user} name={selectedPostDetail.author} username={selectedPostDetail.username} email={selectedPostDetail.authorEmail} avatar={selectedPostDetail.avatar || selectedPostDetail.authorAvatar} />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-0 text-dark hover-primary">
@@ -1883,7 +1882,7 @@ const LostFoundPage = ({ user }) => {
                       fontSize: "0.9rem",
                     }}
                   >
-                    {user.fullName.charAt(0)}
+                    <AvatarFill user={user} name={user.fullName} username={user.username} email={user.email} avatar={user.avatar} />
                   </div>
                   <div className="flex-grow-1 position-relative">
                     <Form.Control
@@ -1951,7 +1950,7 @@ const LostFoundPage = ({ user }) => {
                             handleViewUserProfile(c.author, c.authorEmail);
                           }}
                         >
-                          {c.author ? c.author.charAt(0) : "U"}
+                          <AvatarFill user={user} name={c.author} username={c.username} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
                         </div>
                         <div className="flex-grow-1">
                           <div className="bg-light p-3 rounded-4 border">
@@ -2050,7 +2049,7 @@ const LostFoundPage = ({ user }) => {
                                       );
                                     }}
                                   >
-                                    {rep.author.charAt(0)}
+                                    <AvatarFill user={user} name={rep.author} username={rep.username} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
                                   </div>
                                   <div className="bg-white p-2 px-3 rounded-3 border flex-grow-1">
                                     <div className="d-flex justify-content-between">

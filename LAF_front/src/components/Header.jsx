@@ -14,6 +14,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAvatarSrc } from "../utils/avatar";
 import ThemeToggle from "./ThemeToggle";
+import { clearAuthStorage } from "../utils/session";
+import { SETTINGS_EVENT, getNotifPrefs, isNotifVisible } from "../utils/settings";
 
 const Header = ({ user, setUser }) => {
   const location = useLocation();
@@ -39,7 +41,8 @@ const Header = ({ user, setUser }) => {
       });
       if (isStale()) return;
       if (Array.isArray(res.data)) {
-        setNotifications(res.data);
+        const prefs = getNotifPrefs(email);
+        setNotifications(res.data.filter((n) => isNotifVisible(n.type, prefs)));
         return;
       }
     } catch {
@@ -49,7 +52,12 @@ const Header = ({ user, setUser }) => {
     // Dự phòng khi server lỗi: chỉ lấy thông báo cục bộ của chính email này
     const localNotifs =
       JSON.parse(localStorage.getItem("laf_notifications")) || [];
-    setNotifications(localNotifs.filter((n) => n.recipientEmail === email));
+    const prefs = getNotifPrefs(email);
+    setNotifications(
+      localNotifs.filter(
+        (n) => n.recipientEmail === email && isNotifVisible(n.type, prefs),
+      ),
+    );
   };
 
   // Đổi tài khoản / đăng xuất -> xóa ngay thông báo của tài khoản trước
@@ -64,10 +72,12 @@ const Header = ({ user, setUser }) => {
     fetchNotifications(isStale);
     const handleNewNotif = () => fetchNotifications(isStale);
     window.addEventListener("laf-notifications-updated", handleNewNotif);
+    window.addEventListener(SETTINGS_EVENT, handleNewNotif);
     const timer = setInterval(() => fetchNotifications(isStale), 20000); // tự tải lại mỗi 20 giây
     return () => {
       cancelled = true;
       window.removeEventListener("laf-notifications-updated", handleNewNotif);
+      window.removeEventListener(SETTINGS_EVENT, handleNewNotif);
       clearInterval(timer);
     };
   }, [user?.email, location.pathname]);
@@ -132,8 +142,7 @@ const Header = ({ user, setUser }) => {
     } catch (error) {
       console.log("Lỗi đăng xuất backend", error);
     } finally {
-      sessionStorage.removeItem("user");
-      localStorage.removeItem("user");
+      clearAuthStorage();
       setUser(null);
       navigate("/login");
     }
@@ -433,6 +442,9 @@ const Header = ({ user, setUser }) => {
                     </Dropdown.ItemText>
                     <Dropdown.Item as={Link} to="/profile" className="py-2">
                       <i className="bi bi-person me-2"></i> Trang cá nhân
+                    </Dropdown.Item>
+                    <Dropdown.Item as={Link} to="/settings" className="py-2">
+                      <i className="bi bi-gear me-2"></i> Cài đặt
                     </Dropdown.Item>
                     <Dropdown.Item
                       onClick={handleLogout}
