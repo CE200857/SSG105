@@ -42,7 +42,7 @@ public class ForumDAO extends DBContext {
         StringBuilder query = new StringBuilder(
                 "SELECT f.PostID, f.Title, f.Category, f.Content, "
                 + "CONVERT(VARCHAR, f.CreatedAt, 103) as Date, "
-                + "f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, "
+                + "f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, u.AvatarURL, "
                 + "(SELECT COUNT(*) FROM ForumLikes fl WHERE fl.PostID = f.PostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM ForumLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.PostID = f.PostID AND u2.Email = ?) as UserLiked "
                 + "FROM ForumPosts f JOIN Users u ON f.UserID = u.UserID WHERE 1=1 AND f.ApprovalStatus = 'Approved' "
@@ -91,6 +91,7 @@ public class ForumDAO extends DBContext {
                 map.put("fullName", rs.getString("FullName"));
                 map.put("username", rs.getString("Username"));
                 map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("avatar", rs.getString("AvatarURL"));
                 map.put("visibility", rs.getString("Visibility"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
@@ -112,7 +113,7 @@ public class ForumDAO extends DBContext {
         boolean viewerIsAdmin = isAdminEmail(currentUserEmail);
         String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
                 + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
-                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, "
+                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, u.AvatarURL, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
                 + "FROM ForumComments c JOIN Users u ON c.UserID = u.UserID "
@@ -129,6 +130,7 @@ public class ForumDAO extends DBContext {
                 c.put("username", rs.getString("Username"));
                 String authorEmail = rs.getString("CommentAuthorEmail");
                 c.put("authorEmail", authorEmail);
+                c.put("avatar", rs.getString("AvatarURL"));
                 c.put("canManage", viewerIsAdmin
                         || (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(authorEmail)));
                 c.put("text", rs.getString("Content"));
