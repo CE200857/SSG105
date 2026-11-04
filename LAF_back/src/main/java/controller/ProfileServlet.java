@@ -21,18 +21,30 @@ public class ProfileServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         
         String email = request.getParameter("email");
-        String username = request.getParameter("username");
-        String viewerEmail = request.getParameter("viewerEmail");
+        int uid = 0;
+        try { uid = Integer.parseInt(request.getParameter("uid")); } catch (Exception ignore) { }
+        // Người xem lấy từ SESSION, không tin tham số viewerEmail do client gửi (tránh xem bài riêng tư của người khác)
+        String sessionEmail = util.AuthUtil.currentEmail(request);
+        String viewerEmail = sessionEmail == null ? "" : sessionEmail;
+        entity.Users sessionUser = util.AuthUtil.currentUser(request);
+        boolean viewerIsAdmin = sessionEmail != null && sessionUser != null && sessionUser.getRoleID() == 1;
         
         // Danh sách bài đang chờ duyệt của chính student (Lost / Found / Forum)
         if ("true".equals(request.getParameter("pending"))) {
-            out.print(new Gson().toJson(new dao.ModerationDAO().getPendingPostsByEmail(email)));
+            boolean allowed = sessionEmail != null
+                    && (viewerIsAdmin || sessionEmail.equalsIgnoreCase(email));
+            Object pending = allowed
+                    ? new dao.ModerationDAO().getPendingPostsByEmail(email)
+                    : new java.util.ArrayList<Object>();
+            out.print(new Gson().toJson(pending));
             out.flush();
             return;
         }
         
+        // Khách chưa đăng nhập KHÔNG được thấy email / số điện thoại của người khác
+        boolean canSeeContact = sessionEmail != null;
         ProfileDAO dao = new ProfileDAO();
-        Map<String, Object> userProfile = dao.getFullProfile(email, username, viewerEmail);
+        Map<String, Object> userProfile = dao.getFullProfile(email, uid, viewerEmail, canSeeContact);
         
         out.print(new Gson().toJson(userProfile));
         out.flush();

@@ -62,7 +62,7 @@ const Login = ({ setUser }) => {
         data.success === true ||
         data.status === "success" ||
         Boolean(data.user) ||
-        Boolean(data.email || data.Email || data.username || data.Username) ||
+        Boolean(data.email || data.Email) ||
         (data.message && data.message.toLowerCase().includes("thành công"));
 
       if (isLoginSuccess) {
@@ -70,14 +70,9 @@ const Login = ({ setUser }) => {
         const normalizedRoleId = Number(rawUser.roleId || rawUser.RoleID || 2);
         const finalUser = {
           ...rawUser,
-          username:
-            rawUser.username ||
-            rawUser.Username ||
-            identifier.trim().split("@")[0],
           fullName:
             rawUser.fullName ||
             rawUser.FullName ||
-            rawUser.username ||
             "Sinh viên FPT",
           email: rawUser.email || rawUser.Email || identifier.trim(),
           roleId: normalizedRoleId,

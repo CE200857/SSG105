@@ -18,7 +18,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { compressImage } from "../utils/compressImage";
-import { postImgProps, getPostImage } from "../utils/postImage";
+import { postImgProps } from "../utils/postImage";
 import { useSearchParams } from "react-router-dom";
 
 const AdminPage = ({ user }) => {
@@ -265,7 +265,6 @@ const AdminPage = ({ user }) => {
       });
     } else if (activeSection === "users") {
       setFormData({
-        username: "",
         fullName: "",
         email: "",
         phone: "",
@@ -317,7 +316,6 @@ const AdminPage = ({ user }) => {
     } else if (activeSection === "users") {
       setFormData({
         userId: item.userId,
-        username: item.username || "",
         fullName: item.fullName || "",
         email: item.email || "",
         phone: item.phone || "",
@@ -615,7 +613,6 @@ const AdminPage = ({ user }) => {
       visMatches(reviewFilter, item) &&
       (!kw ||
         (item.fullName && item.fullName.toLowerCase().includes(kw)) ||
-        (item.username && item.username.toLowerCase().includes(kw)) ||
         (item.comment && item.comment.toLowerCase().includes(kw)))
     );
   });
@@ -1346,7 +1343,7 @@ const AdminPage = ({ user }) => {
                       </Form.Label>
                       <Form.Control
                         type="text"
-                        placeholder="Tên, username, email, SĐT..."
+                        placeholder="Tên, email, SĐT..."
                         value={userFilter.keyword}
                         onChange={(e) =>
                           setUserFilter({
@@ -2258,7 +2255,7 @@ const AdminPage = ({ user }) => {
                                   {item.fullName}
                                 </div>
                                 <small className="text-muted">
-                                  @{item.username} • {item.date}
+                                  {item.date}
                                 </small>
                               </td>
                               <td>
@@ -2431,9 +2428,6 @@ const AdminPage = ({ user }) => {
                                 <div className="fw-bold text-dark">
                                   {item.fullName}
                                 </div>
-                                <small className="text-muted">
-                                  @{item.username}
-                                </small>
                               </td>
                               <td>
                                 <div className="text-warning">
@@ -2546,7 +2540,7 @@ const AdminPage = ({ user }) => {
                               fontSize: "0.8rem",
                             }}
                           >
-                            HỌ TÊN & USERNAME
+                            HỌ TÊN
                           </th>
                           <th
                             className="py-3"
@@ -2620,9 +2614,6 @@ const AdminPage = ({ user }) => {
                                 <div className="fw-bold text-dark">
                                   {u.fullName}
                                 </div>
-                                <small className="text-muted">
-                                  @{u.username}
-                                </small>
                               </td>
                               <td>
                                 <div className="text-dark small">{u.email}</div>
@@ -2791,7 +2782,7 @@ const AdminPage = ({ user }) => {
                   )}
                   {userList.map((u) => (
                     <option key={u.userId} value={u.email}>
-                      {u.fullName} (@{u.username} - {u.email})
+                      {u.fullName} ({u.email})
                     </option>
                   ))}
                 </Form.Select>
@@ -3131,21 +3122,6 @@ const AdminPage = ({ user }) => {
                 </Col>
                 <Col md={6}>
                   <Form.Label className="fw-semibold text-secondary">
-                    Tên đăng nhập (Username){" "}
-                    <span className="text-danger">*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    required
-                    value={formData.username || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    className="bg-light border-0"
-                  />
-                </Col>
-                <Col md={6}>
-                  <Form.Label className="fw-semibold text-secondary">
                     Email sinh viên <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Control
@@ -3279,9 +3255,6 @@ const AdminPage = ({ user }) => {
               <div className="d-flex flex-column gap-2">
                 <div>
                   <strong>Họ và tên:</strong> {viewItem.fullName}
-                </div>
-                <div>
-                  <strong>Username:</strong> @{viewItem.username}
                 </div>
                 <div>
                   <strong>Email:</strong> {viewItem.email}

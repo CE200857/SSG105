@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAvatarSrc } from "../utils/avatar";
 import { clearAuthStorage } from "../utils/session";
-import { LANGUAGES, useI18n } from "../i18n";
+import { useI18n } from "../i18n";
 import {
   FONT_SIZES,
   THEME_EVENT,
@@ -29,7 +29,6 @@ import {
 const SECTIONS = [
   { key: "account", labelKey: "settings.section.account", icon: "bi-person-circle" },
   { key: "appearance", labelKey: "settings.section.appearance", icon: "bi-palette" },
-  { key: "language", labelKey: "settings.section.language", icon: "bi-translate" },
   { key: "notifications", labelKey: "settings.section.notifications", icon: "bi-bell" },
   { key: "security", labelKey: "settings.section.security", icon: "bi-shield-lock" },
 ];
@@ -56,7 +55,7 @@ const Row2 = ({ title, desc, children }) => (
 
 const SettingsPage = ({ user, setUser }) => {
   const navigate = useNavigate();
-  const { t, lang, setLang } = useI18n();
+  const { t } = useI18n();
   const [section, setSection] = useState("account");
   const [themeMode, setMode] = useState(getThemeMode());
   const [display, setDisplay] = useState(getDisplaySettings());
@@ -180,9 +179,6 @@ const SettingsPage = ({ user, setUser }) => {
                 </div>
                 <Row2 title={t("settings.account.fullName")}>{user.fullName || "—"}</Row2>
                 <Row2 title={t("settings.account.email")}>{user.email || "—"}</Row2>
-                {user.username && (
-                  <Row2 title={t("settings.account.username")}>@{user.username}</Row2>
-                )}
                 {user.campus && <Row2 title={t("settings.account.campus")}>{user.campus}</Row2>}
                 <div className="d-flex flex-wrap gap-2 mt-4">
                   <Button
@@ -231,7 +227,7 @@ const SettingsPage = ({ user, setUser }) => {
                     >
                       <span
                         className="d-block fw-bold mb-1"
-                        style={{ fontSize: `${f.px / 16 * 1.5}rem` }}
+                        style={{ fontSize: `${f.scale * 1.5}rem` }}
                       >
                         Aa
                       </span>
@@ -254,31 +250,6 @@ const SettingsPage = ({ user, setUser }) => {
                     }
                   />
                 </Row2>
-              </>
-            )}
-
-            {section === "language" && (
-              <>
-                <h5 className="fw-bold mb-1">{t("settings.language.title")}</h5>
-                <p className="text-muted">{t("settings.language.desc")}</p>
-                <div className="d-flex flex-wrap gap-3 mb-3">
-                  {LANGUAGES.map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      lang={l.code}
-                      className={`settings-option ${lang === l.code ? "active" : ""}`}
-                      onClick={() => setLang(l.code)}
-                    >
-                      <span className="d-block fw-bold fs-4 mb-1">{l.short}</span>
-                      {l.name}
-                    </button>
-                  ))}
-                </div>
-                <div className="text-muted small">
-                  <i className="bi bi-info-circle me-1"></i>
-                  {t("settings.language.note")}
-                </div>
               </>
             )}
 

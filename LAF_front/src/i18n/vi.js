@@ -62,7 +62,6 @@ export default {
 
   "settings.account.fullName": "Họ và tên",
   "settings.account.email": "Email",
-  "settings.account.username": "Tên người dùng",
   "settings.account.campus": "Cơ sở",
   "settings.account.edit": "Chỉnh sửa thông tin",
   "settings.account.viewProfile": "Xem trang cá nhân",

@@ -13,12 +13,12 @@ import {
   Dropdown,
   Modal,
 } from "react-bootstrap";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { getAvatarSrc } from "../utils/avatar";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
-import { postImgProps, getPostImage } from "../utils/postImage";
+import { postImgProps } from "../utils/postImage";
 
 // Nhãn phân biệt bài chờ duyệt thuộc trang nào
 const PENDING_SOURCE = {
@@ -52,7 +52,7 @@ const ProfilePage = ({ user, setUser }) => {
 
   const queryEmail = searchParams.get("email");
   const queryName = searchParams.get("name");
-  const queryUsername = searchParams.get("username");
+  const queryUid = searchParams.get("uid");
 
   const [profileData, setProfileData] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
@@ -92,13 +92,14 @@ const ProfilePage = ({ user, setUser }) => {
 
   const isOwnProfile = Boolean(
     user &&
-    ((!queryEmail && !queryName && !queryUsername) ||
+    ((!queryEmail && !queryName && !queryUid) ||
+      (queryUid && user.id && Number(queryUid) === Number(user.id)) ||
       (queryEmail && queryEmail.toLowerCase() === user.email?.toLowerCase()) ||
       (queryName && queryName.toLowerCase() === user.fullName?.toLowerCase())),
   );
 
   useEffect(() => {
-    if (!queryEmail && !queryName && !queryUsername && (!user || !user.email)) {
+    if (!queryEmail && !queryName && !queryUid && (!user || !user.email)) {
       navigate("/login");
       return;
     }
@@ -109,10 +110,10 @@ const ProfilePage = ({ user, setUser }) => {
         let targetEmail = queryEmail || (isOwnProfile ? user?.email : "");
         let loadedProfile = null;
 
-        if (targetEmail) {
+        if (queryUid || targetEmail) {
           try {
             const profRes = await axios.get("/api/profile", {
-              params: { email: targetEmail },
+              params: queryUid ? { uid: queryUid } : { email: targetEmail },
             });
             if (profRes.data && profRes.data.fullName) {
               loadedProfile = profRes.data;
@@ -139,40 +140,31 @@ const ProfilePage = ({ user, setUser }) => {
         const allForum = Array.isArray(forumRes.data) ? forumRes.data : [];
 
         if (!loadedProfile) {
-          const matchedForum = allForum.find(
-            (p) =>
-              (queryUsername && p.username === queryUsername) ||
-              (queryName && p.fullName === queryName),
-          );
           const matchedLost = allLost.find(
             (p) =>
-              (queryName && p.author === queryName) ||
-              (queryEmail && p.authorEmail === queryEmail),
+              (queryUid && Number(p.authorId) === Number(queryUid)) ||
+              (queryName && p.author === queryName),
           );
-
-          if (!loadedProfile) {
-            const displayName =
+          const matchedForum = allForum.find(
+            (p) =>
+              (queryUid && Number(p.authorId) === Number(queryUid)) ||
+              (queryName && p.fullName === queryName),
+          );
+          loadedProfile = {
+            fullName:
               queryName ||
               matchedForum?.fullName ||
               matchedLost?.author ||
               user?.fullName ||
-              "Sinh viên FPT";
-            const displayUsername =
-              queryUsername ||
-              matchedForum?.username ||
-              (targetEmail ? targetEmail.split("@")[0] : "fpt_student");
-            loadedProfile = {
-              fullName: displayName,
-              username: displayUsername,
-              email:
-                targetEmail ||
-                matchedLost?.authorEmail ||
-                `${displayUsername}@fpt.edu.vn`,
-              phone: "Đã ẩn bảo mật",
-              campus: "Cần Thơ",
-              gender: "Sinh viên FPT",
-            };
-          }
+              "Sinh viên FPT",
+            userId: queryUid ? Number(queryUid) : undefined,
+            // Không tự bịa email / số điện thoại: chỉ hiện khi máy chủ trả về
+            email: "",
+            phone: "",
+            canSeeContact: false,
+            campus: "Cần Thơ",
+            gender: "Sinh viên FPT",
+          };
         }
 
         setProfileData(loadedProfile);
@@ -189,8 +181,10 @@ const ProfilePage = ({ user, setUser }) => {
           .filter(
             (p) =>
               !deletedLostIds.includes(p.id) &&
-              (p.author === targetFullName ||
-                (loadedProfile.email && p.authorEmail === loadedProfile.email)),
+              (loadedProfile.userId
+                ? Number(p.authorId) === Number(loadedProfile.userId)
+                : p.author === targetFullName ||
+                  (loadedProfile.email && p.authorEmail === loadedProfile.email)),
           )
           .map((p) => ({
             ...p,
@@ -204,8 +198,10 @@ const ProfilePage = ({ user, setUser }) => {
           .filter(
             (p) =>
               !deletedFoundIds.includes(p.id) &&
-              (p.author === targetFullName ||
-                (loadedProfile.email && p.authorEmail === loadedProfile.email)),
+              (loadedProfile.userId
+                ? Number(p.authorId) === Number(loadedProfile.userId)
+                : p.author === targetFullName ||
+                  (loadedProfile.email && p.authorEmail === loadedProfile.email)),
           )
           .map((p) => ({
             ...p,
@@ -219,9 +215,9 @@ const ProfilePage = ({ user, setUser }) => {
           .filter(
             (p) =>
               !deletedForumIds.includes(p.id) &&
-              (p.fullName === targetFullName ||
-                (loadedProfile.username &&
-                  p.username === loadedProfile.username)),
+              (loadedProfile.userId
+                ? Number(p.authorId) === Number(loadedProfile.userId)
+                : p.fullName === targetFullName),
           )
           .map((p) => ({
             ...p,
@@ -274,7 +270,7 @@ const ProfilePage = ({ user, setUser }) => {
     };
 
     fetchProfileAndPosts();
-  }, [user, queryEmail, queryName, queryUsername]);
+  }, [user, queryEmail, queryName, queryUid]);
 
   // Mở Modal Sửa bài đăng / bài chia sẻ
   const handleOpenEdit = (item, isShare = false, e) => {
@@ -511,6 +507,9 @@ const ProfilePage = ({ user, setUser }) => {
 
   const avatarUrl = getAvatarSrc(profileData.avatar, profileData.fullName);
 
+  // Khách chưa đăng nhập không được thấy email / số điện thoại của người khác
+  const canSeeContact = Boolean(user) && profileData.canSeeContact !== false;
+
   // Đổi ảnh đại diện ngay trên trang cá nhân
   const handleAvatarChange = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -652,12 +651,6 @@ const ProfilePage = ({ user, setUser }) => {
                     >
                       {profileData.fullName}
                     </h2>
-                    <span
-                      className="text-secondary fw-semibold"
-                      style={{ fontSize: "1.1rem" }}
-                    >
-                      (@{profileData.username})
-                    </span>
                   </div>
 
                   <p className="text-secondary mb-1 mt-1 fw-medium">
@@ -789,35 +782,41 @@ const ProfilePage = ({ user, setUser }) => {
                   </div>
                 </div>
 
-                <div className="d-flex align-items-center gap-3">
-                  <i className="bi bi-at fs-5 text-secondary"></i>
-                  <div>
-                    <small className="text-muted d-block">Username</small>
-                    <span className="fw-semibold text-dark">
-                      @{profileData.username}
-                    </span>
-                  </div>
-                </div>
+                {canSeeContact ? (
+                  <>
+                    <div className="d-flex align-items-center gap-3">
+                      <i className="bi bi-envelope-fill fs-5 text-secondary"></i>
+                      <div className="text-truncate">
+                        <small className="text-muted d-block">Email</small>
+                        <span className="fw-semibold text-dark">
+                          {profileData.email}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="d-flex align-items-center gap-3">
-                  <i className="bi bi-envelope-fill fs-5 text-secondary"></i>
-                  <div className="text-truncate">
-                    <small className="text-muted d-block">Email</small>
-                    <span className="fw-semibold text-dark">
-                      {profileData.email}
-                    </span>
+                    <div className="d-flex align-items-center gap-3">
+                      <i className="bi bi-telephone-fill fs-5 text-secondary"></i>
+                      <div>
+                        <small className="text-muted d-block">Số điện thoại</small>
+                        <span className="fw-semibold text-dark">
+                          {profileData.phone}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="d-flex align-items-center gap-3">
+                    <i className="bi bi-lock-fill fs-5 text-secondary"></i>
+                    <div>
+                      <small className="text-muted d-block">
+                        Email và số điện thoại
+                      </small>
+                      <span className="fw-semibold text-dark">
+                        <Link to="/login">Đăng nhập</Link> để xem thông tin liên hệ
+                      </span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="d-flex align-items-center gap-3">
-                  <i className="bi bi-telephone-fill fs-5 text-secondary"></i>
-                  <div>
-                    <small className="text-muted d-block">Số điện thoại</small>
-                    <span className="fw-semibold text-dark">
-                      {profileData.phone}
-                    </span>
-                  </div>
-                </div>
+                )}
 
                 <div className="d-flex align-items-center gap-3">
                   <i className="bi bi-building-fill fs-5 text-secondary"></i>

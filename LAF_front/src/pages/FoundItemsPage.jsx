@@ -123,10 +123,10 @@ const FoundItemsPage = ({ user }) => {
   // Thông báo do máy chủ tự tạo khi like/bình luận/chia sẻ, không cần gửi từ trình duyệt
   const pushNotification = async () => {};
 
-  const handleViewUserProfile = (authorName, authorEmail, e) => {
+  const handleViewUserProfile = (authorName, authorId, e) => {
     if (e) e.stopPropagation();
     const query = new URLSearchParams();
-    if (authorEmail) query.set("email", authorEmail);
+    if (authorId) query.set("uid", authorId);
     if (authorName) query.set("name", authorName);
     navigate(`/profile?${query.toString()}`);
   };
@@ -1036,7 +1036,7 @@ const FoundItemsPage = ({ user }) => {
                             onClick={(e) =>
                               handleViewUserProfile(
                                 post.author,
-                                post.authorEmail,
+                                post.authorId,
                                 e,
                               )
                             }
@@ -1050,7 +1050,7 @@ const FoundItemsPage = ({ user }) => {
                                 fontSize: "0.75rem",
                               }}
                             >
-                              <AvatarFill user={user} name={post.author} username={post.username} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
+                              <AvatarFill user={user} name={post.author} userId={post.authorId} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
                             </div>
                             <span
                               className="fw-semibold text-secondary hover-primary text-truncate"
@@ -1688,7 +1688,7 @@ const FoundItemsPage = ({ user }) => {
                   setShowDetailModal(false);
                   handleViewUserProfile(
                     selectedPost.author,
-                    selectedPost.authorEmail,
+                    selectedPost.authorId,
                   );
                 }}
               >
@@ -1700,7 +1700,7 @@ const FoundItemsPage = ({ user }) => {
                     backgroundColor: primaryColor,
                   }}
                 >
-                  <AvatarFill user={user} name={selectedPost.author} username={selectedPost.username} email={selectedPost.authorEmail} avatar={selectedPost.avatar || selectedPost.authorAvatar} />
+                  <AvatarFill user={user} name={selectedPost.author} userId={selectedPost.authorId} email={selectedPost.authorEmail} avatar={selectedPost.avatar || selectedPost.authorAvatar} />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-0 text-dark hover-primary">
@@ -1912,7 +1912,7 @@ const FoundItemsPage = ({ user }) => {
                       fontSize: "0.9rem",
                     }}
                   >
-                    <AvatarFill user={user} name={user.fullName} username={user.username} email={user.email} avatar={user.avatar} />
+                    <AvatarFill user={user} name={user.fullName} userId={user.id} email={user.email} avatar={user.avatar} />
                   </div>
                   <div className="flex-grow-1 position-relative">
                     <Form.Control
@@ -1976,10 +1976,10 @@ const FoundItemsPage = ({ user }) => {
                           }}
                           onClick={() => {
                             setShowDetailModal(false);
-                            handleViewUserProfile(c.author, c.authorEmail);
+                            handleViewUserProfile(c.author, c.authorId);
                           }}
                         >
-                          <AvatarFill user={user} name={c.author} username={c.username} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
+                          <AvatarFill user={user} name={c.author} userId={c.authorId} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
                         </div>
                         <div className="flex-grow-1">
                           <div className="bg-light p-3 rounded-4 border">
@@ -1994,7 +1994,7 @@ const FoundItemsPage = ({ user }) => {
                                   setShowDetailModal(false);
                                   handleViewUserProfile(
                                     c.author,
-                                    c.authorEmail,
+                                    c.authorId,
                                   );
                                 }}
                               >
@@ -2074,11 +2074,11 @@ const FoundItemsPage = ({ user }) => {
                                       setShowDetailModal(false);
                                       handleViewUserProfile(
                                         rep.author,
-                                        rep.authorEmail,
+                                        rep.authorId,
                                       );
                                     }}
                                   >
-                                    <AvatarFill user={user} name={rep.author} username={rep.username} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
+                                    <AvatarFill user={user} name={rep.author} userId={rep.authorId} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
                                   </div>
                                   <div className="bg-white p-2 px-3 rounded-3 border flex-grow-1">
                                     <div className="d-flex justify-content-between">
@@ -2092,7 +2092,7 @@ const FoundItemsPage = ({ user }) => {
                                           setShowDetailModal(false);
                                           handleViewUserProfile(
                                             rep.author,
-                                            rep.authorEmail,
+                                            rep.authorId,
                                           );
                                         }}
                                       >

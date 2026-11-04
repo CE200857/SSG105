@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import EmailCodeField from "../components/DatNT/EmailCodeField";
 
 const EditProfilePage = ({ user, setUser }) => {
   const primaryColor = "#1f6dba";
@@ -15,12 +16,19 @@ const EditProfilePage = ({ user, setUser }) => {
   // Các state lưu trữ dữ liệu form
   const [formData, setFormData] = useState({
     fullName: "",
-    username: "",
     email: "",
     phone: "",
     campus: "",
     gender: ""
   });
+
+  // Email đang dùng (để biết khi nào người dùng đổi email) + mã xác minh gửi tới email mới
+  const [originalEmail, setOriginalEmail] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const isAdmin = Number(user?.roleId || user?.RoleID) === 1;   // admin đổi email không cần xác minh
+  const emailChanged =
+    formData.email.trim().toLowerCase() !== originalEmail.trim().toLowerCase();
+  const needEmailCode = emailChanged && !isAdmin;
 
   useEffect(() => {
     if (!user || !user.email) {
@@ -37,12 +45,12 @@ const EditProfilePage = ({ user, setUser }) => {
         const data = response.data;
         setFormData({
           fullName: data.fullName || "",
-          username: data.username || "",
           email: data.email || "",
           phone: data.phone === "Chưa cập nhật" ? "" : data.phone,
           campus: data.campus === "Chưa cập nhật" ? "" : data.campus,
           gender: data.gender === "Chưa xác định" ? "" : data.gender
         });
+        setOriginalEmail(data.email || "");
       } catch (error) {
         console.error("Lỗi khi tải hồ sơ:", error);
       } finally {
@@ -65,8 +73,10 @@ const EditProfilePage = ({ user, setUser }) => {
     const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
     if (formData.phone && !phoneRegex.test(formData.phone)) return "Số điện thoại không hợp lệ (Phải bắt đầu bằng số 0 và có 10 số)!";
     
-    // Validate tên đăng nhập (Không chứa dấu cách)
-    if (/\s/.test(formData.username)) return "Tên người dùng không được chứa khoảng trắng!";
+    // Đổi email (không phải admin) -> bắt buộc nhập mã 6 số gửi tới email mới
+    if (needEmailCode && !/^\d{6}$/.test(emailCode)) {
+      return "Bạn đã đổi email, vui lòng bấm \"Gửi mã\" và nhập mã xác minh 6 số gửi tới email mới!";
+    }
 
     return null;
   };
@@ -86,12 +96,12 @@ const EditProfilePage = ({ user, setUser }) => {
     try {
       const params = new URLSearchParams();
       params.append('currentEmail', user.email);
-      params.append('username', formData.username);
       params.append('fullName', formData.fullName);
       params.append('email', formData.email);
       params.append('phone', formData.phone);
       params.append('campus', formData.campus);
       params.append('gender', formData.gender);
+      if (needEmailCode) params.append('code', emailCode);
 
       const response = await axios.post('/api/update-profile', params);
 
@@ -102,6 +112,8 @@ const EditProfilePage = ({ user, setUser }) => {
         const updatedUser = { ...user, email: response.data.newEmail, fullName: response.data.newFullName };
         sessionStorage.setItem("user", JSON.stringify(updatedUser));
         if(setUser) setUser(updatedUser);
+        setOriginalEmail(response.data.newEmail || formData.email);
+        setEmailCode("");
 
         setTimeout(() => navigate("/profile"), 1500); // Tự động về trang cá nhân
       } else {
@@ -157,21 +169,6 @@ const EditProfilePage = ({ user, setUser }) => {
 
                   <Col md={6}>
                     <Form.Group className="d-flex flex-column h-100">
-                      <Form.Label className="text-secondary fw-medium mb-2 ms-1" style={{ fontSize: "0.9rem" }}>Tên người dùng (Username) <span className="text-danger">*</span></Form.Label>
-                      <Form.Control 
-                        type="text" 
-                        name="username"
-                        value={formData.username} 
-                        onChange={handleChange}
-                        required
-                        className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
-                        style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6}>
-                    <Form.Group className="d-flex flex-column h-100">
                       <Form.Label className="text-secondary fw-medium mb-2 ms-1" style={{ fontSize: "0.9rem" }}>Địa chỉ Email <span className="text-danger">*</span></Form.Label>
                       <Form.Control 
                         type="email" 
@@ -184,6 +181,21 @@ const EditProfilePage = ({ user, setUser }) => {
                       />
                     </Form.Group>
                   </Col>
+
+                  {needEmailCode && (
+                    <Col md={12}>
+                      <Alert variant="info" className="rounded-3 border-0 mb-3">
+                        Bạn đang đổi email. Chúng tôi sẽ gửi mã xác minh tới <strong>{formData.email}</strong>; nhập mã đó để lưu thay đổi.
+                      </Alert>
+                      <EmailCodeField
+                        email={formData.email}
+                        purpose="change"
+                        code={emailCode}
+                        setCode={setEmailCode}
+                        onError={setErrorMsg}
+                      />
+                    </Col>
+                  )}
 
                   <Col md={6}>
                     <Form.Group className="d-flex flex-column h-100">

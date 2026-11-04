@@ -30,6 +30,7 @@ dao\NotificationDAO.class
 entity\Comments.class
 controller\RegisterServlet.class
 dao\AvatarDAO.class
+util\CampusUtil.class
 dao\OverviewDAO.class
 entity\Likes.class
 com\mycompany\laf_back\resources\JakartaEE10Resource.class
@@ -55,6 +56,7 @@ controller\CheckUserExistServlet.class
 dao\ReviewDAO.class
 controller\LoginServlet.class
 controller\AuthCheckServlet.class
+util\UsernameUtil.class
 controller\ForumServlet.class
 dao\ShareDAO.class
 controller\ShareServlet.class

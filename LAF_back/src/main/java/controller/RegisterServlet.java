@@ -22,7 +22,6 @@ public class RegisterServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
-        String username = request.getParameter("username");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String fullName = request.getParameter("fullName");
@@ -32,10 +31,6 @@ public class RegisterServlet extends HttpServlet {
         String code = request.getParameter("code");
 
         // 1. Validate dữ liệu
-        if (username == null || !username.matches("^[a-zA-Z0-9_]{3,20}$")) {
-            sendError(response, out, "Tên đăng nhập không hợp lệ.");
-            return;
-        }
         if (email == null || !email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             sendError(response, out, "Email không hợp lệ.");
             return;
@@ -53,12 +48,17 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
+        if (!util.CampusUtil.isCanTho(campus)) {
+            sendError(response, out, util.CampusUtil.unsupportedMessage(campus));
+            return;
+        }
+
         UserDAO dao = new UserDAO();
 
-        // 2. Check trùng lặp Username, Email (Bảo mật 2 lớp)
-        if (dao.checkUserExist(username, email)) {
+        // 2. Check trùng lặp Email (Bảo mật 2 lớp)
+        if (dao.checkEmailExist(email)) {
             response.setStatus(409);
-            out.print("{\"status\":\"error\", \"message\":\"Tên đăng nhập hoặc Email đã được sử dụng!\"}");
+            out.print("{\"status\":\"error\", \"message\":\"Email đã được sử dụng!\"}");
             return;
         }
 
@@ -85,7 +85,8 @@ public class RegisterServlet extends HttpServlet {
         // 4. Mã hóa mật khẩu
         String hashedPassword = PasswordUtils.hashPassword(password);
 
-        // 5. Lưu vào Database
+        // 5. Lưu vào Database (username do server tự sinh từ email)
+        String username = dao.generateUsername(email);
         boolean isSuccess = dao.registerUser(username, fullName, email, phone, campus, gender, hashedPassword);
 
         if (isSuccess) {

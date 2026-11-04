@@ -25,7 +25,6 @@ const Header = ({ user, setUser }) => {
   const primaryColor = "#1f6dba";
 
   const [notifications, setNotifications] = useState([]);
-  const isAdmin = user && Number(user.roleId || user.RoleID) === 1;
 
   // Lấy thông báo của ĐÚNG tài khoản đang đăng nhập.
   // isStale() = true nếu trong lúc chờ server người dùng đã đổi tài khoản / đăng xuất.

@@ -78,7 +78,6 @@ public class ShareDAO extends DBContext {
                 map.put("shareContent", rs.getString("ShareContent"));
                 map.put("time", rs.getString("SharedTime"));
                 map.put("author", rs.getString("SharerName"));
-                map.put("username", rs.getString("SharerUsername"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
                 map.put("originalPost", getOriginalPostSummary(origType, origId));
@@ -115,7 +114,6 @@ public class ShareDAO extends DBContext {
                     orig.put("location", rs.getString("LocationLost"));
                     orig.put("date", rs.getString("Date"));
                     orig.put("author", rs.getString("FullName"));
-                    orig.put("username", rs.getString("Username"));
                     orig.put("image", rs.getString("ImageURL"));
                 }
             } else if ("found".equals(type)) {
@@ -136,7 +134,6 @@ public class ShareDAO extends DBContext {
                     orig.put("location", rs.getString("LocationFound"));
                     orig.put("date", rs.getString("Date"));
                     orig.put("author", rs.getString("FullName"));
-                    orig.put("username", rs.getString("Username"));
                     orig.put("image", rs.getString("ImageURL"));
                 }
             } else if ("forum".equals(type)) {
@@ -154,7 +151,6 @@ public class ShareDAO extends DBContext {
                     orig.put("content", rs.getString("Content"));
                     orig.put("date", rs.getString("Date"));
                     orig.put("author", rs.getString("FullName"));
-                    orig.put("username", rs.getString("Username"));
                 }
             }
         } catch (Exception e) {
@@ -181,7 +177,6 @@ public class ShareDAO extends DBContext {
                 Map<String, Object> c = new HashMap<>();
                 c.put("id", rs.getInt("CommentID"));
                 c.put("author", rs.getString("FullName"));
-                c.put("username", rs.getString("Username"));
                 c.put("text", rs.getString("Content"));
                 c.put("time", rs.getString("Time"));
                 int parentId = rs.getInt("ParentCommentID");

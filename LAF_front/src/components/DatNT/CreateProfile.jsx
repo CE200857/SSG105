@@ -3,6 +3,9 @@ import { Form, Button, Container, Row, Col, Alert, Card, Badge } from "react-boo
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
+const CAMPUS_MSG =
+  "Hiện hệ thống chỉ hỗ trợ sinh viên FPT Cần Thơ. Các campus khác chưa được hỗ trợ.";
+
 const CreateProfile = () => {
   const primaryColor = "#1f6dba";
   const navigate = useNavigate();
@@ -46,11 +49,15 @@ const CreateProfile = () => {
       return;
     }
 
+    if (campus !== "Cần Thơ") {
+      setError(CAMPUS_MSG);
+      return;
+    }
+
     setIsLoading(true);
     try {
       setError("");
       const params = new URLSearchParams();
-      params.append('username', registerData.username);
       params.append('email', registerData.email);
       params.append('code', registerData.code);
       params.append('password', registerData.password);
@@ -236,13 +243,19 @@ const CreateProfile = () => {
                           <option value="Đà Nẵng">Đà Nẵng</option>
                           <option value="Quy Nhơn">Quy Nhơn</option>
                         </Form.Select>
+                        {campus !== "Cần Thơ" && (
+                          <div className="text-danger mt-2" style={{ fontSize: "0.82rem" }}>
+                            <i className="bi bi-exclamation-circle me-1"></i>
+                            {CAMPUS_MSG}
+                          </div>
+                        )}
                       </Form.Group>
                     </Col>
                   </Row>
 
                   <Button 
                     type="submit" 
-                    disabled={isLoading}
+                    disabled={isLoading || campus !== "Cần Thơ"}
                     className="w-100 fw-bold" 
                     style={{ borderRadius: "10px", padding: "12px", backgroundColor: primaryColor, borderColor: primaryColor }}
                   >

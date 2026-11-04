@@ -42,7 +42,19 @@ public class EmailCodeServlet extends HttpServlet {
                 if ("reset".equals(purpose) && !exists) {
                     reply(response, 404, "error", "Email này chưa đăng ký tài khoản.", 0); return;
                 }
-                if (!"register".equals(purpose) && !"reset".equals(purpose)) {
+                if ("change".equals(purpose)) {   // đổi email trong hồ sơ: phải đăng nhập, email mới chưa ai dùng
+                    String current = util.AuthUtil.currentEmail(request);
+                    if (current == null) {
+                        reply(response, 401, "error", "Bạn chưa đăng nhập hoặc phiên đã hết hạn.", 0); return;
+                    }
+                    if (current.trim().equalsIgnoreCase(email)) {
+                        reply(response, 400, "error", "Đây đang là email hiện tại của bạn.", 0); return;
+                    }
+                    if (exists) {
+                        reply(response, 409, "error", "Email này đã được sử dụng.", 0); return;
+                    }
+                }
+                if (!"register".equals(purpose) && !"reset".equals(purpose) && !"change".equals(purpose)) {
                     reply(response, 400, "error", "Yêu cầu không hợp lệ.", 0); return;
                 }
                 int wait = dao.cooldownLeft(email);

@@ -14,7 +14,6 @@ import EmailCodeField from "./EmailCodeField";
 
 const Register = () => {
   const primaryColor = "#1f6dba";
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -26,20 +25,13 @@ const Register = () => {
   const navigate = useNavigate();
 
   const isEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-  const isUsername = (val) => /^[a-zA-Z0-9_]{3,20}$/.test(val);
 
   const handleNextStep = async (e) => {
     e.preventDefault();
 
     // 1. Validate phía Frontend
-    if (!username || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       setError("Vui lòng điền đầy đủ thông tin.");
-      return;
-    }
-    if (!isUsername(username)) {
-      setError(
-        "Tên đăng nhập không hợp lệ (3-20 ký tự, không chứa khoảng trắng hay ký tự đặc biệt).",
-      );
       return;
     }
     if (!isEmail(email)) {
@@ -59,11 +51,10 @@ const Register = () => {
       return;
     }
 
-    // 2. Validate phía Backend (Kiểm tra trùng Username / Email)
+    // 2. Validate phía Backend (Kiểm tra trùng Email)
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      params.append("username", username.trim());
       params.append("email", email.trim());
 
       const response = await axios.post("/api/check-user", params);
@@ -79,7 +70,6 @@ const Register = () => {
         setError("");
         navigate("/create-profile", {
           state: {
-            username: username.trim(),
             email: email.trim(),
             password,
             code,
@@ -223,14 +213,18 @@ const Register = () => {
               <Card.Body>
                 <div className="mb-4 text-start">
                   <div
-                    className="bg-success bg-opacity-10 rounded d-inline-flex align-items-center justify-content-center mb-3"
+                    className="d-inline-flex align-items-center justify-content-center mb-3"
                     style={{
-                      width: "50px",
-                      height: "50px",
-                      color: primaryColor,
+                      width: "56px",
+                      height: "56px",
+                      borderRadius: "16px",
+                      background:
+                        "linear-gradient(135deg, #3b8fdc 0%, #1858a0 100%)",
+                      color: "#ffffff",
+                      boxShadow: "0 10px 22px rgba(31, 109, 186, 0.30)",
                     }}
                   >
-                    <i className="bi bi-person-plus fs-4"></i>
+                    <i className="bi bi-person-plus-fill fs-3"></i>
                   </div>
                   <h3 className="fw-bold mb-2" style={{ color: "#12345a" }}>
                     Đăng ký
@@ -248,34 +242,6 @@ const Register = () => {
                 )}
 
                 <Form onSubmit={handleNextStep} className="text-start">
-                  {/* Ô Tên đăng nhập */}
-                  <Form.Group className="mb-3">
-                    <Form.Label
-                      className="fw-bold"
-                      style={{ color: "#333", fontSize: "0.9rem" }}
-                    >
-                      Tên đăng nhập<span className="text-success">*</span>
-                    </Form.Label>
-                    <div className="position-relative">
-                      <i
-                        className="bi bi-person position-absolute top-50 translate-middle-y text-secondary"
-                        style={{ left: "15px", fontSize: "1.2rem" }}
-                      ></i>
-                      <Form.Control
-                        type="text"
-                        placeholder="Nhập tên đăng nhập"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value.trim())}
-                        className="shadow-none border-secondary-subtle"
-                        style={{
-                          borderRadius: "10px",
-                          padding: "12px 15px 12px 45px",
-                          fontSize: "0.95rem",
-                        }}
-                      />
-                    </div>
-                  </Form.Group>
-
                   {/* Ô Email */}
                   <Form.Group className="mb-3">
                     <Form.Label
@@ -418,14 +384,17 @@ const Register = () => {
                     as={Link}
                     to="/login"
                     variant="outline-primary"
-                    className="w-100"
+                    className="w-100 fw-semibold"
                     style={{
                       borderColor: primaryColor,
+                      borderWidth: "2px",
                       color: primaryColor,
+                      backgroundColor: "#ffffff",
                       borderRadius: "10px",
                       padding: "12px",
                     }}
                   >
+                    <i className="bi bi-box-arrow-in-right me-2"></i>
                     Đăng nhập
                   </Button>
                 </Form>

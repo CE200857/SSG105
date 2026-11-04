@@ -53,6 +53,15 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
+            // Chỉ sinh viên FPT Cần Thơ được đăng nhập (Admin luôn được vào)
+            if (user.getRoleID() != 1 && !util.CampusUtil.isLoginAllowed(user.getCampus())) {
+                response.setStatus(403);
+                result.put("status", "unsupported_campus");
+                result.put("message", util.CampusUtil.unsupportedMessage(user.getCampus()));
+                out.print(gson.toJson(result));
+                return;
+            }
+
             // Tạo session và lưu thông tin user vào session
             jakarta.servlet.http.HttpSession session = request.getSession(true);
             session.setAttribute("user", user);

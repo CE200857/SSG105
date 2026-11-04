@@ -42,7 +42,6 @@ function App() {
           const next = {
             ...server,
             roleId: Number(server.roleId || 2),
-            username: String(server.email).split("@")[0],
             avatar: server.avatar || null,
           };
           persistUser(next);

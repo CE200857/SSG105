@@ -69,7 +69,7 @@ public class NotificationDAO extends DBContext {
         List<Map<String, Object>> list = new ArrayList<>();
         String query = "SELECT TOP 30 n.NotificationID, n.Type, n.PostType, n.PostID, n.Message, n.IsRead, "
                 + "CONVERT(VARCHAR, n.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, n.CreatedAt, 108) as Time, "
-                + "u.FullName as SenderName, u.Username as SenderUsername "
+                + "u.FullName as SenderName "
                 + "FROM Notifications n "
                 + "JOIN Users r ON n.RecipientUserID = r.UserID "
                 + "JOIN Users u ON n.SenderUserID = u.UserID "
@@ -88,7 +88,6 @@ public class NotificationDAO extends DBContext {
                 map.put("isRead", rs.getBoolean("IsRead"));
                 map.put("time", rs.getString("Time"));
                 map.put("senderName", rs.getString("SenderName"));
-                map.put("senderUsername", rs.getString("SenderUsername"));
                 list.add(map);
             }
         } catch (Exception e) {
