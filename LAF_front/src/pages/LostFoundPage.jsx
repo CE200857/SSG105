@@ -126,10 +126,10 @@ const LostFoundPage = ({ user }) => {
   // Thông báo do máy chủ tự tạo khi like/bình luận/chia sẻ, không cần gửi từ trình duyệt
   const pushNotification = async () => {};
 
-  const handleViewUserProfile = (authorName, authorEmail, e) => {
+  const handleViewUserProfile = (authorName, authorId, e) => {
     if (e) e.stopPropagation();
     const query = new URLSearchParams();
-    if (authorEmail) query.set("email", authorEmail);
+    if (authorId) query.set("uid", authorId);
     if (authorName) query.set("name", authorName);
     navigate(`/profile?${query.toString()}`);
   };
@@ -855,7 +855,7 @@ const LostFoundPage = ({ user }) => {
                         onClick={(e) =>
                           handleViewUserProfile(
                             post.author,
-                            post.authorEmail,
+                            post.authorId,
                             e,
                           )
                         }
@@ -869,7 +869,7 @@ const LostFoundPage = ({ user }) => {
                             backgroundColor: primaryColor,
                           }}
                         >
-                          <AvatarFill user={user} name={post.author} username={post.username} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
+                          <AvatarFill user={user} name={post.author} userId={post.authorId} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
                         </div>
                         <div>
                           <h6 className="fw-bold mb-0 text-dark hover-primary">
@@ -1654,7 +1654,7 @@ const LostFoundPage = ({ user }) => {
                   setShowDetailModal(false);
                   handleViewUserProfile(
                     selectedPostDetail.author,
-                    selectedPostDetail.authorEmail,
+                    selectedPostDetail.authorId,
                   );
                 }}
               >
@@ -1666,7 +1666,7 @@ const LostFoundPage = ({ user }) => {
                     backgroundColor: primaryColor,
                   }}
                 >
-                  <AvatarFill user={user} name={selectedPostDetail.author} username={selectedPostDetail.username} email={selectedPostDetail.authorEmail} avatar={selectedPostDetail.avatar || selectedPostDetail.authorAvatar} />
+                  <AvatarFill user={user} name={selectedPostDetail.author} userId={selectedPostDetail.authorId} email={selectedPostDetail.authorEmail} avatar={selectedPostDetail.avatar || selectedPostDetail.authorAvatar} />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-0 text-dark hover-primary">
@@ -1882,7 +1882,7 @@ const LostFoundPage = ({ user }) => {
                       fontSize: "0.9rem",
                     }}
                   >
-                    <AvatarFill user={user} name={user.fullName} username={user.username} email={user.email} avatar={user.avatar} />
+                    <AvatarFill user={user} name={user.fullName} userId={user.id} email={user.email} avatar={user.avatar} />
                   </div>
                   <div className="flex-grow-1 position-relative">
                     <Form.Control
@@ -1947,10 +1947,10 @@ const LostFoundPage = ({ user }) => {
                           }}
                           onClick={() => {
                             setShowDetailModal(false);
-                            handleViewUserProfile(c.author, c.authorEmail);
+                            handleViewUserProfile(c.author, c.authorId);
                           }}
                         >
-                          <AvatarFill user={user} name={c.author} username={c.username} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
+                          <AvatarFill user={user} name={c.author} userId={c.authorId} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
                         </div>
                         <div className="flex-grow-1">
                           <div className="bg-light p-3 rounded-4 border">
@@ -1965,7 +1965,7 @@ const LostFoundPage = ({ user }) => {
                                   setShowDetailModal(false);
                                   handleViewUserProfile(
                                     c.author,
-                                    c.authorEmail,
+                                    c.authorId,
                                   );
                                 }}
                               >
@@ -2045,11 +2045,11 @@ const LostFoundPage = ({ user }) => {
                                       setShowDetailModal(false);
                                       handleViewUserProfile(
                                         rep.author,
-                                        rep.authorEmail,
+                                        rep.authorId,
                                       );
                                     }}
                                   >
-                                    <AvatarFill user={user} name={rep.author} username={rep.username} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
+                                    <AvatarFill user={user} name={rep.author} userId={rep.authorId} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
                                   </div>
                                   <div className="bg-white p-2 px-3 rounded-3 border flex-grow-1">
                                     <div className="d-flex justify-content-between">
@@ -2063,7 +2063,7 @@ const LostFoundPage = ({ user }) => {
                                           setShowDetailModal(false);
                                           handleViewUserProfile(
                                             rep.author,
-                                            rep.authorEmail,
+                                            rep.authorId,
                                           );
                                         }}
                                       >

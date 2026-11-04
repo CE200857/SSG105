@@ -61,7 +61,6 @@ public class ModerationDAO extends DBContext {
                 m.put("location", rs.getNString("Location"));
                 m.put("image", rs.getString("Image"));
                 m.put("author", rs.getNString("FullName"));
-                m.put("username", rs.getString("Username"));
                 m.put("authorEmail", rs.getString("Email"));
                 java.sql.Timestamp ts = rs.getTimestamp("CreatedAt");
                 m.put("createdAt", ts != null

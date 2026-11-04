@@ -11,7 +11,6 @@ import {
   Button,
   Modal,
   Spinner,
-  Badge,
   Alert,
   Dropdown,
 } from "react-bootstrap";
@@ -156,9 +155,9 @@ const ForumPage = ({ user }) => {
       (post.fullName &&
         user.fullName &&
         post.fullName.toLowerCase() === user.fullName.toLowerCase()) ||
-      (post.username &&
-        user.username &&
-        post.username.toLowerCase() === user.username.toLowerCase()) ||
+      (post.authorId &&
+        user.id &&
+        Number(post.authorId) === Number(user.id)) ||
       (post.authorEmail &&
         user.email &&
         post.authorEmail.toLowerCase() === user.email.toLowerCase())
@@ -168,10 +167,10 @@ const ForumPage = ({ user }) => {
   // Thông báo do máy chủ tự tạo khi like/bình luận/chia sẻ, không cần gửi từ trình duyệt
   const pushNotification = async () => {};
 
-  const handleViewUserProfile = (authorName, username, e) => {
+  const handleViewUserProfile = (authorName, authorId, e) => {
     if (e) e.stopPropagation();
     const query = new URLSearchParams();
-    if (username) query.set("username", username);
+    if (authorId) query.set("uid", authorId);
     if (authorName) query.set("name", authorName);
     navigate(`/profile?${query.toString()}`);
   };
@@ -553,7 +552,7 @@ const ForumPage = ({ user }) => {
         category: postToShare.category,
         location: "Diễn đàn sinh viên",
         author: postToShare.fullName,
-        username: postToShare.username,
+        authorId: postToShare.authorId,
         date: postToShare.date,
         status: postToShare.category,
       },
@@ -739,7 +738,7 @@ const ForumPage = ({ user }) => {
                       <div
                         className="d-flex align-items-center"
                         onClick={(e) =>
-                          handleViewUserProfile(post.fullName, post.username, e)
+                          handleViewUserProfile(post.fullName, post.authorId, e)
                         }
                         title={`Xem trang cá nhân của ${post.fullName}`}
                       >
@@ -751,7 +750,7 @@ const ForumPage = ({ user }) => {
                             backgroundColor: primaryColor,
                           }}
                         >
-                          <AvatarFill user={user} name={post.fullName} username={post.username} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
+                          <AvatarFill user={user} name={post.fullName} userId={post.authorId} email={post.authorEmail} avatar={post.avatar || post.authorAvatar} />
                         </div>
                         <div>
                           <h6
@@ -764,7 +763,7 @@ const ForumPage = ({ user }) => {
                             className="text-muted"
                             style={{ fontSize: "0.8rem" }}
                           >
-                            @{post.username} • {post.date}
+                            {post.date}
                           </span>
                         </div>
                       </div>
@@ -1196,7 +1195,7 @@ const ForumPage = ({ user }) => {
                     setShowDetailModal(false);
                     handleViewUserProfile(
                       selectedPostDetail.fullName,
-                      selectedPostDetail.username,
+                      selectedPostDetail.authorId,
                     );
                   }}
                 >
@@ -1208,7 +1207,7 @@ const ForumPage = ({ user }) => {
                       backgroundColor: primaryColor,
                     }}
                   >
-                    <AvatarFill user={user} name={selectedPostDetail.fullName} username={selectedPostDetail.username} email={selectedPostDetail.authorEmail} avatar={selectedPostDetail.avatar || selectedPostDetail.authorAvatar} />
+                    <AvatarFill user={user} name={selectedPostDetail.fullName} userId={selectedPostDetail.authorId} email={selectedPostDetail.authorEmail} avatar={selectedPostDetail.avatar || selectedPostDetail.authorAvatar} />
                   </div>
                   <div>
                     <h5 className="fw-bold mb-0 text-dark hover-primary">
@@ -1218,7 +1217,7 @@ const ForumPage = ({ user }) => {
                       className="text-muted"
                       style={{ fontSize: "0.85rem" }}
                     >
-                      @{selectedPostDetail.username} • {selectedPostDetail.date}
+                      {selectedPostDetail.date}
                     </span>
                   </div>
                 </div>
@@ -1371,7 +1370,7 @@ const ForumPage = ({ user }) => {
                         fontSize: "0.9rem",
                       }}
                     >
-                      <AvatarFill user={user} name={user.fullName} username={user.username} email={user.email} avatar={user.avatar} />
+                      <AvatarFill user={user} name={user.fullName} userId={user.id} email={user.email} avatar={user.avatar} />
                     </div>
                     <div className="flex-grow-1 position-relative">
                       <Form.Control
@@ -1436,10 +1435,10 @@ const ForumPage = ({ user }) => {
                             }}
                             onClick={() => {
                               setShowDetailModal(false);
-                              handleViewUserProfile(c.author, "");
+                              handleViewUserProfile(c.author, c.authorId);
                             }}
                           >
-                            <AvatarFill user={user} name={c.author} username={c.username} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
+                            <AvatarFill user={user} name={c.author} userId={c.authorId} email={c.authorEmail} avatar={c.avatar || c.authorAvatar} />
                           </div>
                           <div className="flex-grow-1">
                             <div className="bg-light p-3 rounded-4 border">
@@ -1452,7 +1451,7 @@ const ForumPage = ({ user }) => {
                                   }}
                                   onClick={() => {
                                     setShowDetailModal(false);
-                                    handleViewUserProfile(c.author, "");
+                                    handleViewUserProfile(c.author, c.authorId);
                                   }}
                                 >
                                   {c.author}
@@ -1530,10 +1529,10 @@ const ForumPage = ({ user }) => {
                                       }}
                                       onClick={() => {
                                         setShowDetailModal(false);
-                                        handleViewUserProfile(rep.author, "");
+                                        handleViewUserProfile(rep.author, rep.authorId);
                                       }}
                                     >
-                                      <AvatarFill user={user} name={rep.author} username={rep.username} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
+                                      <AvatarFill user={user} name={rep.author} userId={rep.authorId} email={rep.authorEmail} avatar={rep.avatar || rep.authorAvatar} />
                                     </div>
                                     <div className="bg-white p-2 px-3 rounded-3 border flex-grow-1">
                                       <div className="d-flex justify-content-between">
@@ -1547,7 +1546,7 @@ const ForumPage = ({ user }) => {
                                             setShowDetailModal(false);
                                             handleViewUserProfile(
                                               rep.author,
-                                              "",
+                                              rep.authorId,
                                             );
                                           }}
                                         >

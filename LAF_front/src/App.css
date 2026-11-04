@@ -17,6 +17,7 @@
   width: 100%;
   min-height: 100vh;
   margin: 0;
+  border-inline: 0; /* bỏ viền dọc còn sót từ template Vite */
 }
 
 .app-dashboard {

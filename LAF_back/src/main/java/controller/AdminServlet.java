@@ -130,7 +130,6 @@ public class AdminServlet extends HttpServlet {
             } else if ("user".equals(entity)) {
                 if ("create".equals(action)) {
                     String err = adminDao.createUserByAdmin(
-                            request.getParameter("username"),
                             request.getParameter("fullName"),
                             request.getParameter("email"),
                             request.getParameter("phone"),
@@ -144,7 +143,6 @@ public class AdminServlet extends HttpServlet {
                 } else if ("update".equals(action)) {
                     String err = adminDao.updateUserByAdmin(
                             Integer.parseInt(request.getParameter("userId")),
-                            request.getParameter("username"),
                             request.getParameter("fullName"),
                             request.getParameter("email"),
                             request.getParameter("phone"),

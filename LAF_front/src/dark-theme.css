@@ -466,7 +466,9 @@ html[data-bs-theme="dark"],
     [style^="color: rgb(3, 105, 161)"],
     [style*="; color: rgb(3, 105, 161)"],
     [style^="color: rgb(29, 78, 216)"],
-    [style*="; color: rgb(29, 78, 216)"]
+    [style*="; color: rgb(29, 78, 216)"],
+    [style^="color: rgb(24, 73, 169)"],
+    [style*="; color: rgb(24, 73, 169)"]
   ):not(.btn) {
   color: #7dd3fc !important;
 }

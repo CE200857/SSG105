@@ -32,16 +32,21 @@ public class AuthCheckServlet extends HttpServlet {
         result.put("status", "success");
         result.put("message", "Session hợp lệ");
         if (u instanceof entity.Users) {
-            entity.Users su = (entity.Users) u;
-            java.util.Map<String, Object> userMap = new java.util.LinkedHashMap<>();
-            userMap.put("id", su.getUserID());
-            userMap.put("fullName", su.getFullName());
-            userMap.put("email", su.getEmail());
-            userMap.put("roleId", su.getRoleID());
-            // Luôn lấy avatar mới nhất từ CSDL (null cũng được gửi để frontend xóa avatar cũ)
-            String avatar = new dao.AvatarDAO().getAvatarByUserId(su.getUserID());
-            userMap.put("avatar", avatar == null ? "" : avatar);
-            result.put("user", userMap);
+            // Lấy thông tin MỚI NHẤT từ CSDL (email, họ tên, avatar có thể đã đổi sau khi đăng nhập)
+            dao.SessionDAO sdao = new dao.SessionDAO();
+            java.util.Map<String, Object> info;
+            try {
+                info = sdao.getActiveUserInfo(((entity.Users) u).getUserID());
+            } finally {
+                sdao.close();
+            }
+            if (info == null) { // tài khoản đã bị xóa hoặc không còn hoạt động
+                session.invalidate();
+                response.setStatus(401);
+                response.getWriter().print("{\"status\":\"error\", \"message\":\"Tài khoản không còn tồn tại.\"}");
+                return;
+            }
+            result.put("user", info);
         }
         response.setStatus(200);
         response.getWriter().print(new com.google.gson.Gson().toJson(result));

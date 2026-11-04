@@ -20,6 +20,29 @@ public class SessionDAO extends DBContext {
         return null;
     }
 
+    // Thông tin mới nhất của tài khoản còn hoạt động (email/họ tên có thể đã đổi sau khi đăng nhập)
+    public java.util.Map<String, Object> getActiveUserInfo(int userId) {
+        String sql = "SELECT UserID, FullName, Email, RoleID, AvatarURL FROM Users WHERE UserID = ? AND IsActive = 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("id", rs.getInt("UserID"));
+                    m.put("fullName", rs.getString("FullName"));
+                    m.put("email", rs.getString("Email"));
+                    m.put("roleId", rs.getInt("RoleID"));
+                    String avatar = rs.getString("AvatarURL");
+                    m.put("avatar", avatar == null ? "" : avatar);
+                    return m;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi getActiveUserInfo: " + e.getMessage());
+        }
+        return null;
+    }
+
     // Kiểm tra user có phải chủ bài không
     public boolean isOwner(String type, int id, int userId) {
         String table, col;

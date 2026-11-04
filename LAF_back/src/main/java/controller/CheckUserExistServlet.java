@@ -20,10 +20,9 @@ public class CheckUserExistServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
         
-        String username = request.getParameter("username");
         String email = request.getParameter("email");
         
-        if (username == null || email == null) {
+        if (email == null) {
             response.setStatus(400);
             out.print("{\"status\":\"error\", \"message\":\"Dữ liệu không hợp lệ.\"}");
             return;
@@ -31,10 +30,10 @@ public class CheckUserExistServlet extends HttpServlet {
 
         UserDAO dao = new UserDAO();
         
-        // Kiểm tra xem username hoặc email đã tồn tại chưa
-        if (dao.checkUserExist(username, email)) {
+        // Kiểm tra xem email đã tồn tại chưa
+        if (dao.checkEmailExist(email)) {
             response.setStatus(409); // Lỗi Conflict
-            out.print("{\"status\":\"error\", \"message\":\"Tên đăng nhập hoặc Email đã được sử dụng!\"}");
+            out.print("{\"status\":\"error\", \"message\":\"Email đã được sử dụng!\"}");
         } else {
             response.setStatus(200); // Thành công
             out.print("{\"status\":\"success\", \"message\":\"Hợp lệ, có thể tiếp tục.\"}");

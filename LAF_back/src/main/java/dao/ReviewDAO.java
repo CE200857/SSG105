@@ -19,7 +19,7 @@ public class ReviewDAO extends DBContext {
         List<Map<String, Object>> list = new ArrayList<>();
         List<String> params = new ArrayList<>();
         String query = "SELECT r.ReviewID, r.Rating, r.Content, CONVERT(VARCHAR, r.CreatedAt, 103) as Date, " +
-                       "r.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, u.AvatarURL " +
+                       "r.Visibility, u.FullName, u.UserID as AuthorID, u.Email as AuthorEmail, u.AvatarURL " +
                        "FROM Reviews r JOIN Users u ON r.UserID = u.UserID WHERE 1=1 ";
 
         if (adminView) {
@@ -57,8 +57,8 @@ public class ReviewDAO extends DBContext {
                 map.put("comment", rs.getString("Content")); 
                 map.put("date", rs.getString("Date"));
                 map.put("fullName", rs.getString("FullName"));
-                map.put("username", rs.getString("Username"));
-                map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("authorId", rs.getInt("AuthorID"));
+                map.put("authorEmail", (viewerEmail == null || viewerEmail.trim().isEmpty()) ? "" : rs.getString("AuthorEmail"));
                 map.put("avatar", rs.getString("AvatarURL"));
                 list.add(map);
             }

@@ -6,13 +6,13 @@ const same = (a, b) =>
 
 // Nằm bên trong vòng tròn chữ cái đầu có sẵn: có ảnh thì hiện ảnh, không thì hiện chữ cái đầu.
 // Bài/bình luận của chính người đang đăng nhập luôn dùng ảnh mới nhất từ user (kể cả khi đã đổi avatar).
-const AvatarFill = ({ user, name, username, email, avatar }) => {
+const AvatarFill = ({ user, name, userId, email, avatar }) => {
   const [failedSrc, setFailedSrc] = useState(null);
   const isMe =
     !!user &&
     (same(email, user.email) ||
-      same(username, user.username) ||
-      (!email && !username && same(name, user.fullName)));
+      (!!userId && !!user.id && Number(userId) === Number(user.id)) ||
+      (!email && !userId && same(name, user.fullName)));
   const raw = isMe ? user.avatar || avatar : avatar;
   const initial = name ? String(name).charAt(0) : "U";
 

@@ -33,9 +33,9 @@ export const setThemeMode = (mode) => {
 
 /* ---------------- Cỡ chữ & hiệu ứng ---------------- */
 export const FONT_SIZES = {
-  small: { label: "Nhỏ", labelKey: "settings.font.small", px: 14.5 },
-  normal: { label: "Vừa", labelKey: "settings.font.normal", px: 16 },
-  large: { label: "Lớn", labelKey: "settings.font.large", px: 18 },
+  small: { label: "Nhỏ", labelKey: "settings.font.small", scale: 0.9 },
+  normal: { label: "Vừa", labelKey: "settings.font.normal", scale: 1 },
+  large: { label: "Lớn", labelKey: "settings.font.large", scale: 1.12 },
 };
 
 const DEFAULT_DISPLAY = { fontSize: "normal", reduceMotion: false };
@@ -54,7 +54,9 @@ export const getDisplaySettings = () => {
 export const applyDisplaySettings = (d = getDisplaySettings()) => {
   const root = document.documentElement;
   const size = FONT_SIZES[d.fontSize] || FONT_SIZES.normal;
-  root.style.fontSize = `${size.px}px`;
+  // Không đặt font-size trực tiếp: dùng hệ số nhân với cỡ chữ gốc (xem theme.css) nên "Vừa" giữ nguyên giao diện cũ
+  root.style.removeProperty("font-size");
+  root.style.setProperty("--lf-font-scale", String(size.scale));
   root.classList.toggle("reduce-motion", !!d.reduceMotion);
 };
 

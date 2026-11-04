@@ -62,9 +62,8 @@ public class AdminDAO extends DBContext {
         List<Object> params = new ArrayList<>();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            query.append("AND (Username LIKE ? OR FullName LIKE ? OR Email LIKE ? OR Phone LIKE ?) ");
+            query.append("AND (FullName LIKE ? OR Email LIKE ? OR Phone LIKE ?) ");
             String kw = "%" + keyword.trim() + "%";
-            params.add(kw);
             params.add(kw);
             params.add(kw);
             params.add(kw);
@@ -93,7 +92,6 @@ public class AdminDAO extends DBContext {
             while (rs.next()) {
                 Map<String, Object> u = new HashMap<>();
                 u.put("userId", rs.getInt("UserID"));
-                u.put("username", rs.getString("Username"));
                 u.put("fullName", rs.getString("FullName"));
                 u.put("email", rs.getString("Email"));
                 u.put("phone", rs.getString("Phone") != null ? rs.getString("Phone") : "");
@@ -111,14 +109,14 @@ public class AdminDAO extends DBContext {
     }
 
     // 3. Tạo tài khoản mới bởi Admin
-    public String createUserByAdmin(String username, String fullName, String email, String phone, String campus, String gender, String rawPassword, int roleId) {
+    public String createUserByAdmin(String fullName, String email, String phone, String campus, String gender, String rawPassword, int roleId) {
         try {
-            PreparedStatement check = conn.prepareStatement("SELECT 1 FROM Users WHERE Username = ? OR Email = ?");
-            check.setString(1, username.trim());
-            check.setString(2, email.trim());
+            PreparedStatement check = conn.prepareStatement("SELECT 1 FROM Users WHERE Email = ?");
+            check.setString(1, email.trim());
             if (check.executeQuery().next()) {
-                return "Username hoặc Email đã tồn tại trong hệ thống!";
+                return "Email đã tồn tại trong hệ thống!";
             }
+            String username = util.UsernameUtil.generate(conn, email);
 
             String query = "INSERT INTO Users (Username, FullName, Email, Phone, Campus, Gender, PasswordHash, RoleID, CreatedAt) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
@@ -139,40 +137,37 @@ public class AdminDAO extends DBContext {
     }
 
     // 4. Cập nhật tài khoản bởi Admin (Có thể đổi cả mật khẩu nếu nhập mật khẩu mới)
-    public String updateUserByAdmin(int userId, String username, String fullName, String email, String phone, String campus, String gender, String newPassword, int roleId) {
+    public String updateUserByAdmin(int userId, String fullName, String email, String phone, String campus, String gender, String newPassword, int roleId) {
         try {
-            PreparedStatement check = conn.prepareStatement("SELECT 1 FROM Users WHERE (Username = ? OR Email = ?) AND UserID != ?");
-            check.setString(1, username.trim());
-            check.setString(2, email.trim());
-            check.setInt(3, userId);
+            PreparedStatement check = conn.prepareStatement("SELECT 1 FROM Users WHERE Email = ? AND UserID != ?");
+            check.setString(1, email.trim());
+            check.setInt(2, userId);
             if (check.executeQuery().next()) {
-                return "Username hoặc Email đã bị trùng với tài khoản khác!";
+                return "Email đã bị trùng với tài khoản khác!";
             }
 
             if (newPassword != null && !newPassword.trim().isEmpty()) {
-                String q = "UPDATE Users SET Username=?, FullName=?, Email=?, Phone=?, Campus=?, Gender=?, PasswordHash=?, RoleID=? WHERE UserID=?";
+                String q = "UPDATE Users SET FullName=?, Email=?, Phone=?, Campus=?, Gender=?, PasswordHash=?, RoleID=? WHERE UserID=?";
                 PreparedStatement ps = conn.prepareStatement(q);
-                ps.setString(1, username.trim());
-                ps.setNString(2, fullName.trim());
-                ps.setString(3, email.trim());
-                ps.setString(4, phone != null ? phone.trim() : "");
-                ps.setNString(5, campus);
-                ps.setNString(6, gender);
-                ps.setString(7, hashMD5(newPassword.trim()));
-                ps.setInt(8, roleId);
-                ps.setInt(9, userId);
-                ps.executeUpdate();
-            } else {
-                String q = "UPDATE Users SET Username=?, FullName=?, Email=?, Phone=?, Campus=?, Gender=?, RoleID=? WHERE UserID=?";
-                PreparedStatement ps = conn.prepareStatement(q);
-                ps.setString(1, username.trim());
-                ps.setNString(2, fullName.trim());
-                ps.setString(3, email.trim());
-                ps.setString(4, phone != null ? phone.trim() : "");
-                ps.setNString(5, campus);
-                ps.setNString(6, gender);
+                ps.setNString(1, fullName.trim());
+                ps.setString(2, email.trim());
+                ps.setString(3, phone != null ? phone.trim() : "");
+                ps.setNString(4, campus);
+                ps.setNString(5, gender);
+                ps.setString(6, hashMD5(newPassword.trim()));
                 ps.setInt(7, roleId);
                 ps.setInt(8, userId);
+                ps.executeUpdate();
+            } else {
+                String q = "UPDATE Users SET FullName=?, Email=?, Phone=?, Campus=?, Gender=?, RoleID=? WHERE UserID=?";
+                PreparedStatement ps = conn.prepareStatement(q);
+                ps.setNString(1, fullName.trim());
+                ps.setString(2, email.trim());
+                ps.setString(3, phone != null ? phone.trim() : "");
+                ps.setNString(4, campus);
+                ps.setNString(5, gender);
+                ps.setInt(6, roleId);
+                ps.setInt(7, userId);
                 ps.executeUpdate();
             }
             return null;

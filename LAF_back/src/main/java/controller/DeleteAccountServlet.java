@@ -15,9 +15,10 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import filter.PasswordUtils;
+import util.AuthUtil;
 import util.ImageUtil;
 
 // Người dùng tự xóa tài khoản: phải đang đăng nhập (session) + nhập đúng mật khẩu
@@ -28,20 +29,6 @@ public class DeleteAccountServlet extends HttpServlet {
     private static final Path DIR = Paths.get(
             System.getProperty("laf.upload.dir", System.getProperty("user.home") + "/laf_uploads"),
             "avatars").toAbsolutePath().normalize();
-
-    private String md5(String s) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(s.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : md.digest()) {
-                sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-            }
-            return sb.toString();
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -54,8 +41,10 @@ public class DeleteAccountServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         Object sessionUser = session == null ? null : session.getAttribute("user");
         String password = request.getParameter("password");
+        // Email MỚI NHẤT trong CSDL (có thể khác email lúc đăng nhập nếu đã sửa hồ sơ); null nếu hết phiên / bị khóa
+        String currentEmail = AuthUtil.currentEmail(request);
 
-        if (!(sessionUser instanceof Users)) {
+        if (!(sessionUser instanceof Users) || currentEmail == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             result.put("message", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại rồi thử lại.");
         } else if (password == null || password.isEmpty()) {
@@ -64,12 +53,12 @@ public class DeleteAccountServlet extends HttpServlet {
             Users user = (Users) sessionUser;
             if (user.getRoleID() == 1) {
                 result.put("message", "Không thể xóa tài khoản Quản trị viên.");
-            } else if (!new UserDAO().checkCurrentPassword(user.getEmail(), md5(password))) {
+            } else if (!new UserDAO().checkCurrentPassword(currentEmail, PasswordUtils.hashPassword(password))) {
                 result.put("message", "Mật khẩu không đúng!");
             } else {
                 AccountDAO dao = new AccountDAO();
                 String avatar = dao.getAvatarPath(user.getUserID());
-                if (dao.deleteAccount(user.getUserID(), user.getEmail())) {
+                if (dao.deleteAccount(user.getUserID(), currentEmail)) {
                     // Xóa file ảnh đại diện (nếu có) và hủy phiên
                     if (avatar != null && avatar.startsWith(URL_PREFIX)) {
                         String name = avatar.substring(URL_PREFIX.length());

@@ -51,6 +51,22 @@ public class UserDAO extends DBContext {
         return true;
     }
     
+    // Email đã được dùng chưa (Username không còn nhập từ giao diện)
+    public boolean checkEmailExist(String email) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT 1 FROM Users WHERE Email = ?")) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        } catch (Exception e) {
+            System.out.println("Lỗi checkEmailExist: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // Server tự sinh username duy nhất từ email
+    public String generateUsername(String email) {
+        return util.UsernameUtil.generate(conn, email);
+    }
+
     // Kiểm tra xem Username hoặc Email đã tồn tại chưa
     public boolean checkUserExist(String username, String email) {
         String query = "SELECT 1 FROM Users WHERE Username = ? OR Email = ?";
@@ -143,15 +159,8 @@ public class UserDAO extends DBContext {
     }
     
     // 3. Kiểm tra trùng lặp khi Cập nhật (Bỏ qua chính user hiện tại)
-    public String checkDuplicateForUpdate(String currentEmail, String newUsername, String newEmail, String newPhone) {
+    public String checkDuplicateForUpdate(String currentEmail, String newEmail, String newPhone) {
         try {
-            // Check Username
-            String q1 = "SELECT 1 FROM Users WHERE Username = ? AND Email != ?";
-            PreparedStatement p1 = conn.prepareStatement(q1);
-            p1.setString(1, newUsername);
-            p1.setString(2, currentEmail);
-            if (p1.executeQuery().next()) return "Tên người dùng (Username) đã có người sử dụng!";
-
             // Check Email
             String q2 = "SELECT 1 FROM Users WHERE Email = ? AND Email != ?";
             PreparedStatement p2 = conn.prepareStatement(q2);
@@ -175,17 +184,16 @@ public class UserDAO extends DBContext {
     }
 
     // 4. Thực thi cập nhật Profile
-    public boolean updateProfile(String currentEmail, String username, String fullName, String newEmail, String phone, String campus, String gender) {
-        String query = "UPDATE Users SET Username=?, FullName=?, Email=?, Phone=?, Campus=?, Gender=? WHERE Email=?";
+    public boolean updateProfile(String currentEmail, String fullName, String newEmail, String phone, String campus, String gender) {
+        String query = "UPDATE Users SET FullName=?, Email=?, Phone=?, Campus=?, Gender=? WHERE Email=?";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
-            ps.setString(1, username);
-            ps.setNString(2, fullName);
-            ps.setString(3, newEmail);
-            ps.setString(4, phone);
-            ps.setNString(5, campus);
-            ps.setNString(6, gender);
-            ps.setString(7, currentEmail);
+            ps.setNString(1, fullName);
+            ps.setString(2, newEmail);
+            ps.setString(3, phone);
+            ps.setNString(4, campus);
+            ps.setNString(5, gender);
+            ps.setString(6, currentEmail);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("Lỗi updateProfile: " + e.getMessage());

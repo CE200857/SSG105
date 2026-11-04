@@ -23,7 +23,7 @@ public class LostPostDAO extends DBContext {
                 "SELECT l.LostPostID, l.Category, l.Title, l.Content, l.LocationLost, "
                 + "CONVERT(VARCHAR, l.TimeLost, 103) as DateLost, "
                 + "CONVERT(VARCHAR, l.CreatedAt, 103) as CreatedDate, "
-                + "l.Status, l.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, u.AvatarURL, i.ImageURL, "
+                + "l.Status, l.Visibility, u.FullName, u.UserID as AuthorID, u.Email as AuthorEmail, u.AvatarURL, i.ImageURL, "
                 + "(SELECT COUNT(*) FROM LostLikes ll WHERE ll.LostPostID = l.LostPostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM LostLikes ll JOIN Users u2 ON ll.UserID = u2.UserID WHERE ll.LostPostID = l.LostPostID AND u2.Email = ?) as UserLiked "
                 + "FROM LostPosts l "
@@ -83,8 +83,8 @@ public class LostPostDAO extends DBContext {
                 map.put("status", ("Found".equalsIgnoreCase(rawStatus) || "Đã tìm được".equalsIgnoreCase(rawStatus)) ? "Đã tìm được" : "Đang tìm đồ");
 
                 map.put("author", rs.getString("FullName"));
-                map.put("username", rs.getString("Username"));
-                map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("authorId", rs.getInt("AuthorID"));
+                map.put("authorEmail", (currentUserEmail == null || currentUserEmail.trim().isEmpty()) ? "" : rs.getString("AuthorEmail"));
                 map.put("avatar", rs.getString("AvatarURL"));
                 map.put("visibility", rs.getString("Visibility"));
                 map.put("image", rs.getString("ImageURL"));
@@ -108,7 +108,7 @@ public class LostPostDAO extends DBContext {
         boolean viewerIsAdmin = isAdminEmail(currentUserEmail);
         String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
                 + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
-                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, u.AvatarURL, "
+                + "u.FullName, u.UserID as AuthorID, u.Email as CommentAuthorEmail, u.AvatarURL, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'lost' AND cl.CommentID = c.CommentID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'lost' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
                 + "FROM LostComments c JOIN Users u ON c.UserID = u.UserID "
@@ -122,9 +122,9 @@ public class LostPostDAO extends DBContext {
                 Map<String, Object> c = new HashMap<>();
                 c.put("id", rs.getInt("CommentID"));
                 c.put("author", rs.getString("FullName"));
-                c.put("username", rs.getString("Username"));
+                c.put("authorId", rs.getInt("AuthorID"));
                 String authorEmail = rs.getString("CommentAuthorEmail");
-                c.put("authorEmail", authorEmail);
+                c.put("authorEmail", (currentUserEmail == null || currentUserEmail.trim().isEmpty()) ? "" : authorEmail);
                 c.put("avatar", rs.getString("AvatarURL"));
                 c.put("canManage", viewerIsAdmin
                         || (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(authorEmail)));

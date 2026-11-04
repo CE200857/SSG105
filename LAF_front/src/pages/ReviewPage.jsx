@@ -71,19 +71,19 @@ const ReviewPage = ({ user }) => {
       (rev.authorEmail &&
         user.email &&
         rev.authorEmail.toLowerCase() === user.email.toLowerCase()) ||
-      (rev.username &&
-        user.username &&
-        rev.username.toLowerCase() === user.username.toLowerCase()) ||
+      (rev.authorId &&
+        user.id &&
+        Number(rev.authorId) === Number(user.id)) ||
       (rev.fullName &&
         user.fullName &&
         rev.fullName.toLowerCase() === user.fullName.toLowerCase())
     );
   };
 
-  const handleViewUserProfile = (fullName, username, e) => {
+  const handleViewUserProfile = (fullName, authorId, e) => {
     if (e) e.stopPropagation();
     const query = new URLSearchParams();
-    if (username) query.set("username", username);
+    if (authorId) query.set("uid", authorId);
     if (fullName) query.set("name", fullName);
     navigate(`/profile?${query.toString()}`);
   };
@@ -429,12 +429,12 @@ const ReviewPage = ({ user }) => {
                             onClick={(e) =>
                               handleViewUserProfile(
                                 rev.fullName,
-                                rev.username,
+                                rev.authorId,
                                 e,
                               )
                             }
                           >
-                            <AvatarFill user={user} name={rev.fullName} username={rev.username} email={rev.authorEmail || rev.email} avatar={rev.avatar || rev.authorAvatar} />
+                            <AvatarFill user={user} name={rev.fullName} userId={rev.authorId} email={rev.authorEmail || rev.email} avatar={rev.avatar || rev.authorAvatar} />
                           </div>
                           <div className="flex-grow-1 text-truncate">
                             <div className="d-flex align-items-center gap-2">
@@ -444,7 +444,7 @@ const ReviewPage = ({ user }) => {
                                 onClick={(e) =>
                                   handleViewUserProfile(
                                     rev.fullName,
-                                    rev.username,
+                                    rev.authorId,
                                     e,
                                   )
                                 }
@@ -595,7 +595,7 @@ const ReviewPage = ({ user }) => {
                       <div
                         className="d-flex gap-3 align-items-center"
                         onClick={(e) =>
-                          handleViewUserProfile(rev.fullName, rev.username, e)
+                          handleViewUserProfile(rev.fullName, rev.authorId, e)
                         }
                       >
                         <div
@@ -606,7 +606,7 @@ const ReviewPage = ({ user }) => {
                             backgroundColor: primaryColor,
                           }}
                         >
-                          <AvatarFill user={user} name={rev.fullName} username={rev.username} email={rev.authorEmail || rev.email} avatar={rev.avatar || rev.authorAvatar} />
+                          <AvatarFill user={user} name={rev.fullName} userId={rev.authorId} email={rev.authorEmail || rev.email} avatar={rev.avatar || rev.authorAvatar} />
                         </div>
                         <div>
                           <h6 className="fw-bold mb-0 text-dark hover-primary">
@@ -616,7 +616,7 @@ const ReviewPage = ({ user }) => {
                             className="text-muted"
                             style={{ fontSize: "0.8rem" }}
                           >
-                            @{rev.username} • {rev.date}
+                            {rev.date}
                           </span>
                         </div>
                       </div>
@@ -722,7 +722,7 @@ const ReviewPage = ({ user }) => {
                     setShowDetailModal(false);
                     handleViewUserProfile(
                       selectedReview.fullName,
-                      selectedReview.username
+                      selectedReview.authorId
                     );
                   }}
                 >
@@ -734,14 +734,14 @@ const ReviewPage = ({ user }) => {
                       backgroundColor: primaryColor,
                     }}
                   >
-                    <AvatarFill user={user} name={selectedReview.fullName} username={selectedReview.username} email={selectedReview.authorEmail || selectedReview.email} avatar={selectedReview.avatar || selectedReview.authorAvatar} />
+                    <AvatarFill user={user} name={selectedReview.fullName} userId={selectedReview.authorId} email={selectedReview.authorEmail || selectedReview.email} avatar={selectedReview.avatar || selectedReview.authorAvatar} />
                   </div>
                   <div>
                     <h6 className="fw-bold mb-0 text-dark hover-primary">
                       {selectedReview.fullName}
                     </h6>
                     <small className="text-muted">
-                      @{selectedReview.username} • {selectedReview.date}
+                      {selectedReview.date}
                     </small>
                   </div>
                 </div>

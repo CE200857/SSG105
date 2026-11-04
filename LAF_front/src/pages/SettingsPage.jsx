@@ -179,9 +179,6 @@ const SettingsPage = ({ user, setUser }) => {
                 </div>
                 <Row2 title={t("settings.account.fullName")}>{user.fullName || "—"}</Row2>
                 <Row2 title={t("settings.account.email")}>{user.email || "—"}</Row2>
-                {user.username && (
-                  <Row2 title={t("settings.account.username")}>@{user.username}</Row2>
-                )}
                 {user.campus && <Row2 title={t("settings.account.campus")}>{user.campus}</Row2>}
                 <div className="d-flex flex-wrap gap-2 mt-4">
                   <Button
@@ -230,7 +227,7 @@ const SettingsPage = ({ user, setUser }) => {
                     >
                       <span
                         className="d-block fw-bold mb-1"
-                        style={{ fontSize: `${f.px / 16 * 1.5}rem` }}
+                        style={{ fontSize: `${f.scale * 1.5}rem` }}
                       >
                         Aa
                       </span>

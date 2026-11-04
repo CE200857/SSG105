@@ -628,3 +628,13 @@ html.reduce-motion *::after {
 .settings-page .settings-row > div:first-child {
   text-align: left !important;
 }
+
+/* Cỡ chữ theo Cài đặt: "Vừa" (scale = 1) giữ nguyên cỡ gốc của web */
+html:root {
+  font-size: calc(18px * var(--lf-font-scale, 1));
+}
+@media (max-width: 1024px) {
+  html:root {
+    font-size: calc(16px * var(--lf-font-scale, 1));
+  }
+}

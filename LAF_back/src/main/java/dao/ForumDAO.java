@@ -51,7 +51,7 @@ public class ForumDAO extends DBContext {
         StringBuilder query = new StringBuilder(
                 "SELECT f.PostID, f.Title, f.Category, f.Content, "
                 + "CONVERT(VARCHAR, f.CreatedAt, 103) as Date, "
-                + "f.Visibility, u.FullName, u.Username, u.Email as AuthorEmail, u.AvatarURL, "
+                + "f.Visibility, u.FullName, u.UserID as AuthorID, u.Email as AuthorEmail, u.AvatarURL, "
                 + "(SELECT COUNT(*) FROM ForumLikes fl WHERE fl.PostID = f.PostID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM ForumLikes fl JOIN Users u2 ON fl.UserID = u2.UserID WHERE fl.PostID = f.PostID AND u2.Email = ?) as UserLiked "
                 + "FROM ForumPosts f JOIN Users u ON f.UserID = u.UserID WHERE 1=1 AND f.ApprovalStatus = 'Approved' "
@@ -80,10 +80,8 @@ public class ForumDAO extends DBContext {
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.append("AND (f.Title COLLATE Latin1_General_CI_AI LIKE ? "
                     + "OR f.Content COLLATE Latin1_General_CI_AI LIKE ? "
-                    + "OR u.FullName COLLATE Latin1_General_CI_AI LIKE ? "
-                    + "OR u.Username COLLATE Latin1_General_CI_AI LIKE ?) ");
+                    + "OR u.FullName COLLATE Latin1_General_CI_AI LIKE ?) ");
             String like = "%" + keyword.trim() + "%";
-            params.add(like);
             params.add(like);
             params.add(like);
             params.add(like);
@@ -111,8 +109,8 @@ public class ForumDAO extends DBContext {
                 map.put("content", rs.getString("Content"));
                 map.put("date", rs.getString("Date"));
                 map.put("fullName", rs.getString("FullName"));
-                map.put("username", rs.getString("Username"));
-                map.put("authorEmail", rs.getString("AuthorEmail"));
+                map.put("authorId", rs.getInt("AuthorID"));
+                map.put("authorEmail", (currentUserEmail == null || currentUserEmail.trim().isEmpty()) ? "" : rs.getString("AuthorEmail"));
                 map.put("avatar", rs.getString("AvatarURL"));
                 map.put("visibility", rs.getString("Visibility"));
                 map.put("likes", rs.getInt("LikesCount"));
@@ -135,7 +133,7 @@ public class ForumDAO extends DBContext {
         boolean viewerIsAdmin = isAdminEmail(currentUserEmail);
         String query = "SELECT c.CommentID, c.Content, c.ParentCommentID, "
                 + "CONVERT(VARCHAR, c.CreatedAt, 103) + ' ' + CONVERT(VARCHAR, c.CreatedAt, 108) as Time, "
-                + "u.FullName, u.Username, u.Email as CommentAuthorEmail, u.AvatarURL, "
+                + "u.FullName, u.UserID as AuthorID, u.Email as CommentAuthorEmail, u.AvatarURL, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID) as LikesCount, "
                 + "(SELECT COUNT(*) FROM CommentLikes cl JOIN Users u2 ON cl.UserID = u2.UserID WHERE cl.CommentType = 'forum' AND cl.CommentID = c.CommentID AND u2.Email = ?) as UserLiked "
                 + "FROM ForumComments c JOIN Users u ON c.UserID = u.UserID "
@@ -149,9 +147,9 @@ public class ForumDAO extends DBContext {
                 Map<String, Object> c = new HashMap<>();
                 c.put("id", rs.getInt("CommentID"));
                 c.put("author", rs.getString("FullName"));
-                c.put("username", rs.getString("Username"));
+                c.put("authorId", rs.getInt("AuthorID"));
                 String authorEmail = rs.getString("CommentAuthorEmail");
-                c.put("authorEmail", authorEmail);
+                c.put("authorEmail", (currentUserEmail == null || currentUserEmail.trim().isEmpty()) ? "" : authorEmail);
                 c.put("avatar", rs.getString("AvatarURL"));
                 c.put("canManage", viewerIsAdmin
                         || (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(authorEmail)));
