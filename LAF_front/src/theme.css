@@ -163,7 +163,7 @@ h6 {
   transform: translateY(-1px);
 }
 /* Nút nền xanh thương hiệu (viết inline) -> gradient + bóng */
-.btn[style*="rgb(31, 109, 186)"] {
+.btn[style*="background-color: rgb(31, 109, 186)"] {
   background-image: linear-gradient(
     135deg,
     #3b8fdc 0%,
@@ -173,7 +173,7 @@ h6 {
   box-shadow: 0 8px 20px rgba(31, 109, 186, 0.28);
   color: #fff;
 }
-.btn[style*="rgb(31, 109, 186)"]:hover {
+.btn[style*="background-color: rgb(31, 109, 186)"]:hover {
   filter: brightness(1.06);
   box-shadow: 0 12px 26px rgba(31, 109, 186, 0.36);
 }

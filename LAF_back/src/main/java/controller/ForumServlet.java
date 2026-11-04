@@ -35,7 +35,9 @@ public class ForumServlet extends HttpServlet {
         String sort = request.getParameter("sort");
         String email = request.getParameter("email");
 
-        List<Map<String, Object>> posts = dao.getForumPosts(category, sort, email);
+        String keyword = request.getParameter("keyword");
+
+        List<Map<String, Object>> posts = dao.getForumPosts(category, sort, email, keyword);
         out.print(new Gson().toJson(posts));
         out.flush();
     }

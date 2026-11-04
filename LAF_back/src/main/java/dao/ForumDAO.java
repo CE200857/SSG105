@@ -33,11 +33,20 @@ public class ForumDAO extends DBContext {
     }
 
     public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail) {
-        return getForumPosts(categoryFilter, sortBy, currentUserEmail, false, null);
+        return getForumPosts(categoryFilter, sortBy, currentUserEmail, false, null, null);
+    }
+
+    // Có tìm kiếm: keyword khớp tiêu đề, nội dung, tên hoặc username tác giả
+    public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail, String keyword) {
+        return getForumPosts(categoryFilter, sortBy, currentUserEmail, false, null, keyword);
     }
 
     // adminView = true: thấy cả bài riêng tư (trang quản lý), có thể lọc theo visibility (Public/Private)
     public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail, boolean adminView, String visibilityFilter) {
+        return getForumPosts(categoryFilter, sortBy, currentUserEmail, adminView, visibilityFilter, null);
+    }
+
+    public List<Map<String, Object>> getForumPosts(String categoryFilter, String sortBy, String currentUserEmail, boolean adminView, String visibilityFilter, String keyword) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
                 "SELECT f.PostID, f.Title, f.Category, f.Content, "
@@ -65,6 +74,19 @@ public class ForumDAO extends DBContext {
         if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("Tất cả")) {
             query.append("AND f.Category = ? ");
             params.add(categoryFilter);
+        }
+
+        // Tìm kiếm không phân biệt hoa/thường và dấu tiếng Việt (vd: "meo" khớp "Mẹo")
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.append("AND (f.Title COLLATE Latin1_General_CI_AI LIKE ? "
+                    + "OR f.Content COLLATE Latin1_General_CI_AI LIKE ? "
+                    + "OR u.FullName COLLATE Latin1_General_CI_AI LIKE ? "
+                    + "OR u.Username COLLATE Latin1_General_CI_AI LIKE ?) ");
+            String like = "%" + keyword.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
         }
 
         if ("oldest".equals(sortBy)) {

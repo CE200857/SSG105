@@ -1,39 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import vi from "./vi";
-import en from "./en";
-import ja from "./ja";
-import "./lang.css";
 
-export const LANG_KEY = "laf_lang";
+// Website chỉ dùng tiếng Việt (không còn chuyển đổi ngôn ngữ)
 export const DEFAULT_LANG = "vi";
-
-// Tên ngôn ngữ luôn viết bằng chính ngôn ngữ đó để người dùng dễ nhận ra
-// (short: mã ngắn hiển thị trên nút, vì Windows không hiện được emoji lá cờ)
-export const LANGUAGES = [
-  { code: "vi", name: "Tiếng Việt", short: "VI" },
-  { code: "en", name: "English", short: "EN" },
-  { code: "ja", name: "日本語", short: "JA" },
-];
-
-const DICTS = { vi, en, ja };
-
-export const getSavedLang = () => {
-  try {
-    const saved = localStorage.getItem(LANG_KEY);
-    if (saved && DICTS[saved]) return saved;
-  } catch {
-    /* trình duyệt chặn localStorage: bỏ qua */
-  }
-  return DEFAULT_LANG;
-};
 
 // Thay {tên} trong chuỗi bằng giá trị truyền vào: t("key", { tên: "An" })
 const format = (text, params) =>
@@ -43,54 +13,26 @@ const format = (text, params) =>
       )
     : text;
 
-// Thiếu chuỗi ở ngôn ngữ đang chọn -> dùng tiếng Việt; thiếu luôn -> hiện chính khóa
-export const translate = (lang, key, params) => {
-  const text = DICTS[lang]?.[key] ?? DICTS[DEFAULT_LANG][key] ?? key;
-  return format(text, params);
-};
+// Thiếu chuỗi -> hiện chính khóa
+export const translate = (lang, key, params) => format(vi[key] ?? key, params);
 
-const LanguageContext = createContext({
-  lang: DEFAULT_LANG,
-  setLang: () => {},
-  t: (key, params) => translate(DEFAULT_LANG, key, params),
-});
+const t = (key, params) => translate(DEFAULT_LANG, key, params);
+
+const LanguageContext = createContext({ lang: DEFAULT_LANG, t });
 
 export const LanguageProvider = ({ children }) => {
-  const [lang, setLangState] = useState(getSavedLang);
-
-  const setLang = useCallback((code) => {
-    if (!DICTS[code]) return;
+  useEffect(() => {
+    document.documentElement.lang = DEFAULT_LANG;
+    document.title = t("app.title");
+    // Dọn lựa chọn ngôn ngữ cũ (nếu trước đây từng chọn EN/JA)
     try {
-      localStorage.setItem(LANG_KEY, code);
+      localStorage.removeItem("laf_lang");
     } catch {
       /* bỏ qua */
     }
-    setLangState(code);
   }, []);
 
-  // Cập nhật thuộc tính lang của trang (để trình duyệt chọn đúng font) và tiêu đề tab
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    document.title = translate(lang, "app.title");
-  }, [lang]);
-
-  // Đổi ngôn ngữ ở tab khác thì tab này đồng bộ theo
-  useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key === LANG_KEY) setLangState(getSavedLang());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  const value = useMemo(
-    () => ({
-      lang,
-      setLang,
-      t: (key, params) => translate(lang, key, params),
-    }),
-    [lang, setLang],
-  );
+  const value = useMemo(() => ({ lang: DEFAULT_LANG, t }), []);
 
   return (
     <LanguageContext.Provider value={value}>
@@ -99,5 +41,5 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
-// Dùng trong component: const { t, lang, setLang } = useI18n();
+// Dùng trong component: const { t } = useI18n();
 export const useI18n = () => useContext(LanguageContext);

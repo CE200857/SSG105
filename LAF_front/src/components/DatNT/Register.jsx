@@ -223,14 +223,18 @@ const Register = () => {
               <Card.Body>
                 <div className="mb-4 text-start">
                   <div
-                    className="bg-success bg-opacity-10 rounded d-inline-flex align-items-center justify-content-center mb-3"
+                    className="d-inline-flex align-items-center justify-content-center mb-3"
                     style={{
-                      width: "50px",
-                      height: "50px",
-                      color: primaryColor,
+                      width: "56px",
+                      height: "56px",
+                      borderRadius: "16px",
+                      background:
+                        "linear-gradient(135deg, #3b8fdc 0%, #1858a0 100%)",
+                      color: "#ffffff",
+                      boxShadow: "0 10px 22px rgba(31, 109, 186, 0.30)",
                     }}
                   >
-                    <i className="bi bi-person-plus fs-4"></i>
+                    <i className="bi bi-person-plus-fill fs-3"></i>
                   </div>
                   <h3 className="fw-bold mb-2" style={{ color: "#12345a" }}>
                     Đăng ký
@@ -418,14 +422,17 @@ const Register = () => {
                     as={Link}
                     to="/login"
                     variant="outline-primary"
-                    className="w-100"
+                    className="w-100 fw-semibold"
                     style={{
                       borderColor: primaryColor,
+                      borderWidth: "2px",
                       color: primaryColor,
+                      backgroundColor: "#ffffff",
                       borderRadius: "10px",
                       padding: "12px",
                     }}
                   >
+                    <i className="bi bi-box-arrow-in-right me-2"></i>
                     Đăng nhập
                   </Button>
                 </Form>

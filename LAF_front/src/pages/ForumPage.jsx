@@ -89,6 +89,8 @@ const ForumPage = ({ user }) => {
   const [categoryFilter, setCategoryFilter] = useState("Tất cả");
   const [onlyMine, setOnlyMine] = useState(false); // lọc bài của bản thân
   const [sortBy, setSortBy] = useState("newest");
+  const [searchInput, setSearchInput] = useState(""); // chữ đang gõ trong ô tìm kiếm
+  const [keyword, setKeyword] = useState(""); // từ khóa đã áp dụng (sau khi ngừng gõ)
 
   // State cho Modal Tạo bài viết mới
   const [showModal, setShowModal] = useState(false);
@@ -175,13 +177,15 @@ const ForumPage = ({ user }) => {
   };
 
   const fetchPosts = async () => {
-    setLoading(true);
+    // Chỉ hiện vòng xoay khi chưa có bài nào, để lúc gõ tìm kiếm danh sách không bị nháy
+    if (posts.length === 0) setLoading(true);
     try {
       const response = await axios.get("/api/forum", {
         params: {
           category: categoryFilter,
           sort: sortBy,
           email: user ? user.email : "",
+          keyword,
         },
       });
       const editedMap =
@@ -202,6 +206,8 @@ const ForumPage = ({ user }) => {
         if (target) {
           setSelectedPostDetail(target);
           setShowDetailModal(true);
+          // Xóa dấu "mở bài" để các lần tải / tìm kiếm sau không mở lại bài này
+          navigate(locationData.pathname, { replace: true, state: {} });
         }
       }
     } catch (error) {
@@ -211,9 +217,15 @@ const ForumPage = ({ user }) => {
     }
   };
 
+  // Gõ xong khoảng 0,4 giây mới tìm (tránh gọi server mỗi phím)
+  useEffect(() => {
+    const timer = setTimeout(() => setKeyword(searchInput.trim()), 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   useEffect(() => {
     fetchPosts();
-  }, [categoryFilter, sortBy, user, navState.openPostId]);
+  }, [categoryFilter, sortBy, keyword, user, navState.openPostId]);
 
   const handleOpenModal = () => {
     if (requireLogin("đăng bài viết")) {
@@ -671,6 +683,33 @@ const ForumPage = ({ user }) => {
 
           {/* CỘT PHẢI: DANH SÁCH BÀI VIẾT */}
           <Col lg={9}>
+            {/* Ô TÌM KIẾM BÀI VIẾT */}
+            <div className="position-relative mb-3">
+              <i
+                className="bi bi-search position-absolute top-50 translate-middle-y text-secondary"
+                style={{ left: "18px" }}
+              ></i>
+              <Form.Control
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Tìm bài viết theo tiêu đề, nội dung hoặc tác giả..."
+                className="rounded-pill border-0 shadow-sm py-2 shadow-none"
+                style={{ paddingLeft: "46px", paddingRight: "46px" }}
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput("")}
+                  aria-label="Xóa tìm kiếm"
+                  className="btn btn-link position-absolute top-50 translate-middle-y text-secondary p-1"
+                  style={{ right: "12px" }}
+                >
+                  <i className="bi bi-x-circle-fill"></i>
+                </button>
+              )}
+            </div>
+
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" style={{ color: primaryColor }} />
@@ -678,8 +717,14 @@ const ForumPage = ({ user }) => {
             ) : visiblePosts.length === 0 ? (
               <div className="text-center py-5 text-secondary">
                 <i className="bi bi-journal-x fs-1 opacity-50 mb-3 d-block"></i>
-                <h5 className="fw-bold">Chưa có bài viết nào</h5>
-                <p>Hãy là người đầu tiên chia sẻ kinh nghiệm trong mục này!</p>
+                <h5 className="fw-bold">
+                  {keyword ? "Không tìm thấy bài viết phù hợp" : "Chưa có bài viết nào"}
+                </h5>
+                <p>
+                  {keyword
+                    ? `Không có bài nào khớp với "${keyword}". Thử từ khóa khác nhé!`
+                    : "Hãy là người đầu tiên chia sẻ kinh nghiệm trong mục này!"}
+                </p>
               </div>
             ) : (
               <div className="d-flex flex-column gap-3">
