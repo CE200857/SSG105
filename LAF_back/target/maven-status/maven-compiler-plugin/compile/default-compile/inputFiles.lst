@@ -4,6 +4,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\UserDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\filter\PasswordUtils.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\com\mycompany\laf_back\JakartaRestConfiguration.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\RegisterServlet.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\CommentBatchLoader.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\LostPosts.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\NotificationDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\LogoutServlet.java
@@ -13,6 +14,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\PostDTO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\filter\CorsFilter.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\FoundImages.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\com\mycompany\laf_back\resources\JakartaEE10Resource.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\util\UpdateHub.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\NotificationServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\ReviewServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\ResetPasswordServlet.java
@@ -28,6 +30,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\AdminServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\OverviewServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\LoginServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dto\OverviewDTO.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\util\LiveUpdates.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\StatusRequestServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\util\MailUtil.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\entity\Users.java
@@ -39,6 +42,7 @@ E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\SessionDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\dao\ReviewDAO.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\ShareServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\LostPostsServlet.java
+E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\UpdatesServlet.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\util\CorsUtil.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\filter\SessionGuardFilter.java
 E:\Study\Ky5\SSG105\SSG105\LAF_back\src\main\java\controller\UpdateProfileServlet.java

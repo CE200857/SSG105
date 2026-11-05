@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Container,
   Row,
@@ -17,6 +17,8 @@ import {
   Image,
 } from "react-bootstrap";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
+import { subscribeUpdates } from "../utils/liveUpdates";
 import { compressImage } from "../utils/compressImage";
 import { postImgProps } from "../utils/postImage";
 import { useSearchParams } from "react-router-dom";
@@ -113,117 +115,53 @@ const AdminPage = ({ user }) => {
   const [showPendingView, setShowPendingView] = useState(false);
   const [pendingViewItem, setPendingViewItem] = useState(null);
 
-  useEffect(() => {
-    axios
-      .get("/api/admin", { params: { type: "statusRequests" } })
-      .then((res) => setStatusReqList(Array.isArray(res.data) ? res.data : []))
-      .catch(() => {});
-  }, []);
+
 
   const showToast = (type, text) => {
     setFeedback({ type, text });
     setTimeout(() => setFeedback({ type: "", text: "" }), 3500);
   };
 
-  // Tải thống kê tổng quan và danh sách User (dùng cho dropdown chọn tác giả khi Admin tạo bài)
-  const fetchStatsAndUsers = async () => {
+  const usersLoaded = useRef(false);
+  useEffect(() => subscribeUpdates((topics) => {
+    if (topics.includes("users") || topics.includes("*")) usersLoaded.current = false;
+  }), []);
+
+  const loadSectionData = async ({ background, signal, isCurrent }) => {
+    if (!background) setLoading(true);
+    const config = { signal, silent: background, timeout: 15000 };
+    const get = (params) => axios.get("/api/admin", { ...config, params });
+    const sections = {
+      lost: [{ type: "lost", ...lostFilter }, setLostList],
+      found: [{ type: "found", ...foundFilter, sort: "newest" }, setFoundList],
+      forum: [{ type: "forum", ...forumFilter }, setForumList],
+      pending: [{ type: "pending" }, setPendingList],
+      statusReq: [{ type: "statusRequests" }, setStatusReqList],
+      reviews: [{ type: "reviews", ...reviewFilter }, setReviewList],
+      users: [{ type: "users", ...userFilter }, setUserList],
+    };
     try {
-      const [stRes, usRes] = await Promise.all([
-        axios.get("/api/admin", { params: { type: "stats" } }),
-        axios.get("/api/admin", {
-          params: {
-            type: "users",
-            keyword: userFilter.keyword,
-            campus: userFilter.campus,
-            gender: userFilter.gender,
-            roleId: userFilter.roleId,
-          },
-        }),
+      const section = sections[activeSection];
+      const needUsers = activeSection !== "users" && !usersLoaded.current;
+      const [statsResult, sectionResult, usersResult] = await Promise.all([
+        get({ type: "stats" }),
+        section ? get(section[0]) : Promise.resolve(null),
+        needUsers ? get({ type: "users" }) : Promise.resolve(null),
       ]);
-      if (stRes.data) setStats(stRes.data);
-      if (Array.isArray(usRes.data)) setUserList(usRes.data);
-    } catch (err) {
-      console.error("Lỗi tải thống kê Admin:", err);
-    }
-  };
-
-  // Tải dữ liệu theo từng mục quản lý
-  const fetchSectionData = async () => {
-    setLoading(true);
-    try {
-      await fetchStatsAndUsers();
-
-      if (activeSection === "lost") {
-        const res = await axios.get("/api/admin", {
-          params: {
-            type: "lost",
-            keyword: lostFilter.keyword,
-            category: lostFilter.category,
-            location: lostFilter.location,
-          },
-        });
-        setLostList(Array.isArray(res.data) ? res.data : []);
-      } else if (activeSection === "found") {
-        const res = await axios.get("/api/admin", {
-          params: {
-            type: "found",
-            keyword: foundFilter.keyword,
-            category: foundFilter.category,
-            location: foundFilter.location,
-            sort: "newest",
-          },
-        });
-        setFoundList(Array.isArray(res.data) ? res.data : []);
-      } else if (activeSection === "forum") {
-        const res = await axios.get("/api/admin", {
-          params: {
-            type: "forum",
-            category: forumFilter.category,
-            sort: forumFilter.sort,
-          },
-        });
-        setForumList(Array.isArray(res.data) ? res.data : []);
-      } else if (activeSection === "pending") {
-        const res = await axios.get("/api/admin", {
-          params: { type: "pending" },
-        });
-        setPendingList(Array.isArray(res.data) ? res.data : []);
-      } else if (activeSection === "statusReq") {
-        const reqRes = await axios.get("/api/admin", {
-          params: { type: "statusRequests" },
-        });
-        setStatusReqList(Array.isArray(reqRes.data) ? reqRes.data : []);
-      } else if (activeSection === "reviews") {
-        const res = await axios.get("/api/admin", {
-          params: {
-            type: "reviews",
-            star: reviewFilter.star,
-            sort: reviewFilter.sort,
-          },
-        });
-        setReviewList(Array.isArray(res.data) ? res.data : []);
-      } else if (activeSection === "users") {
-        const res = await axios.get("/api/admin", {
-          params: {
-            type: "users",
-            keyword: userFilter.keyword,
-            campus: userFilter.campus,
-            gender: userFilter.gender,
-            roleId: userFilter.roleId,
-          },
-        });
-        setUserList(Array.isArray(res.data) ? res.data : []);
+      if (!isCurrent()) return;
+      if (statsResult.data) setStats(statsResult.data);
+      if (sectionResult) section[1](Array.isArray(sectionResult.data) ? sectionResult.data : []);
+      if (usersResult) {
+        setUserList(Array.isArray(usersResult.data) ? usersResult.data : []);
+        usersLoaded.current = true;
       }
-    } catch (error) {
-      console.error("Lỗi tải dữ liệu quản lý:", error);
+      // A filtered account table must not become the author dropdown cache.
+      if (activeSection === "users") usersLoaded.current = false;
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchSectionData();
-  }, [activeSection]);
+  const fetchSectionData = useLiveQuery(["admin"], loadSectionData, [activeSection, user?.email]);
 
   // Mở Modal Tạo mới (Create)
   const handleOpenCreate = () => {
@@ -641,7 +579,7 @@ const AdminPage = ({ user }) => {
       key: "statusReq",
       label: "Yêu cầu đổi trạng thái",
       icon: "bi-arrow-left-right",
-      count: statusReqList.length,
+      count: stats.statusRequestCount ?? 0,
     },
     {
       key: "lost",

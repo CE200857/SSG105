@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/exhaustive-deps */
+ 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Navbar,
@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import { getAvatarSrc } from "../utils/avatar";
 import ThemeToggle from "./ThemeToggle";
 import { useI18n } from "../i18n";
@@ -26,62 +27,32 @@ const Header = ({ user, setUser }) => {
 
   const [notifications, setNotifications] = useState([]);
 
-  // Lấy thông báo của ĐÚNG tài khoản đang đăng nhập.
-  // isStale() = true nếu trong lúc chờ server người dùng đã đổi tài khoản / đăng xuất.
-  const fetchNotifications = async (isStale = () => false) => {
-    if (!user || !user.email) {
-      setNotifications([]);
+  const fetchNotifications = useLiveQuery(["notifications"], async ({ signal, isCurrent }) => {
+    if (!user?.email) {
+      if (isCurrent()) setNotifications([]);
       return;
     }
-    const email = user.email;
-
-    try {
-      const res = await axios.get("/api/notifications", {
-        params: { email },
-        silent: true, // tự cập nhật nền: không hiện thanh tải
-      });
-      if (isStale()) return;
-      if (Array.isArray(res.data)) {
-        const prefs = getNotifPrefs(email);
-        setNotifications(res.data.filter((n) => isNotifVisible(n.type, prefs)));
-        return;
-      }
-    } catch {
-      if (isStale()) return;
+    const res = await axios.get("/api/notifications", {
+      params: { email: user.email }, signal, silent: true, timeout: 15000,
+    });
+    if (isCurrent() && Array.isArray(res.data)) {
+      const prefs = getNotifPrefs(user.email);
+      setNotifications(res.data.filter((n) => isNotifVisible(n.type, prefs)));
     }
-
-    // Dự phòng khi server lỗi: chỉ lấy thông báo cục bộ của chính email này
-    const localNotifs =
-      JSON.parse(localStorage.getItem("laf_notifications")) || [];
-    const prefs = getNotifPrefs(email);
-    setNotifications(
-      localNotifs.filter(
-        (n) => n.recipientEmail === email && isNotifVisible(n.type, prefs),
-      ),
-    );
-  };
-
-  // Đổi tài khoản / đăng xuất -> xóa ngay thông báo của tài khoản trước
-  useEffect(() => {
-    setNotifications([]);
   }, [user?.email]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const isStale = () => cancelled;
+  // Remove the previous account's notifications before the browser paints.
+  useLayoutEffect(() => { setNotifications([]); }, [user?.email]);
 
-    fetchNotifications(isStale);
-    const handleNewNotif = () => fetchNotifications(isStale);
-    window.addEventListener("laf-notifications-updated", handleNewNotif);
-    window.addEventListener(SETTINGS_EVENT, handleNewNotif);
-    const timer = setInterval(() => fetchNotifications(isStale), 20000); // tự tải lại mỗi 20 giây
+  useEffect(() => {
+    const refresh = () => fetchNotifications({ background: true });
+    window.addEventListener("laf-notifications-updated", refresh);
+    window.addEventListener(SETTINGS_EVENT, refresh);
     return () => {
-      cancelled = true;
-      window.removeEventListener("laf-notifications-updated", handleNewNotif);
-      window.removeEventListener(SETTINGS_EVENT, handleNewNotif);
-      clearInterval(timer);
+      window.removeEventListener("laf-notifications-updated", refresh);
+      window.removeEventListener(SETTINGS_EVENT, refresh);
     };
-  }, [user?.email, location.pathname]);
+  }, [fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -179,7 +150,7 @@ const Header = ({ user, setUser }) => {
     const lampEl = lampRef.current;
     if (!lampEl) return;
     if (updateLamp(lampEl.dataset.ready === "1")) lampEl.dataset.ready = "1";
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [location.pathname]);
 
   useEffect(() => {
@@ -188,7 +159,7 @@ const Header = ({ user, setUser }) => {
     if (document.fonts && document.fonts.ready)
       document.fonts.ready.then(relayout);
     return () => window.removeEventListener("resize", relayout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const getNotifIcon = (type) => {

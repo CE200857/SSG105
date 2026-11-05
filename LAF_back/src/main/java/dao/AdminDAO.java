@@ -29,25 +29,22 @@ public class AdminDAO extends DBContext {
     // 1. Thống kê tổng quan Dashboard
     public Map<String, Integer> getDashboardStats() {
         Map<String, Integer> stats = new HashMap<>();
-        String[] keys = {"lostCount", "foundCount", "forumCount", "reviewCount", "studentCount", "pendingCount"};
-        String[] queries = {
-            "SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Approved'",
-            "SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Approved'",
-            "SELECT COUNT(*) FROM ForumPosts WHERE ApprovalStatus = 'Approved'",
-            "SELECT COUNT(*) FROM Reviews",
-            "SELECT COUNT(*) FROM Users WHERE RoleID = 2",
-            "SELECT (SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Pending') + "
-            + "(SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Pending') + "
-            + "(SELECT COUNT(*) FROM ForumPosts WHERE ApprovalStatus = 'Pending')"
-        };
-        for (int i = 0; i < keys.length; i++) {
-            try {
-                PreparedStatement ps = conn.prepareStatement(queries[i]);
-                ResultSet rs = ps.executeQuery();
-                stats.put(keys[i], rs.next() ? rs.getInt(1) : 0);
-            } catch (Exception e) {
-                stats.put(keys[i], 0);
-            }
+        String[] keys = {"lostCount", "foundCount", "forumCount", "reviewCount", "studentCount", "pendingCount", "statusRequestCount"};
+        String sql = "SELECT "
+                + "(SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Approved') AS lostCount, "
+                + "(SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Approved') AS foundCount, "
+                + "(SELECT COUNT(*) FROM ForumPosts WHERE ApprovalStatus = 'Approved') AS forumCount, "
+                + "(SELECT COUNT(*) FROM Reviews) AS reviewCount, "
+                + "(SELECT COUNT(*) FROM Users WHERE RoleID = 2) AS studentCount, "
+                + "((SELECT COUNT(*) FROM LostPosts WHERE ApprovalStatus = 'Pending') + "
+                + "(SELECT COUNT(*) FROM FoundPosts WHERE ApprovalStatus = 'Pending') + "
+                + "(SELECT COUNT(*) FROM ForumPosts WHERE ApprovalStatus = 'Pending')) AS pendingCount, "
+                + "(SELECT COUNT(*) FROM StatusRequests WHERE Status = 'Pending') AS statusRequestCount";
+        for (String key : keys) stats.put(key, 0);
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) for (String key : keys) stats.put(key, rs.getInt(key));
+        } catch (Exception e) {
+            System.out.println("Lỗi getDashboardStats: " + e.getMessage());
         }
         return stats;
     }

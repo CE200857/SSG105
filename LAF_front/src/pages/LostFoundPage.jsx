@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from "react";
+ 
+ 
+import { useState } from "react";
 import {
   Container,
   Row,
@@ -19,6 +19,7 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import CommentContent from "../components/CommentContent";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
@@ -135,89 +136,55 @@ const LostFoundPage = ({ user }) => {
     navigate(`/profile?${query.toString()}`);
   };
 
-  const fetchPosts = async () => {
-    setLoading(true);
+  const loadPosts = async ({ background, signal, isCurrent, filters }) => {
+    if (!background) setLoading(true);
     try {
       const response = await axios.get("/api/lost-posts", {
+        signal, silent: background, timeout: 15000,
         params: {
           keyword: keyword,
           category: categoryFilter === "Tất cả danh mục" ? "" : categoryFilter,
           location: locationFilter === "Toàn campus" ? "" : locationFilter,
           email: user ? user.email : "",
+          ...filters,
         },
       });
-      const localImages =
-        JSON.parse(localStorage.getItem("laf_lost_images")) || {};
-      const localEdits =
-        JSON.parse(localStorage.getItem("laf_edited_lost_posts")) || {};
-      const deletedIds =
-        JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
-
-      const merged = (response.data || [])
-        .filter((p) => !deletedIds.includes(p.id))
-        .map((p) => {
-          const edited = localEdits[p.id] || {};
-          return {
-            ...p,
-            ...edited,
-            image:
-              edited.image ||
-              p.image ||
-              localImages[p.id] ||
-              localImages[p.title] ||
-              null,
-          };
-        });
+      if (!isCurrent()) return;
+      const merged = Array.isArray(response.data) ? response.data : [];
       setPosts(merged);
+      setSelectedPostDetail((current) => current ? merged.find((p) => Number(p.id) === Number(current.id)) || null : current);
 
-      if (navState.openPostId) {
+      if (!background && navState.openPostId) {
         const target = merged.find(
           (item) => Number(item.id) === Number(navState.openPostId),
         );
         if (target) {
           setSelectedPostDetail(target);
           setShowDetailModal(true);
+          navigate(locationData.pathname, { replace: true, state: {} });
         }
       }
     } catch (error) {
+      if (!isCurrent() || axios.isCancel(error)) return;
       console.error("Lỗi khi tải dữ liệu bài đăng mất đồ:", error);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [user, navState.openPostId]);
+  const fetchPosts = useLiveQuery(["lost"], loadPosts, [user?.email, navState.openPostId]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     fetchPosts();
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     setKeyword("");
     setCategoryFilter("Tất cả danh mục");
     setLocationFilter("Toàn campus");
     setActiveTab("Tất cả");
-    setLoading(true);
-    try {
-      const response = await axios.get("/api/lost-posts", {
-        params: {
-          keyword: "",
-          category: "",
-          location: "",
-          email: user ? user.email : "",
-        },
-      });
-      const deletedIds =
-        JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
-      setPosts((response.data || []).filter((p) => !deletedIds.includes(p.id)));
-    } catch (error) {
-      console.error("Lỗi khi tải lại dữ liệu:", error);
-    } finally {
-      setLoading(false);
-    }
+    fetchPosts({ filters: { keyword: "", category: "", location: "", sort: "newest" } });
   };
 
   const handleOpenPostModal = () => {

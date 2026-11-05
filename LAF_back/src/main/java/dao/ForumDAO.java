@@ -93,12 +93,11 @@ public class ForumDAO extends DBContext {
             query.append("ORDER BY f.CreatedAt DESC");
         }
 
-        try {
-            PreparedStatement ps = conn.prepareStatement(query.toString());
+        try (PreparedStatement ps = conn.prepareStatement(query.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int postId = rs.getInt("PostID");
                 Map<String, Object> map = new HashMap<>();
@@ -116,12 +115,13 @@ public class ForumDAO extends DBContext {
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
 
-                List<Map<String, Object>> comments = getCommentsByPostId(postId, currentUserEmail);
-                map.put("comments", comments);
-                map.put("commentsCount", comments.size());
+                map.put("comments", new ArrayList<>());
+                map.put("commentsCount", 0);
 
                 list.add(map);
             }
+            }
+            if (!list.isEmpty()) CommentBatchLoader.attach(conn, list, "forum", currentUserEmail, isAdminEmail(currentUserEmail));
         } catch (Exception e) {
             System.out.println("Lỗi getForumPosts: " + e.getMessage());
         }

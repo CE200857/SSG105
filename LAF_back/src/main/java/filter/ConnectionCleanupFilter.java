@@ -9,7 +9,7 @@ import jakarta.servlet.annotation.WebFilter;
 import java.io.IOException;
 import util.DBContext;
 
-@WebFilter(urlPatterns = {"/*"})
+@WebFilter(asyncSupported = true, urlPatterns = {"/*"})
 public class ConnectionCleanupFilter implements Filter {
 
     @Override

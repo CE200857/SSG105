@@ -59,7 +59,7 @@ public class NotificationDAO extends DBContext {
             ps.setString(4, postType);
             ps.setInt(5, postId);
             ps.setNString(6, message);
-            ps.executeUpdate();
+            if (ps.executeUpdate() > 0) util.UpdateHub.notification(recipientId);
         } catch (Exception e) {
             System.out.println("Lỗi createNotification: " + e.getMessage());
         }
@@ -73,7 +73,7 @@ public class NotificationDAO extends DBContext {
                 + "FROM Notifications n "
                 + "JOIN Users r ON n.RecipientUserID = r.UserID "
                 + "JOIN Users u ON n.SenderUserID = u.UserID "
-                + "WHERE r.Email = ? ORDER BY n.CreatedAt DESC";
+                + "WHERE r.Email = ? ORDER BY n.CreatedAt DESC, n.NotificationID DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, email);

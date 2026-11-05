@@ -130,6 +130,7 @@ public class DBContext {
     // close() -> trả về pool; dùng sau khi trả -> báo lỗi rõ ràng
     private static Connection wrap(final Connection real) {
         final AtomicBoolean released = new AtomicBoolean(false);
+        final List<java.sql.Statement> statements = new ArrayList<>();
         return (Connection) Proxy.newProxyInstance(
                 DBContext.class.getClassLoader(),
                 new Class<?>[]{Connection.class},
@@ -142,6 +143,10 @@ public class DBContext {
                     }
                     if (name.equals("close")) {
                         if (released.compareAndSet(false, true)) {
+                            for (java.sql.Statement statement : statements) {
+                                try { statement.close(); } catch (SQLException ignored) { }
+                            }
+                            statements.clear();
                             release(real);
                         }
                         return null;
@@ -153,7 +158,9 @@ public class DBContext {
                         throw new SQLException("Ket noi da duoc tra ve pool");
                     }
                     try {
-                        return method.invoke(real, args);
+                        Object result = method.invoke(real, args);
+                        if (result instanceof java.sql.Statement) statements.add((java.sql.Statement) result);
+                        return result;
                     } catch (InvocationTargetException e) {
                         throw e.getCause();
                     }

@@ -55,6 +55,8 @@ export const getPostImage = (post) => {
 
 // Dùng: <Image {...postImgProps(post)} />  (tự thay ảnh khi link bị lỗi)
 export const postImgProps = (post) => ({
+  loading: "lazy",
+  decoding: "async",
   src: getPostImage(post),
   onError: (e) => {
     const img = e.currentTarget;

@@ -51,6 +51,7 @@ public class NotificationServlet extends HttpServlet {
             }
         }
 
+        util.LiveUpdates.changed(request, res);
         out.print(new Gson().toJson(res));
         out.flush();
     }

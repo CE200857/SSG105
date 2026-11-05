@@ -112,6 +112,7 @@ public class AvatarServlet extends HttpServlet {
             }
         }
 
+        util.UpdateHub.publish("profile", "lost", "found", "forum", "reviews");
         response.getWriter().print("{\"success\":true,\"avatar\":\"" + newPath + "\"}");
     }
 

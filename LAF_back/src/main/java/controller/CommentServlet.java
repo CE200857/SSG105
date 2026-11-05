@@ -49,6 +49,7 @@ public class CommentServlet extends HttpServlet {
             result.put("success", false);
             result.put("message", "Yêu cầu không hợp lệ.");
         }
+        util.LiveUpdates.changed(request, result);
         response.getWriter().print(new Gson().toJson(result));
     }
 }

@@ -111,6 +111,7 @@ public class LostPostsServlet extends HttpServlet {
             result.put("message", ok ? "Đã gửi bài đăng! Bài sẽ hiển thị sau khi admin duyệt." : "Lỗi khi đăng bài!");
         }
 
+        util.LiveUpdates.changed(request, result);
         out.print(new Gson().toJson(result));
         out.flush();
     }

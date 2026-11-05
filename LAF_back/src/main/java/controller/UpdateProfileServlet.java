@@ -114,6 +114,7 @@ public class UpdateProfileServlet extends HttpServlet {
             }
         }
 
+        util.LiveUpdates.changed(request, result);
         out.print(new Gson().toJson(result));
         out.flush();
     }

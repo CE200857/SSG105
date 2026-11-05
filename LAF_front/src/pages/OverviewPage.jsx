@@ -1,38 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import useLiveQuery from '../hooks/useLiveQuery';
 import { Container, Row, Col, Card, ProgressBar, Badge } from 'react-bootstrap';
 import axios from 'axios';
 
 const OverviewPage = () => {
-  // Đã nạp sẵn dữ liệu được tính toán chính xác từ database LAFDATA.sql
+  // Dữ liệu thực tế được lấy từ máy chủ.
   const [stats, setStats] = useState({
-    avgRating: 4.5,
-    totalReviews: 20,
-    totalPosts: 40,
-    resolvedPosts: 12,
-    waitingPosts: 28,
+    avgRating: 0,
+    totalReviews: 0,
+    totalPosts: 0,
+    resolvedPosts: 0,
+    waitingPosts: 0,
     
-    totalLost: 20,
-    lostFound: 6,
-    lostNotFound: 14,
+    totalLost: 0,
+    lostFound: 0,
+    lostNotFound: 0,
     
-    totalFound: 20,
-    foundClaimed: 6,
-    foundUnclaimed: 14,
+    totalFound: 0,
+    foundClaimed: 0,
+    foundUnclaimed: 0,
   });
 
-  // Gọi API lấy dữ liệu thực tế từ Backend để đồng bộ nếu có bài đăng mới
-  useEffect(() => {
-    const fetchOverviewStats = async () => {
-      try {
-        const response = await axios.get('/api/overview');
-        if (response.data && response.data.totalPosts > 0) {
-          setStats(response.data);
-        }
-      } catch (error) {
-        console.error("Lỗi khi kết nối API tổng quan:", error);
-      }
-    };
-    fetchOverviewStats();
+  useLiveQuery(["overview"], async ({ background, signal, isCurrent }) => {
+    const response = await axios.get('/api/overview', { signal, silent: background, timeout: 15000 });
+    if (isCurrent() && response.data && typeof response.data.totalPosts === 'number') {
+      setStats(response.data);
+    }
   }, []);
 
   const calcPercent = (part, total) => {

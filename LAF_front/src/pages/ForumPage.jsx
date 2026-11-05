@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
+ 
+ 
 import { useState, useEffect } from "react";
 import {
   Container,
@@ -16,6 +16,7 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import CommentContent from "../components/CommentContent";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
@@ -176,11 +177,12 @@ const ForumPage = ({ user }) => {
     navigate(`/profile?${query.toString()}`);
   };
 
-  const fetchPosts = async () => {
+  const loadPosts = async ({ background, signal, isCurrent }) => {
     // Chỉ hiện vòng xoay khi chưa có bài nào, để lúc gõ tìm kiếm danh sách không bị nháy
-    if (posts.length === 0) setLoading(true);
+    if (!background && posts.length === 0) setLoading(true);
     try {
       const response = await axios.get("/api/forum", {
+        signal, silent: background, timeout: 15000,
         params: {
           category: categoryFilter,
           sort: sortBy,
@@ -188,18 +190,12 @@ const ForumPage = ({ user }) => {
           keyword,
         },
       });
-      const editedMap =
-        JSON.parse(localStorage.getItem("laf_edited_forum_posts")) || {};
-      const deletedIds =
-        JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
-
-      const finalPosts = (response.data || [])
-        .filter((p) => !deletedIds.includes(p.id))
-        .map((p) => (editedMap[p.id] ? { ...p, ...editedMap[p.id] } : p));
-
+      if (!isCurrent()) return;
+      const finalPosts = Array.isArray(response.data) ? response.data : [];
       setPosts(finalPosts);
+      setSelectedPostDetail((current) => current ? finalPosts.find((p) => Number(p.id) === Number(current.id)) || null : current);
 
-      if (navState.openPostId) {
+      if (!background && navState.openPostId) {
         const target = finalPosts.find(
           (item) => Number(item.id) === Number(navState.openPostId),
         );
@@ -211,9 +207,10 @@ const ForumPage = ({ user }) => {
         }
       }
     } catch (error) {
+      if (!isCurrent() || axios.isCancel(error)) return;
       console.error("Lỗi khi tải bài viết:", error);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
@@ -223,9 +220,7 @@ const ForumPage = ({ user }) => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  useEffect(() => {
-    fetchPosts();
-  }, [categoryFilter, sortBy, keyword, user, navState.openPostId]);
+  const fetchPosts = useLiveQuery(["forum"], loadPosts, [categoryFilter, sortBy, keyword, user?.email, navState.openPostId]);
 
   const handleOpenModal = () => {
     if (requireLogin("đăng bài viết")) {

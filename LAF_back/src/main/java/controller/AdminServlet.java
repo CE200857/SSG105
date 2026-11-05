@@ -33,18 +33,17 @@ public class AdminServlet extends HttpServlet {
             type = "stats";
         }
 
-        AdminDAO adminDao = new AdminDAO();
 
         switch (type) {
             case "stats":
-                out.print(gson.toJson(adminDao.getDashboardStats()));
+                out.print(gson.toJson(new AdminDAO().getDashboardStats()));
                 break;
             case "users":
                 String kw = request.getParameter("keyword");
                 String campus = request.getParameter("campus");
                 String gender = request.getParameter("gender");
                 String roleId = request.getParameter("roleId");
-                out.print(gson.toJson(adminDao.getAllUsers(kw, campus, gender, roleId)));
+                out.print(gson.toJson(new AdminDAO().getAllUsers(kw, campus, gender, roleId)));
                 break;
             case "lost":
                 LostPostDAO lostDao = new LostPostDAO();
@@ -95,7 +94,7 @@ public class AdminServlet extends HttpServlet {
                 out.print(gson.toJson(new dao.StatusRequestDAO().getPending(null)));
                 break;
             default:
-                out.print(gson.toJson(adminDao.getDashboardStats()));
+                out.print(gson.toJson(new AdminDAO().getDashboardStats()));
                 break;
         }
         out.flush();
@@ -111,12 +110,6 @@ public class AdminServlet extends HttpServlet {
         String entity = request.getParameter("entity"); // "user", "lost", "found", "forum", "review"
         String action = request.getParameter("action"); // "create", "update", "delete", "status"
 
-        AdminDAO adminDao = new AdminDAO();
-        LostPostDAO lostDao = new LostPostDAO();
-        FoundPostDAO foundDao = new FoundPostDAO();
-        ForumDAO forumDao = new ForumDAO();
-        ReviewDAO reviewDao = new ReviewDAO();
-        ModerationDAO modDao = new ModerationDAO();
 
         try {
             if ("visibility".equals(action)) {
@@ -129,7 +122,7 @@ public class AdminServlet extends HttpServlet {
                 result.put("message", ok ? "Đã đổi chế độ xem!" : "Không thể đổi chế độ xem!");
             } else if ("user".equals(entity)) {
                 if ("create".equals(action)) {
-                    String err = adminDao.createUserByAdmin(
+                    String err = new AdminDAO().createUserByAdmin(
                             request.getParameter("fullName"),
                             request.getParameter("email"),
                             request.getParameter("phone"),
@@ -141,7 +134,7 @@ public class AdminServlet extends HttpServlet {
                     result.put("success", err == null);
                     result.put("message", err == null ? "Thêm tài khoản thành công!" : err);
                 } else if ("update".equals(action)) {
-                    String err = adminDao.updateUserByAdmin(
+                    String err = new AdminDAO().updateUserByAdmin(
                             Integer.parseInt(request.getParameter("userId")),
                             request.getParameter("fullName"),
                             request.getParameter("email"),
@@ -154,12 +147,12 @@ public class AdminServlet extends HttpServlet {
                     result.put("success", err == null);
                     result.put("message", err == null ? "Cập nhật tài khoản thành công!" : err);
                 } else if ("delete".equals(action)) {
-                    boolean ok = adminDao.deleteUserByAdmin(Integer.parseInt(request.getParameter("userId")));
+                    boolean ok = new AdminDAO().deleteUserByAdmin(Integer.parseInt(request.getParameter("userId")));
                     result.put("success", ok);
                     result.put("message", ok ? "Đã xóa tài khoản!" : "Lỗi khi xóa tài khoản!");
                 } else if ("ban".equals(action) || "unban".equals(action)) {
                     boolean ban = "ban".equals(action);
-                    boolean ok = adminDao.setUserActive(Integer.parseInt(request.getParameter("userId")), !ban);
+                    boolean ok = new AdminDAO().setUserActive(Integer.parseInt(request.getParameter("userId")), !ban);
                     result.put("success", ok);
                     result.put("message", ok
                             ? (ban ? "Đã khóa tài khoản!" : "Đã mở khóa tài khoản!")
@@ -167,7 +160,7 @@ public class AdminServlet extends HttpServlet {
                 }
             } else if ("lost".equals(entity)) {
                 if ("create".equals(action)) {
-                    boolean ok = lostDao.addLostPost(
+                    boolean ok = new LostPostDAO().addLostPost(
                             request.getParameter("email"),
                             request.getParameter("title"),
                             request.getParameter("category"),
@@ -180,7 +173,7 @@ public class AdminServlet extends HttpServlet {
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
                     int id = Integer.parseInt(request.getParameter("id"));
-                    boolean ok = lostDao.updateLostPost(
+                    boolean ok = new LostPostDAO().updateLostPost(
                             id,
                             request.getParameter("title"),
                             request.getParameter("category"),
@@ -190,16 +183,16 @@ public class AdminServlet extends HttpServlet {
                     );
                     String status = request.getParameter("status");
                     if (status != null && !status.isEmpty()) {
-                        lostDao.updateStatus(id, status);
+                        new LostPostDAO().updateStatus(id, status);
                     }
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", modDao.deleteWithNotice("lost", Integer.parseInt(request.getParameter("id")),
+                    result.put("success", new ModerationDAO().deleteWithNotice("lost", Integer.parseInt(request.getParameter("id")),
                             request.getParameter("reason"), request.getParameter("adminEmail")));
                 }
             } else if ("found".equals(entity)) {
                 if ("create".equals(action)) {
-                    boolean ok = foundDao.addFoundPost(
+                    boolean ok = new FoundPostDAO().addFoundPost(
                             request.getParameter("email"),
                             request.getParameter("itemName"),
                             request.getParameter("category"),
@@ -212,7 +205,7 @@ public class AdminServlet extends HttpServlet {
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
                     int id = Integer.parseInt(request.getParameter("id"));
-                    boolean ok = foundDao.updateFoundPost(
+                    boolean ok = new FoundPostDAO().updateFoundPost(
                             id,
                             request.getParameter("itemName"),
                             request.getParameter("category"),
@@ -222,16 +215,16 @@ public class AdminServlet extends HttpServlet {
                     );
                     String status = request.getParameter("status");
                     if (status != null && !status.isEmpty()) {
-                        foundDao.updateStatus(id, status);
+                        new FoundPostDAO().updateStatus(id, status);
                     }
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", modDao.deleteWithNotice("found", Integer.parseInt(request.getParameter("id")),
+                    result.put("success", new ModerationDAO().deleteWithNotice("found", Integer.parseInt(request.getParameter("id")),
                             request.getParameter("reason"), request.getParameter("adminEmail")));
                 }
             } else if ("forum".equals(entity)) {
                 if ("create".equals(action)) {
-                    boolean ok = forumDao.addForumPost(
+                    boolean ok = new ForumDAO().addForumPost(
                             request.getParameter("email"),
                             request.getParameter("title"),
                             request.getParameter("category"),
@@ -240,7 +233,7 @@ public class AdminServlet extends HttpServlet {
                     );
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
-                    boolean ok = forumDao.updateForumPost(
+                    boolean ok = new ForumDAO().updateForumPost(
                             Integer.parseInt(request.getParameter("id")),
                             request.getParameter("title"),
                             request.getParameter("category"),
@@ -248,12 +241,12 @@ public class AdminServlet extends HttpServlet {
                     );
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", modDao.deleteWithNotice("forum", Integer.parseInt(request.getParameter("id")),
+                    result.put("success", new ModerationDAO().deleteWithNotice("forum", Integer.parseInt(request.getParameter("id")),
                             request.getParameter("reason"), request.getParameter("adminEmail")));
                 }
             } else if ("moderation".equals(entity)) {
                 if ("approve".equals(action)) {
-                    boolean ok = modDao.approvePost(
+                    boolean ok = new ModerationDAO().approvePost(
                             request.getParameter("postType"),
                             Integer.parseInt(request.getParameter("id")),
                             request.getParameter("adminEmail"));
@@ -274,21 +267,21 @@ public class AdminServlet extends HttpServlet {
                 }
             } else if ("review".equals(entity)) {
                 if ("create".equals(action)) {
-                    boolean ok = reviewDao.addReview(
+                    boolean ok = new ReviewDAO().addReview(
                             request.getParameter("email"),
                             Integer.parseInt(request.getParameter("rating")),
                             request.getParameter("comment")
                     );
                     result.put("success", ok);
                 } else if ("update".equals(action)) {
-                    boolean ok = reviewDao.updateReview(
+                    boolean ok = new ReviewDAO().updateReview(
                             Integer.parseInt(request.getParameter("id")),
                             Integer.parseInt(request.getParameter("rating")),
                             request.getParameter("comment")
                     );
                     result.put("success", ok);
                 } else if ("delete".equals(action)) {
-                    result.put("success", reviewDao.deleteReview(Integer.parseInt(request.getParameter("id"))));
+                    result.put("success", new ReviewDAO().deleteReview(Integer.parseInt(request.getParameter("id"))));
                 }
             }
         } catch (Exception e) {
@@ -296,6 +289,7 @@ public class AdminServlet extends HttpServlet {
             result.put("message", "Lỗi xử lý: " + e.getMessage());
         }
 
+        util.LiveUpdates.changed(request, result);
         out.print(new Gson().toJson(result));
         out.flush();
     }

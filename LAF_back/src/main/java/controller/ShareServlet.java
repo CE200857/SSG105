@@ -56,6 +56,7 @@ public class ShareServlet extends HttpServlet {
             result = dao.toggleCommentLike(commentType, commentId, email);
         }
 
+        util.LiveUpdates.changed(request, result);
         out.print(new Gson().toJson(result));
         out.flush();
     }

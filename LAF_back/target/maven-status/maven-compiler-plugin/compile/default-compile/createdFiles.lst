@@ -1,4 +1,5 @@
 dao\ModerationDAO.class
+util\LiveUpdates.class
 controller\CommentServlet.class
 dao\ProfileDAO.class
 com\mycompany\laf_back\resources\TestResource.class
@@ -24,7 +25,9 @@ dao\EmailCodeDAO.class
 util\AuthUtil.class
 entity\Roles.class
 controller\FoundPostsServlet.class
+util\UpdateHub$Change.class
 util\DBContext.class
+util\UpdateHub$Snapshot.class
 controller\LogoutServlet.class
 util\ImageUtil.class
 dao\NotificationDAO.class
@@ -36,10 +39,12 @@ dao\OverviewDAO.class
 entity\Likes.class
 com\mycompany\laf_back\resources\JakartaEE10Resource.class
 controller\EmailCodeServlet.class
+util\UpdateHub$Subscription.class
 dao\AccountDAO.class
 dao\AdminDAO.class
 controller\AvatarServlet.class
 controller\StatusRequestServlet.class
+dao\CommentBatchLoader.class
 controller\ResetPasswordServlet.class
 filter\AuthFilter.class
 entity\Users.class
@@ -62,9 +67,12 @@ controller\ForumServlet.class
 dao\ShareDAO.class
 controller\ShareServlet.class
 dao\CommentDAO.class
+controller\UpdatesServlet$1.class
 filter\SessionGuardFilter.class
 controller\OverviewServlet.class
 filter\PasswordUtils.class
 dao\VisibilityDAO.class
+controller\UpdatesServlet.class
 dao\ForumDAO.class
+util\UpdateHub.class
 controller\HomeServlet.class

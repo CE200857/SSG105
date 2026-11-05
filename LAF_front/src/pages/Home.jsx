@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import { postImgProps } from "../utils/postImage";
 
 const Home = ({ user }) => {
@@ -29,78 +30,19 @@ const Home = ({ user }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Gọi API lấy bài diễn đàn (Đồng bộ lọc bỏ các bài đã xóa & cập nhật bài đã sửa)
-  useEffect(() => {
-    const fetchForumPosts = async () => {
-      try {
-        const response = await axios.get("/api/home/forum-posts");
-        const deletedForumIds =
-          JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
-        const editedForumMap =
-          JSON.parse(localStorage.getItem("laf_edited_forum_posts")) || {};
-
-        const filteredForum = (response.data || [])
-          .filter((p) => !deletedForumIds.includes(p.id))
-          .map((p) =>
-            editedForumMap[p.id] ? { ...p, ...editedForumMap[p.id] } : p,
-          );
-
-        setForumPosts(filteredForum);
-      } catch (error) {
-        console.error("Lỗi lấy dữ liệu diễn đàn:", error);
-      }
-    };
-    fetchForumPosts();
-  }, []);
-
-  // Gọi API lấy tin mới nhất (Đồng bộ lọc bỏ các bài Lost & Found đã xóa)
-  useEffect(() => {
-    const fetchRecentPosts = async () => {
-      try {
-        const response = await axios.get("/api/home/recent-posts");
-        const deletedLostIds =
-          JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
-        const deletedFoundIds =
-          JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
-        const editedLostMap =
-          JSON.parse(localStorage.getItem("laf_edited_lost_posts")) || {};
-        const editedFoundMap =
-          JSON.parse(localStorage.getItem("laf_edited_found_posts")) || {};
-
-        const filteredRecent = (response.data || [])
-          .filter((p) => {
-            if (p.type === "lost") return !deletedLostIds.includes(p.id);
-            if (p.type === "found") return !deletedFoundIds.includes(p.id);
-            return true;
-          })
-          .map((p) => {
-            if (p.type === "lost" && editedLostMap[p.id]) {
-              return {
-                ...p,
-                title: editedLostMap[p.id].title || p.title,
-                location: editedLostMap[p.id].location || p.location,
-                category: editedLostMap[p.id].category || p.category,
-              };
-            }
-            if (p.type === "found" && editedFoundMap[p.id]) {
-              return {
-                ...p,
-                title: editedFoundMap[p.id].itemName || p.title,
-                location: editedFoundMap[p.id].location || p.location,
-                category: editedFoundMap[p.id].category || p.category,
-              };
-            }
-            return p;
-          });
-
-        setRecentPosts(filteredRecent);
-      } catch (error) {
-        console.error("Lỗi lấy dữ liệu trang chủ:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRecentPosts();
+  useLiveQuery(["home"], async ({ background, signal, isCurrent }) => {
+    try {
+      const config = { signal, silent: background, timeout: 15000 };
+      const [recent, forum] = await Promise.all([
+        axios.get("/api/home/recent-posts", config),
+        axios.get("/api/home/forum-posts", config),
+      ]);
+      if (!isCurrent()) return;
+      setRecentPosts(Array.isArray(recent.data) ? recent.data : []);
+      setForumPosts(Array.isArray(forum.data) ? forum.data : []);
+    } finally {
+      if (isCurrent()) setLoading(false);
+    }
   }, []);
 
   const checkScrollPosition = () => {

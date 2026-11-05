@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-@WebFilter(urlPatterns = {"/api/*"})
+@WebFilter(asyncSupported = true, urlPatterns = {"/api/*"})
 public class SessionGuardFilter implements Filter {
 
     // endpoint -> {loại bài, tên tham số chứa id bài}

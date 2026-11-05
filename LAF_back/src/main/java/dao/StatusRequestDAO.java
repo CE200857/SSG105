@@ -324,7 +324,7 @@ public class StatusRequestDAO extends DBContext {
             ps.setString(4, postType);
             ps.setInt(5, postId);
             ps.setNString(6, message);
-            ps.executeUpdate();
+            if (ps.executeUpdate() > 0) util.UpdateHub.notification(recipientId);
         } catch (Exception e) {
             System.out.println("Lỗi insertNotification: " + e.getMessage());
         }

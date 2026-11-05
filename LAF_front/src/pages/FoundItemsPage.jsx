@@ -1,7 +1,7 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from "react";
+ 
+ 
+ 
+import { useState } from "react";
 import {
   Container,
   Row,
@@ -20,6 +20,7 @@ import {
 } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import CommentContent from "../components/CommentContent";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
@@ -132,92 +133,57 @@ const FoundItemsPage = ({ user }) => {
     navigate(`/profile?${query.toString()}`);
   };
 
-  const fetchPosts = async () => {
-    setLoading(true);
+  const loadPosts = async ({ background, signal, isCurrent, filters }) => {
+    if (!background) setLoading(true);
     try {
       const response = await axios.get("/api/found-posts", {
+        signal, silent: background, timeout: 15000,
         params: {
           keyword,
           category: categoryFilter === "Tất cả danh mục" ? "" : categoryFilter,
           location: locationFilter === "Toàn campus" ? "" : locationFilter,
           sort: sortBy,
           email: user ? user.email : "",
+          ...filters,
         },
       });
-      const localImages =
-        JSON.parse(localStorage.getItem("laf_found_images")) || {};
-      const localEdits =
-        JSON.parse(localStorage.getItem("laf_edited_found_posts")) || {};
-      const deletedIds =
-        JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
-
-      const merged = (response.data || [])
-        .filter((p) => !deletedIds.includes(p.id))
-        .map((p) => {
-          const edited = localEdits[p.id] || {};
-          return {
-            ...p,
-            ...edited,
-            image:
-              edited.image ||
-              localImages[p.id] ||
-              localImages[p.itemName] ||
-              p.image ||
-              "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80",
-          };
-        });
+      if (!isCurrent()) return;
+      const merged = Array.isArray(response.data) ? response.data : [];
       setPosts(merged);
+      setSelectedPost((current) => current ? merged.find((p) => Number(p.id) === Number(current.id)) || null : current);
 
-      if (navState.openPostId) {
+      if (!background && navState.openPostId) {
         const target = merged.find(
           (item) => Number(item.id) === Number(navState.openPostId),
         );
         if (target) {
           setSelectedPost(target);
           setShowDetailModal(true);
+          navigate(locationData.pathname, { replace: true, state: {} });
         }
       }
     } catch (error) {
+      if (!isCurrent() || axios.isCancel(error)) return;
       console.error("Lỗi khi tải dữ liệu đồ nhặt được:", error);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [sortBy, user, navState.openPostId]);
+  const fetchPosts = useLiveQuery(["found"], loadPosts, [sortBy, user?.email, navState.openPostId]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     fetchPosts();
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     setKeyword("");
     setCategoryFilter("Tất cả danh mục");
     setLocationFilter("Toàn campus");
-    setSortBy("newest");
     setActiveTab("Tất cả");
-    setLoading(true);
-    try {
-      const response = await axios.get("/api/found-posts", {
-        params: {
-          keyword: "",
-          category: "",
-          location: "",
-          sort: "newest",
-          email: user ? user.email : "",
-        },
-      });
-      const deletedIds =
-        JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
-      setPosts((response.data || []).filter((p) => !deletedIds.includes(p.id)));
-    } catch (error) {
-      console.error("Lỗi khi reset:", error);
-    } finally {
-      setLoading(false);
-    }
+    setSortBy("newest");
+    fetchPosts({ filters: { keyword: "", category: "", location: "", sort: "newest" } });
   };
 
   const handlePostNew = () => {

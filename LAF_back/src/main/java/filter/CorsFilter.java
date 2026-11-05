@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 // Bắt mọi request gửi đến Backend
-@WebFilter(urlPatterns = {"/*"})
+@WebFilter(asyncSupported = true, urlPatterns = {"/*"})
 public class CorsFilter implements Filter {
 
     @Override
@@ -24,6 +24,9 @@ public class CorsFilter implements Filter {
         // Chỉ origin nằm trong danh sách cấu hình (xem util.CorsUtil) mới nhận header CORS + cookie/session.
         // Cấu hình: -Dlaf.cors.origins=... hoặc biến môi trường LAF_CORS_ORIGINS (mặc định localhost:5173 khi dev)
         util.CorsUtil.apply(req, res);
+        if (req.getServletPath().startsWith("/api/") && !"/api/avatar".equals(req.getServletPath())) {
+            res.setHeader("Cache-Control", "no-store");
+        }
 
         // Xử lý preflight request (Trình duyệt thường gửi method OPTIONS trước khi POST)
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {

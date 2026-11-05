@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useRef } from "react";
+ 
+import { useState, useRef } from "react";
 import {
   Container,
   Row,
@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import { getAvatarSrc } from "../utils/avatar";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
@@ -103,42 +104,32 @@ const ProfilePage = ({ user, setUser }) => {
       (queryName && queryName.toLowerCase() === user.fullName?.toLowerCase())),
   );
 
-  useEffect(() => {
+  useLiveQuery(["profile"], async ({ background, signal, isCurrent }) => {
     if (!queryEmail && !queryName && !queryUid && (!user || !user.email)) {
       navigate("/login");
       return;
     }
 
-    const fetchProfileAndPosts = async () => {
-      setLoading(true);
+    if (!background) setLoading(true);
       try {
-        let targetEmail = queryEmail || (isOwnProfile ? user?.email : "");
-        let loadedProfile = null;
-
-        if (queryUid || targetEmail) {
-          try {
-            const profRes = await axios.get("/api/profile", {
-              params: queryUid ? { uid: queryUid } : { email: targetEmail },
-            });
-            if (profRes.data && profRes.data.fullName) {
-              loadedProfile = profRes.data;
-            }
-          } catch {
-            // Fallback bên dưới
-          }
-        }
-
-        const [lostRes, foundRes, forumRes] = await Promise.all([
-          axios
-            .get("/api/lost-posts", { params: { email: user?.email || "" } })
-            .catch(() => ({ data: null })),
-          axios
-            .get("/api/found-posts", { params: { email: user?.email || "" } })
-            .catch(() => ({ data: null })),
-          axios
-            .get("/api/forum", { params: { email: user?.email || "" } })
-            .catch(() => ({ data: null })),
+        const targetEmail = queryEmail || (isOwnProfile ? user?.email : "");
+        const config = { signal, silent: background, timeout: 15000 };
+        const [profRes, lostRes, foundRes, forumRes, pendRes, reqRes] = await Promise.all([
+          queryUid || targetEmail
+            ? axios.get("/api/profile", { ...config, params: queryUid ? { uid: queryUid } : { email: targetEmail } })
+            : Promise.resolve({ data: null }),
+          axios.get("/api/lost-posts", { ...config, params: { email: user?.email || "" } }),
+          axios.get("/api/found-posts", { ...config, params: { email: user?.email || "" } }),
+          axios.get("/api/forum", { ...config, params: { email: user?.email || "" } }),
+          isOwnProfile && user?.email
+            ? axios.get("/api/profile", { ...config, params: { pending: "true", email: user.email } })
+            : Promise.resolve({ data: [] }),
+          isOwnProfile && user?.email
+            ? axios.get("/api/status-requests", config)
+            : Promise.resolve({ data: [] }),
         ]);
+        if (!isCurrent()) return;
+        let loadedProfile = profRes.data?.fullName ? profRes.data : null;
 
         const allLost = Array.isArray(lostRes.data) ? lostRes.data : [];
         const allFound = Array.isArray(foundRes.data) ? foundRes.data : [];
@@ -175,17 +166,9 @@ const ProfilePage = ({ user, setUser }) => {
         setProfileData(loadedProfile);
 
         const targetFullName = loadedProfile.fullName;
-        const deletedLostIds =
-          JSON.parse(localStorage.getItem("laf_deleted_lost_ids")) || [];
-        const deletedFoundIds =
-          JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
-        const deletedForumIds =
-          JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];
-
         const myLost = allLost
           .filter(
             (p) =>
-              !deletedLostIds.includes(p.id) &&
               (loadedProfile.userId
                 ? Number(p.authorId) === Number(loadedProfile.userId)
                 : p.author === targetFullName ||
@@ -202,7 +185,6 @@ const ProfilePage = ({ user, setUser }) => {
         const myFound = allFound
           .filter(
             (p) =>
-              !deletedFoundIds.includes(p.id) &&
               (loadedProfile.userId
                 ? Number(p.authorId) === Number(loadedProfile.userId)
                 : p.author === targetFullName ||
@@ -219,7 +201,6 @@ const ProfilePage = ({ user, setUser }) => {
         const myForum = allForum
           .filter(
             (p) =>
-              !deletedForumIds.includes(p.id) &&
               (loadedProfile.userId
                 ? Number(p.authorId) === Number(loadedProfile.userId)
                 : p.fullName === targetFullName),
@@ -234,30 +215,8 @@ const ProfilePage = ({ user, setUser }) => {
 
         setUserPosts([...myLost, ...myFound, ...myForum]);
 
-        // Bài đang chờ admin duyệt (chỉ hiện ở trang cá nhân của chính mình)
-        if (isOwnProfile && user?.email) {
-          try {
-            const pendRes = await axios.get("/api/profile", {
-              params: { pending: "true", email: user.email },
-            });
-            setPendingPosts(Array.isArray(pendRes.data) ? pendRes.data : []);
-          } catch {
-            setPendingPosts([]);
-          }
-        } else {
-          setPendingPosts([]);
-        }
-
-        if (isOwnProfile && user?.email) {
-          try {
-            const reqRes = await axios.get("/api/status-requests");
-            setStatusRequests(Array.isArray(reqRes.data) ? reqRes.data : []);
-          } catch {
-            setStatusRequests([]);
-          }
-        } else {
-          setStatusRequests([]);
-        }
+        setPendingPosts(Array.isArray(pendRes.data) ? pendRes.data : []);
+        setStatusRequests(Array.isArray(reqRes.data) ? reqRes.data : []);
 
         const allShares = readShares();
         // Chỉ hiện bài chia sẻ mà bài gốc vẫn còn (bài gốc bị xóa thì bài chia sẻ cũng biến mất).
@@ -276,14 +235,12 @@ const ProfilePage = ({ user, setUser }) => {
           .filter((s) => shareOriginalExists(s, originalLists));
         setSharedPosts(userShares);
       } catch (error) {
+        if (!isCurrent() || axios.isCancel(error)) return;
         console.error("Lỗi khi tải hồ sơ:", error);
       } finally {
-        setLoading(false);
+        if (isCurrent()) setLoading(false);
       }
-    };
-
-    fetchProfileAndPosts();
-  }, [user, queryEmail, queryName, queryUid]);
+  }, [user?.email, queryEmail, queryName, queryUid]);
 
   // Mở Modal Sửa bài đăng / bài chia sẻ
   const handleOpenEdit = (item, isShare = false, e) => {

@@ -101,6 +101,7 @@ public class FoundPostsServlet extends HttpServlet {
             }
         }
 
+        util.LiveUpdates.changed(request, result);
         out.print(new Gson().toJson(result));
         out.flush();
     }

@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+ 
+ 
+import { useState } from "react";
 import {
   Container,
   Row,
@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import useLiveQuery from "../hooks/useLiveQuery";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
 import AvatarFill from "../components/AvatarFill";
@@ -88,33 +89,26 @@ const ReviewPage = ({ user }) => {
     navigate(`/profile?${query.toString()}`);
   };
 
-  const fetchReviews = async () => {
-    setLoading(true);
+  const loadReviews = async ({ background, signal, isCurrent }) => {
+    if (!background) setLoading(true);
     try {
       const response = await axios.get("/api/reviews", {
+        signal, silent: background, timeout: 15000,
         params: {
           star: starFilter,
           sort: sortBy,
           email: user ? user.email : "",
         },
       });
-      const editedMap =
-        JSON.parse(localStorage.getItem("laf_edited_reviews")) || {};
-      const deletedIds =
-        JSON.parse(localStorage.getItem("laf_deleted_review_ids")) || [];
-
-      const finalReviews = (response.data || [])
-        .filter((r) => !deletedIds.includes(r.id))
-        .map((r) => (editedMap[r.id] ? { ...r, ...editedMap[r.id] } : r))
-        .filter((r) =>
-          starFilter > 0 ? Number(r.rating) === Number(starFilter) : true,
-        );
-
+      if (!isCurrent()) return;
+      const finalReviews = (Array.isArray(response.data) ? response.data : [])
+        .filter((r) => starFilter > 0 ? Number(r.rating) === Number(starFilter) : true);
       setReviews(finalReviews);
     } catch (error) {
+      if (!isCurrent() || axios.isCancel(error)) return;
       console.error("Lỗi khi tải đánh giá:", error);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
@@ -129,9 +123,7 @@ const ReviewPage = ({ user }) => {
 
   const topRecentReviews = [...reviews].slice(0, 5);
 
-  useEffect(() => {
-    fetchReviews();
-  }, [starFilter, sortBy]);
+  const fetchReviews = useLiveQuery(["reviews"], loadReviews, [starFilter, sortBy, user?.email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

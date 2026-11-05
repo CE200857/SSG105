@@ -6,11 +6,11 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import Login from "../components/DatNT/Login";
 import { Suspense, lazy, useEffect } from "react";
-import Register from "../components/DatNT/Register";
-import CreateProfile from "../components/DatNT/CreateProfile";
-import ForgotPassword from "../components/DatNT/ForgotPassword";
+const Login = lazy(() => import("../components/DatNT/Login"));
+const Register = lazy(() => import("../components/DatNT/Register"));
+const CreateProfile = lazy(() => import("../components/DatNT/CreateProfile"));
+const ForgotPassword = lazy(() => import("../components/DatNT/ForgotPassword"));
 
 // Import Header & Footer
 import Header from "../components/Header";
