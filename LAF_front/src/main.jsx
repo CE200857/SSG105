@@ -9,7 +9,7 @@ import axios from 'axios';
 import { initDisplaySettings } from './utils/settings';
 
 // Đổi port và tên context path ứng với Tomcat của bạn
-axios.defaults.baseURL = 'http://localhost:8080/LAF_back';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/LAF_back';
 axios.defaults.withCredentials = true;
 
 initDisplaySettings();
