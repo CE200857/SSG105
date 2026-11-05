@@ -42,6 +42,7 @@ function App() {
           const next = {
             ...server,
             roleId: Number(server.roleId || 2),
+            
             avatar: server.avatar || null,
           };
           persistUser(next);
