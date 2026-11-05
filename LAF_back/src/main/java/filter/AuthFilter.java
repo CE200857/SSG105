@@ -27,6 +27,7 @@ public class AuthFilter implements Filter {
         
         // Kiểm tra nếu session null hoặc không chứa thuộc tính "user"
         if (session == null || session.getAttribute("user") == null) {
+            util.CorsUtil.apply(req, res);
             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Trả về mã lỗi 401
             res.setContentType("application/json;charset=UTF-8");
             res.getWriter().print("{\"status\":\"error\", \"message\":\"Phiên đăng nhập không hợp lệ hoặc đã hết hạn.\"}");

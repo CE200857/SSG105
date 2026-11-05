@@ -20,6 +20,7 @@ import CommentContent from "../components/CommentContent";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
 import AvatarFill from "../components/AvatarFill";
+import { removeSharesOfPost } from "../utils/sharedPosts";
 
 // Mác phân loại chủ đề của bài viết Forum
 const CATEGORY_META = {
@@ -324,6 +325,7 @@ const ForumPage = ({ user }) => {
     } catch {
       // Fallback xóa đồng bộ
     }
+    removeSharesOfPost("forum", selectedPostId); // bài chia sẻ biến mất cùng bài gốc
 
     const deletedIds =
       JSON.parse(localStorage.getItem("laf_deleted_forum_posts")) || [];

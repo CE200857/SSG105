@@ -56,6 +56,19 @@ public class UpdateProfileServlet extends HttpServlet {
 
         UserDAO dao = new UserDAO();
 
+        // Số điện thoại: cùng quy tắc với lúc đăng ký, chỉ kiểm tra khi người dùng THỰC SỰ đổi số
+        // (số cũ đã lưu từ trước thì giữ nguyên, không bắt nhập lại)
+        phone = (phone == null) ? "" : phone.trim();
+        String oldPhone = dao.getPhoneByEmail(currentEmail);
+        boolean phoneChanged = !phone.equals(oldPhone == null ? "" : oldPhone.trim());
+        if (phoneChanged && !phone.isEmpty() && !phone.matches("^0[1-9][0-9]{8}$")) {
+            result.put("success", false);
+            result.put("message", "Số điện thoại không hợp lệ (phải bắt đầu bằng số 0 và có đủ 10 số).");
+            out.print(new Gson().toJson(result));
+            out.flush();
+            return;
+        }
+
         // 1. Kiểm tra trùng lặp
         String errorMsg = dao.checkDuplicateForUpdate(currentEmail, email, phone);
 

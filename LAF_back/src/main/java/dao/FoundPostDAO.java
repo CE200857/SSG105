@@ -318,8 +318,8 @@ public class FoundPostDAO extends DBContext {
     // 8. Xóa hoàn toàn bài đăng đồ nhặt được khỏi Database (kể cả trên trang Home)
     public boolean deletePost(int foundPostId) {
         try {
+            ShareDAO.purgeSharesOfPost(conn, "found", foundPostId);
             String[] queries = {
-                "DELETE FROM SharedPosts WHERE PostType = 'found' AND OriginalPostID = ?",
                 "DELETE FROM Notifications WHERE PostType = 'found' AND PostID = ?",
                 "DELETE FROM CommentLikes WHERE CommentType = 'found' AND CommentID IN (SELECT CommentID FROM FoundComments WHERE FoundPostID = ?)",
                 "UPDATE FoundComments SET ParentCommentID = NULL WHERE FoundPostID = ?",

@@ -306,8 +306,8 @@ public class ForumDAO extends DBContext {
 
     public boolean deleteForumPost(int postId) {
         try {
+            ShareDAO.purgeSharesOfPost(conn, "forum", postId);
             String[] queries = {
-                "DELETE FROM SharedPosts WHERE PostType = 'forum' AND OriginalPostID = ?",
                 "DELETE FROM Notifications WHERE PostType = 'forum' AND PostID = ?",
                 "DELETE FROM CommentLikes WHERE CommentType = 'forum' AND CommentID IN (SELECT CommentID FROM ForumComments WHERE PostID = ?)",
                 "UPDATE ForumComments SET ParentCommentID = NULL WHERE PostID = ?",

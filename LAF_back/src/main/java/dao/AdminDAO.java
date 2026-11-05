@@ -193,6 +193,11 @@ public class AdminDAO extends DBContext {
     // 5. Xóa hoàn toàn tài khoản và dọn sạch các bảng phụ thuộc
     public boolean deleteUserByAdmin(int userId) {
         try {
+            // Bài chia sẻ của chính user + bài chia sẻ (của người khác) trỏ tới bài viết của user này
+            ShareDAO.purgeShares(conn, "UserID = ?", userId);
+            ShareDAO.purgeShares(conn, "OriginalPostType = 'lost' AND OriginalPostID IN (SELECT LostPostID FROM LostPosts WHERE UserID = ?)", userId);
+            ShareDAO.purgeShares(conn, "OriginalPostType = 'found' AND OriginalPostID IN (SELECT FoundPostID FROM FoundPosts WHERE UserID = ?)", userId);
+            ShareDAO.purgeShares(conn, "OriginalPostType = 'forum' AND OriginalPostID IN (SELECT PostID FROM ForumPosts WHERE UserID = ?)", userId);
             String[] cleanupQueries = {
                 "DELETE FROM CommentLikes WHERE UserID = ?",
                 "DELETE FROM LostLikes WHERE UserID = ?",

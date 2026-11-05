@@ -20,6 +20,7 @@ import axios from "axios";
 import { compressImage } from "../utils/compressImage";
 import { postImgProps } from "../utils/postImage";
 import { useSearchParams } from "react-router-dom";
+import { removeSharesOfPost } from "../utils/sharedPosts";
 
 const AdminPage = ({ user }) => {
   const primaryColor = "#1f6dba";
@@ -554,6 +555,9 @@ const AdminPage = ({ user }) => {
 
       const res = await axios.post("/api/admin", params);
       if (res.data && res.data.success) {
+        if (["lost", "found", "forum"].includes(entity)) {
+          removeSharesOfPost(entity, deleteTarget.id);
+        }
         showToast("success", "Đã xóa dữ liệu khỏi hệ thống!");
         setShowDeleteModal(false);
         fetchSectionData();

@@ -26,6 +26,7 @@ import { VisibilityBadge } from "../components/Visibility";
 import { compressImage } from "../utils/compressImage";
 import { postImgProps, getPostImage } from "../utils/postImage";
 import AvatarFill from "../components/AvatarFill";
+import { removeSharesOfPost } from "../utils/sharedPosts";
 
 const FoundItemsPage = ({ user }) => {
   const primaryColor = "#1f6dba";
@@ -355,6 +356,7 @@ const FoundItemsPage = ({ user }) => {
     } catch {
       // Bỏ qua nếu backend chưa hỗ trợ
     } finally {
+      removeSharesOfPost("found", selectedPostId); // bài chia sẻ biến mất cùng bài gốc
       const deletedIds =
         JSON.parse(localStorage.getItem("laf_deleted_found_ids")) || [];
       localStorage.setItem(

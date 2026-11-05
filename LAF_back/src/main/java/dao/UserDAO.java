@@ -200,4 +200,18 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
+
+    // Số điện thoại hiện lưu trong CSDL của tài khoản (null nếu không có)
+    public String getPhoneByEmail(String email) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT Phone FROM Users WHERE Email = ?")) {
+            ps.setString(1, email);
+            java.sql.ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi getPhoneByEmail: " + e.getMessage());
+        }
+        return null;
+    }
 }

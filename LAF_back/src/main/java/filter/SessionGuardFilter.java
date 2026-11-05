@@ -71,14 +71,14 @@ public class SessionGuardFilter implements Filter {
                 chain.doFilter(new EmailRequest(req, emailParam, ""), response);
                 return;
             }
-            deny(res, 401, "Bạn chưa đăng nhập hoặc phiên đã hết hạn.");
+            deny(req, res, 401, "Bạn chưa đăng nhập hoặc phiên đã hết hạn.");
             return;
         }
 
         boolean admin = (u.getRoleID() == 1);
 
         if (isAdminApi) {                              // việc 2: chỉ admin
-            if (!admin) { deny(res, 403, "Bạn không có quyền quản trị."); return; }
+            if (!admin) { deny(req, res, 403, "Bạn không có quyền quản trị."); return; }
             chain.doFilter(request, response);
             return;
         }
@@ -91,22 +91,21 @@ public class SessionGuardFilter implements Filter {
             try {
                 id = Integer.parseInt(req.getParameter(meta[1]));
             } catch (Exception e) {
-                deny(res, 400, "Thiếu hoặc sai mã bài.");
+                deny(req, res, 400, "Thiếu hoặc sai mã bài.");
                 return;
             }
             SessionDAO dao = new SessionDAO();
             boolean owner;
             try { owner = dao.isOwner(meta[0], id, u.getUserID()); } finally { dao.close(); }
-            if (!owner) { deny(res, 403, "Bạn không phải chủ bài này."); return; }
+            if (!owner) { deny(req, res, 403, "Bạn không phải chủ bài này."); return; }
         }
 
         chain.doFilter(new EmailRequest(req, emailParam, email), response);
     }
 
-    private void deny(HttpServletResponse res, int code, String msg) throws IOException {
+    private void deny(HttpServletRequest req, HttpServletResponse res, int code, String msg) throws IOException {
         // Thêm header CORS vì filter này có thể chạy trước CorsFilter
-        res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
+        util.CorsUtil.apply(req, res);
         res.setStatus(code);
         res.setContentType("application/json;charset=UTF-8");
         res.getWriter().print("{\"status\":\"error\",\"success\":false,\"message\":\"" + msg + "\"}");

@@ -19,6 +19,11 @@ import { getAvatarSrc } from "../utils/avatar";
 import { setPostVisibility } from "../utils/visibility";
 import { VisibilityBadge } from "../components/Visibility";
 import { postImgProps } from "../utils/postImage";
+import {
+  readShares,
+  removeSharesOfPost,
+  shareOriginalExists,
+} from "../utils/sharedPosts";
 
 // Nhãn phân biệt bài chờ duyệt thuộc trang nào
 const PENDING_SOURCE = {
@@ -126,13 +131,13 @@ const ProfilePage = ({ user, setUser }) => {
         const [lostRes, foundRes, forumRes] = await Promise.all([
           axios
             .get("/api/lost-posts", { params: { email: user?.email || "" } })
-            .catch(() => ({ data: [] })),
+            .catch(() => ({ data: null })),
           axios
             .get("/api/found-posts", { params: { email: user?.email || "" } })
-            .catch(() => ({ data: [] })),
+            .catch(() => ({ data: null })),
           axios
             .get("/api/forum", { params: { email: user?.email || "" } })
-            .catch(() => ({ data: [] })),
+            .catch(() => ({ data: null })),
         ]);
 
         const allLost = Array.isArray(lostRes.data) ? lostRes.data : [];
@@ -254,13 +259,21 @@ const ProfilePage = ({ user, setUser }) => {
           setStatusRequests([]);
         }
 
-        const allShares =
-          JSON.parse(localStorage.getItem("laf_shared_posts")) || [];
-        const userShares = allShares.filter(
-          (s) =>
-            s.sharerName === targetFullName ||
-            (loadedProfile.email && s.sharerEmail === loadedProfile.email),
-        );
+        const allShares = readShares();
+        // Chỉ hiện bài chia sẻ mà bài gốc vẫn còn (bài gốc bị xóa thì bài chia sẻ cũng biến mất).
+        // Nếu tải danh sách bài bị lỗi (null) thì không lọc loại đó, tránh ẩn nhầm.
+        const originalLists = {
+          lost: Array.isArray(lostRes.data) ? allLost : null,
+          found: Array.isArray(foundRes.data) ? allFound : null,
+          forum: Array.isArray(forumRes.data) ? allForum : null,
+        };
+        const userShares = allShares
+          .filter(
+            (s) =>
+              s.sharerName === targetFullName ||
+              (loadedProfile?.email && s.sharerEmail === loadedProfile.email),
+          )
+          .filter((s) => shareOriginalExists(s, originalLists));
         setSharedPosts(userShares);
       } catch (error) {
         console.error("Lỗi khi tải hồ sơ:", error);
@@ -372,6 +385,7 @@ const ProfilePage = ({ user, setUser }) => {
             "laf_deleted_lost_ids",
             JSON.stringify([...del, deletingItem.id]),
           );
+          removeSharesOfPost("lost", deletingItem.id);
         } else if (deletingItem.postSource === "FOUND") {
           await axios.post("/api/found-posts", params);
           const del =
@@ -380,6 +394,7 @@ const ProfilePage = ({ user, setUser }) => {
             "laf_deleted_found_ids",
             JSON.stringify([...del, deletingItem.id]),
           );
+          removeSharesOfPost("found", deletingItem.id);
         } else if (deletingItem.postSource === "FORUM") {
           await axios.post("/api/forum", params);
           const del =
@@ -388,6 +403,7 @@ const ProfilePage = ({ user, setUser }) => {
             "laf_deleted_forum_posts",
             JSON.stringify([...del, deletingItem.id]),
           );
+          removeSharesOfPost("forum", deletingItem.id);
         }
       } catch (err) {
         console.error("Lỗi xóa bài viết:", err);
@@ -789,7 +805,13 @@ const ProfilePage = ({ user, setUser }) => {
                       <div className="text-truncate">
                         <small className="text-muted d-block">Email</small>
                         <span className="fw-semibold text-dark">
-                          {profileData.email}
+                          {profileData.contactHidden ? (
+                            <span className="text-muted fst-italic fw-normal">
+                              Đăng nhập để xem
+                            </span>
+                          ) : (
+                            profileData.email
+                          )}
                         </span>
                       </div>
                     </div>
@@ -799,7 +821,13 @@ const ProfilePage = ({ user, setUser }) => {
                       <div>
                         <small className="text-muted d-block">Số điện thoại</small>
                         <span className="fw-semibold text-dark">
-                          {profileData.phone}
+                          {profileData.contactHidden ? (
+                            <span className="text-muted fst-italic fw-normal">
+                              Đăng nhập để xem
+                            </span>
+                          ) : (
+                            profileData.phone
+                          )}
                         </span>
                       </div>
                     </div>

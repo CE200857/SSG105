@@ -33,6 +33,7 @@ export default {
   "footer.tip1": "Xác minh đặc điểm riêng của món đồ trước khi trao trả.",
   "footer.tip2": "Hẹn nhận lại ở nơi công cộng trong campus.",
   "footer.tip3": "Không chia sẻ số thẻ, CMND/CCCD.",
+  "footer.adminContact": "Liên hệ quản trị viên",
   "footer.explore": "Khám phá",
   "footer.account": "Tài khoản",
   "footer.link.lost": "Tìm đồ (Đồ mất)",

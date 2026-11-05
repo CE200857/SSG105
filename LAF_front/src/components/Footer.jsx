@@ -26,6 +26,10 @@ const GUEST_LINKS = [
 
 const SAFETY_TIPS = ["footer.tip1", "footer.tip2", "footer.tip3"];
 
+// Thông tin liên hệ quản trị viên
+const ADMIN_PHONE = "0328223449";
+const ADMIN_EMAIL = "datntce200858@gmail.com";
+
 const FooterLinks = ({ title, links, t }) => (
   <>
     <h6 className="fw-bold mb-3 text-white">{title}</h6>
@@ -85,6 +89,34 @@ const Footer = ({ user }) => {
                   <span>{t(tipKey)}</span>
                 </li>
               ))}
+            </ul>
+
+            {/* Liên hệ quản trị viên */}
+            <h6 className="fw-bold mt-4 mb-2 text-white">
+              {t("footer.adminContact")}
+            </h6>
+            <ul
+              className="list-unstyled d-flex flex-column gap-2 mb-0"
+              style={{ fontSize: "0.9rem" }}
+            >
+              <li>
+                <a
+                  href={`tel:${ADMIN_PHONE}`}
+                  className="text-decoration-none lf-footer-link d-inline-flex align-items-center gap-2"
+                >
+                  <i className="bi bi-telephone-fill"></i>
+                  {ADMIN_PHONE}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${ADMIN_EMAIL}`}
+                  className="text-decoration-none lf-footer-link d-inline-flex align-items-center gap-2"
+                >
+                  <i className="bi bi-envelope-fill"></i>
+                  {ADMIN_EMAIL}
+                </a>
+              </li>
             </ul>
           </Col>
 

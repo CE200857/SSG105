@@ -317,6 +317,7 @@ public class LostPostDAO extends DBContext {
 
     public boolean deletePost(int lostPostId) {
         try {
+            ShareDAO.purgeSharesOfPost(conn, "lost", lostPostId);
             String[] queries = {
                 "DELETE FROM CommentLikes WHERE CommentType = 'lost' AND CommentID IN (SELECT CommentID FROM LostComments WHERE LostPostID = ?)",
                 "UPDATE LostComments SET ParentCommentID = NULL WHERE LostPostID = ?",

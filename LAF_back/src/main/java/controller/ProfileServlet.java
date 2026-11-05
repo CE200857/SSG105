@@ -45,6 +45,13 @@ public class ProfileServlet extends HttpServlet {
         boolean canSeeContact = sessionEmail != null;
         ProfileDAO dao = new ProfileDAO();
         Map<String, Object> userProfile = dao.getFullProfile(email, uid, viewerEmail, canSeeContact);
+
+        // Khách chưa đăng nhập không được xem email / số điện thoại của người khác
+        if (sessionEmail == null && userProfile != null) {
+            userProfile.remove("email");
+            userProfile.remove("phone");
+            userProfile.put("contactHidden", true);
+        }
         
         out.print(new Gson().toJson(userProfile));
         out.flush();

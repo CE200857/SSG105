@@ -21,11 +21,9 @@ public class CorsFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
-        // Bắt buộc trỏ đích danh URL của React, KHÔNG được dùng "*" khi có Cookie/Session
-        res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        // Chỉ origin nằm trong danh sách cấu hình (xem util.CorsUtil) mới nhận header CORS + cookie/session.
+        // Cấu hình: -Dlaf.cors.origins=... hoặc biến môi trường LAF_CORS_ORIGINS (mặc định localhost:5173 khi dev)
+        util.CorsUtil.apply(req, res);
 
         // Xử lý preflight request (Trình duyệt thường gửi method OPTIONS trước khi POST)
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {

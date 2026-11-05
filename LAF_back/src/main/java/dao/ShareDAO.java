@@ -10,6 +10,43 @@ import java.util.Map;
 
 public class ShareDAO extends DBContext {
 
+    /**
+     * Xóa bài chia sẻ (và mọi thứ gắn với nó: bình luận, lượt thích) theo điều kiện trên bảng SharedPosts.
+     * Ví dụ: purgeShares(conn, "OriginalPostType = ? AND OriginalPostID = ?", "lost", 5)
+     * Mỗi câu lệnh chạy riêng, lỗi được ghi log (không còn nuốt im lặng).
+     */
+    public static void purgeShares(java.sql.Connection conn, String shareWhere, Object... params) {
+        String ids = "SELECT ShareID FROM SharedPosts WHERE " + shareWhere;
+        String[] queries = {
+            "DELETE FROM CommentLikes WHERE CommentType = 'shared' AND CommentID IN "
+                + "(SELECT CommentID FROM SharedComments WHERE ShareID IN (" + ids + "))",
+            "DELETE FROM SharedComments WHERE ShareID IN (" + ids + ")",
+            "DELETE FROM SharedLikes WHERE ShareID IN (" + ids + ")",
+            "DELETE FROM SharedPosts WHERE " + shareWhere
+        };
+        for (String q : queries) {
+            try (PreparedStatement ps = conn.prepareStatement(q)) {
+                int placeholders = q.length() - q.replace("?", "").length();
+                for (int i = 0; i < placeholders; i++) {
+                    Object p = params[i % params.length];
+                    if (p instanceof Integer) {
+                        ps.setInt(i + 1, (Integer) p);
+                    } else {
+                        ps.setString(i + 1, String.valueOf(p));
+                    }
+                }
+                ps.executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Lỗi purgeShares: " + e.getMessage());
+            }
+        }
+    }
+
+    // Xóa mọi bài chia sẻ của một bài gốc (type: lost | found | forum)
+    public static void purgeSharesOfPost(java.sql.Connection conn, String type, int postId) {
+        purgeShares(conn, "OriginalPostType = ? AND OriginalPostID = ?", type, postId);
+    }
+
     public boolean createShare(String email, String postType, int postId, String shareContent) {
         String query = "INSERT INTO SharedPosts (UserID, OriginalPostType, OriginalPostID, ShareContent, CreatedAt) " +
                        "SELECT UserID, ?, ?, ?, GETDATE() FROM Users WHERE Email = ?";
@@ -65,10 +102,18 @@ public class ShareDAO extends DBContext {
             ps.setString(1, viewerEmail != null ? viewerEmail : "");
             ps.setInt(2, profileUserId);
             ResultSet rs = ps.executeQuery();
+            List<Integer> orphanShareIds = new ArrayList<>();
             while (rs.next()) {
                 int shareId = rs.getInt("ShareID");
                 String origType = rs.getString("OriginalPostType");
                 int origId = rs.getInt("OriginalPostID");
+
+                // Bài gốc đã bị xóa -> không hiển thị bài chia sẻ nữa (và dọn luôn khỏi CSDL)
+                Map<String, Object> origSummary = getOriginalPostSummary(origType, origId);
+                if (origSummary.isEmpty()) {
+                    orphanShareIds.add(shareId);
+                    continue;
+                }
 
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", shareId);
@@ -80,12 +125,16 @@ public class ShareDAO extends DBContext {
                 map.put("author", rs.getString("SharerName"));
                 map.put("likes", rs.getInt("LikesCount"));
                 map.put("hasLiked", rs.getInt("UserLiked") > 0);
-                map.put("originalPost", getOriginalPostSummary(origType, origId));
+                map.put("originalPost", origSummary);
 
                 List<Map<String, Object>> comments = getCommentsByShareId(shareId, viewerEmail);
                 map.put("comments", comments);
                 map.put("commentsCount", comments.size());
                 list.add(map);
+            }
+            rs.close();
+            for (int orphanId : orphanShareIds) {
+                purgeShares(conn, "ShareID = ?", orphanId);
             }
         } catch (Exception e) {
             System.out.println("Lỗi getSharedPostsByUserId: " + e.getMessage());

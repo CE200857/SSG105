@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Form, Button, Spinner, Alert } from "react-b
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import EmailCodeField from "../components/DatNT/EmailCodeField";
+import { persistUser } from "../utils/session";
 
 const EditProfilePage = ({ user, setUser }) => {
   const primaryColor = "#1f6dba";
@@ -25,6 +26,7 @@ const EditProfilePage = ({ user, setUser }) => {
   // Email đang dùng (để biết khi nào người dùng đổi email) + mã xác minh gửi tới email mới
   const [originalEmail, setOriginalEmail] = useState("");
   const [emailCode, setEmailCode] = useState("");
+  const [originalPhone, setOriginalPhone] = useState(""); // số điện thoại đã lưu (không kiểm tra lại nếu không đổi)
   const isAdmin = Number(user?.roleId || user?.RoleID) === 1;   // admin đổi email không cần xác minh
   const emailChanged =
     formData.email.trim().toLowerCase() !== originalEmail.trim().toLowerCase();
@@ -45,12 +47,13 @@ const EditProfilePage = ({ user, setUser }) => {
         const data = response.data;
         setFormData({
           fullName: data.fullName || "",
-          email: data.email || "",
+          email: data.email || user.email || "",
           phone: data.phone === "Chưa cập nhật" ? "" : data.phone,
           campus: data.campus === "Chưa cập nhật" ? "" : data.campus,
           gender: data.gender === "Chưa xác định" ? "" : data.gender
         });
-        setOriginalEmail(data.email || "");
+        setOriginalEmail(data.email || user.email || "");
+        setOriginalPhone(data.phone === "Chưa cập nhật" ? "" : data.phone || "");
       } catch (error) {
         console.error("Lỗi khi tải hồ sơ:", error);
       } finally {
@@ -69,9 +72,10 @@ const EditProfilePage = ({ user, setUser }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) return "Định dạng email không hợp lệ!";
     
-    // Validate Phone (10 chữ số)
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    if (formData.phone && !phoneRegex.test(formData.phone)) return "Số điện thoại không hợp lệ (Phải bắt đầu bằng số 0 và có 10 số)!";
+    // Validate Phone (10 chữ số): cùng quy tắc với lúc đăng ký và CHỈ kiểm tra khi người dùng đổi số
+    const phoneRegex = /^0[1-9][0-9]{8}$/;
+    const phoneChanged = formData.phone.trim() !== originalPhone.trim();
+    if (phoneChanged && formData.phone && !phoneRegex.test(formData.phone.trim())) return "Số điện thoại không hợp lệ (Phải bắt đầu bằng số 0 và có đủ 10 số)!";
     
     // Đổi email (không phải admin) -> bắt buộc nhập mã 6 số gửi tới email mới
     if (needEmailCode && !/^\d{6}$/.test(emailCode)) {
@@ -110,9 +114,10 @@ const EditProfilePage = ({ user, setUser }) => {
         
         // Cập nhật lại session user do email/tên có thể bị đổi
         const updatedUser = { ...user, email: response.data.newEmail, fullName: response.data.newFullName };
-        sessionStorage.setItem("user", JSON.stringify(updatedUser));
+        persistUser(updatedUser);
         if(setUser) setUser(updatedUser);
         setOriginalEmail(response.data.newEmail || formData.email);
+        setOriginalPhone(formData.phone);
         setEmailCode("");
 
         setTimeout(() => navigate("/profile"), 1500); // Tự động về trang cá nhân
@@ -179,6 +184,11 @@ const EditProfilePage = ({ user, setUser }) => {
                         className="px-3 py-3 rounded-3 shadow-none border-0 flex-grow-1" 
                         style={{ backgroundColor: "#f8fafc", color: "#12345a", fontWeight: "600", border: "1px solid #e2e8f0" }}
                       />
+                      <Form.Text className="ms-1 mt-2 text-secondary">
+                        {isAdmin
+                          ? "Quản trị viên được đổi email mà không cần xác minh."
+                          : "Nếu đổi email, bạn sẽ nhập mã OTP gửi về email mới để xác nhận."}
+                      </Form.Text>
                     </Form.Group>
                   </Col>
 
