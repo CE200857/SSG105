@@ -11,12 +11,15 @@ import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
 public class MailUtil {
+
     private static final String FROM = "zonestevegamer2@gmail.com";
 
     public static void send(String to, String subject, String body) throws MessagingException {
         // Mật khẩu ỨNG DỤNG 16 ký tự của Gmail (không phải mật khẩu đăng nhập Gmail)
         String pass = System.getenv("LAF_MAIL_PASSWORD");
-        if (pass == null) pass = "fxst ibgk laty ryfr";
+        if (pass == null || pass.isEmpty()) {
+            throw new MessagingException("Chưa cấu hình biến môi trường LAF_MAIL_PASSWORD");
+        }
         final String pw = pass;
 
         Properties p = new Properties();
