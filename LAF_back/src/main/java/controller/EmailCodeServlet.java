@@ -72,7 +72,8 @@ public class EmailCodeServlet extends HttpServlet {
                             + "\nKhông chia sẻ mã này cho bất kỳ ai.");
                 } catch (Exception e) {
                     dao.deleteCode(email);
-                    System.out.println("Lỗi gửi mail: " + e.getMessage());
+                    System.out.println("[EmailCode] Lỗi gửi mail tới " + email + ": " + MailUtil.describe(e));
+                    System.out.println("[EmailCode] Gợi ý: " + MailUtil.hint(e));
                     reply(response, 500, "error", "Không gửi được email, vui lòng thử lại sau.", 0);
                     return;
                 }
